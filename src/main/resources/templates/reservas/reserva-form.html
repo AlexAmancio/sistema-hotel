@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head th:replace="~{header-fragment :: headertag(title='Reserva múltiple')}">
+</head>
+<body>
+<div th:replace="~{navegacion :: menu}"></div>
+<div class="content">
+    <form th:action="@{/reservas/guardar/}" method="post">
+        <div class="header-form">
+            <h1>Reserva múltiple</h1>
+        </div>
+        <div class="content-form">
+            <div th:if="${error}" class="alert alert-danger">
+                <p th:text="${error}"></p>
+            </div>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="group-field">
+                <label for="cliente">Cliente</label>
+                <select id="cliente" name="cliente">
+                    <option th:each="cliente : ${listaClientes}" th:value="${cliente.id}" th:text="${cliente.nombres + ' ' + cliente.apellidos}"></option>
+                </select>
+            </div>
+            <div class="group-field">
+                <label for="checkIn">Fecha de ingreso (compartida para todas las habitaciones):</label>
+                <input id="checkIn" name="checkIn" type="datetime-local" required/>
+            </div>
+            <div class="group-field">
+                <label for="noches">N° Noches:</label>
+                <input id="noches" name="noches" type="number" required min="1"/>
+                <button type="button" class="btn btnbusqueda" id="busqueda">Buscar habitaciones libres
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="bi bi-search" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="group-field">
+                <label for="huespedesPorHabitacion">Huéspedes por habitación:</label>
+                <input id="huespedesPorHabitacion" name="huespedesPorHabitacion" type="number" min="1" value="1" required/>
+            </div>
+
+            <div id="habitaciones-group" class="hidden" style="margin: 20px 0;">
+                <label style="display:block; margin-bottom: 10px;">Elegí las habitaciones (podés marcar varias)</label>
+                <div id="habitaciones-lista" style="display:flex; flex-direction:column; row-gap: 10px;"></div>
+            </div>
+
+            <div class="group-field">
+                <label for="usuario">Usuario</label>
+                <select id="usuario" name="usuario">
+                    <option th:each="usuario : ${listaUsuarios}" th:value="${usuario.id}" th:text="${usuario.nombres + ' ' + usuario.apellidos}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="actions-form">
+            <button type="submit">
+                <span>Crear reserva</span>
+            </button>
+            <button id="btn-close"><span>Cancelar</span></button>
+        </div>
+    </form>
+</div>
+<script th:src="@{/js/script.js}"></script>
+<script th:src="@{/js/script-forms.js}"></script>
+<script>
+    document.getElementById("busqueda").addEventListener("click", function() {
+        const checkIn = document.getElementById('checkIn').value;
+        const noches = document.getElementById('noches').value;
+
+        fetch(`/habitaciones/disponibles?checkIn=${checkIn}&noches=${noches}`)
+            .then(response => response.json())
+            .then(data => {
+                const contenedor = document.getElementById('habitaciones-lista');
+                contenedor.innerHTML = "";
+
+                data.forEach(habitacion => {
+                    const label = document.createElement('label');
+                    label.style.display = 'flex';
+                    label.style.alignItems = 'center';
+                    label.style.columnGap = '10px';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'habitaciones';
+                    checkbox.value = habitacion.id;
+
+                    label.appendChild(checkbox);
+                    label.append(`Habitación ${habitacion.numero} (aforo ${habitacion.aforo})`);
+                    contenedor.appendChild(label);
+                });
+
+                document.getElementById('habitaciones-group').classList.remove('hidden');
+            })
+            .catch(error => console.error('Error al obtener las habitaciones disponibles:', error));
+    });
+</script>
+</body>
+</html>

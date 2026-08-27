@@ -59,6 +59,13 @@ public class Registro {
     @JoinColumn(name="usuario_id")
     private Usuario usuario;
 
+    // Null para un registro individual (el caso de siempre). Si no es null,
+    // este registro es una de varias habitaciones de una misma Reserva
+    // (grupo familiar, etc.) — ver Reserva.java.
+    @ManyToOne
+    @JoinColumn(name = "reserva_id")
+    private Reserva reserva;
+
     @OneToMany(mappedBy = "registro", fetch = FetchType.EAGER)
     private List<Consumo> consumos;
 

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head th:replace="~{header-fragment :: headertag(title='Reserva')}">
+
+<body>
+  <div th:replace="~{navegacion :: menu}"></div>
+  <div class="content">
+    <div class="header-form" style="margin-top:0; text-align:left; margin-bottom: 10px;">
+      <h1 th:text="${'Reserva #' + reserva.id}"></h1>
+      <p style="color: var(--color-plomo-oscuro); margin-top: 6px;"
+         th:text="${reserva.cliente.nombres + ' ' + reserva.cliente.apellidos + ' — ' + #lists.size(reserva.registros) + ' habitación(es)'}"></p>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <tr class="table-header">
+          <th>Habitación</th>
+          <th>Ingreso</th>
+          <th>Noches</th>
+          <th>Estado</th>
+          <th>Tarifa</th>
+        </tr>
+        <tr class="table-item" th:each="registro : ${reserva.registros}">
+          <td><a th:href="${'/editar/' + registro.id + '/'}" th:text="${'Hab. ' + registro.habitacion.numero}"></a></td>
+          <td th:text="${#dates.format(registro.checkIn, 'dd/MM/yyyy HH:mm')}"></td>
+          <td th:text="${registro.noches}"></td>
+          <td th:text="${registro.estado}"></td>
+          <td th:text="${'S/. ' + #numbers.formatDecimal(registro.totalEstadia, 1, 2)}"></td>
+        </tr>
+      </table>
+    </div>
+
+    <p style="margin: 20px 0; font-size: 18px;">
+      <b th:text="${'Total de la reserva: S/. ' + #numbers.formatDecimal(reserva.total, 1, 2)}"></b>
+    </p>
+
+    <a th:href="@{/}" style="display:inline-block; color: var(--color-plomo-oscuro);">← Volver a registros</a>
+  </div>
+  <script th:src="@{/js/script.js}"></script>
+</body>
+
+</html>

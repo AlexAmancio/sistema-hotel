@@ -7,7 +7,10 @@
   <div th:replace="~{navegacion :: menu}"></div>
 
   <div class="content">
-    <div th:replace="~{button-fragment(url=@{/nuevo/}, texto='Agregar registro')}"></div>
+    <div style="display:flex; column-gap: 16px; flex-wrap: wrap;">
+      <div th:replace="~{button-fragment(url=@{/nuevo/}, texto='Agregar registro')}"></div>
+      <div th:replace="~{button-fragment(url=@{/reservas/nueva/}, texto='Reserva múltiple')}"></div>
+    </div>
 
     <div class="table-wrapper">
     <table class="table-registros">
@@ -29,6 +32,8 @@
               <h3 th:text="${registro.cliente.nombres + ' en Hab.' + registro.habitacion.numero}"></h3>
 
               <span th:text="${'Huespedes ' + registro.numHuespedes}"></span>
+              <span th:if="${registro.reserva != null}" class="col-tag" style="margin-left: 8px; font-size: 12px;"
+                    th:text="${'Reserva #' + registro.reserva.id}"></span>
 
             </div>
           </a>
