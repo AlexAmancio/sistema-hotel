@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head th:replace="~{header-fragment :: headertag(title='Buscar')}">
+
+<body>
+  <div th:replace="~{navegacion :: menu}"></div>
+  <div class="content">
+    <div class="header-form" style="margin-top:0; text-align:left; margin-bottom: 30px;">
+      <h1 th:text="${query != null and !query.isEmpty()} ? ${'Resultados para “' + query + '”'} : 'Buscar'"></h1>
+    </div>
+
+    <div th:if="${query == null or query.isEmpty()}">
+      <p style="color: var(--color-plomo-oscuro);">Escribí un nombre, DNI o número de habitación en el buscador de la barra lateral.</p>
+    </div>
+
+    <div th:if="${query != null and !query.isEmpty()}">
+      <h3 class="busqueda-seccion">Clientes</h3>
+      <div class="table-wrapper">
+        <table>
+          <tr class="table-header"><th>Nombre</th><th>Identificación</th><th>Correo</th></tr>
+          <tr class="table-item" th:each="cliente : ${clientes}">
+            <td><a th:href="${'/clientes/editar/' + cliente.id + '/'}" th:text="${cliente.nombres + ' ' + cliente.apellidos}"></a></td>
+            <td th:text="${cliente.identificacion}"></td>
+            <td th:text="${cliente.correo}"></td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(clientes)}"><td colspan="3" style="color: var(--color-plomo-oscuro);">Sin resultados.</td></tr>
+        </table>
+      </div>
+
+      <h3 class="busqueda-seccion">Habitaciones</h3>
+      <div class="table-wrapper">
+        <table>
+          <tr class="table-header"><th>N°</th><th>Piso</th><th>Estado</th></tr>
+          <tr class="table-item" th:each="habitacion : ${habitaciones}">
+            <td><a th:href="${'/habitaciones/editar/' + habitacion.id + '/'}" th:text="${'Hab. ' + habitacion.numero}"></a></td>
+            <td th:text="${habitacion.piso}"></td>
+            <td th:text="${habitacion.estado}"></td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(habitaciones)}"><td colspan="3" style="color: var(--color-plomo-oscuro);">Sin resultados.</td></tr>
+        </table>
+      </div>
+
+      <h3 class="busqueda-seccion">Registros</h3>
+      <div class="table-wrapper">
+        <table>
+          <tr class="table-header"><th>Descripción</th><th>Ingreso</th><th>Estado</th></tr>
+          <tr class="table-item" th:each="registro : ${registros}">
+            <td><a th:href="${'/editar/' + registro.id + '/'}" th:text="${registro.cliente.nombres + ' en Hab.' + registro.habitacion.numero}"></a></td>
+            <td th:text="${#dates.format(registro.checkIn, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${registro.estado}"></td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(registros)}"><td colspan="3" style="color: var(--color-plomo-oscuro);">Sin resultados.</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script th:src="@{/js/script.js}"></script>
+</body>
+
+</html>

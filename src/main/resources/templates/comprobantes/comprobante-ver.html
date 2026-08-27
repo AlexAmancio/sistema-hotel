@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head th:replace="~{header-fragment :: headertag(title='Comprobante')}">
+
+<body>
+  <div class="no-print">
+    <div th:replace="~{navegacion :: menu}"></div>
+  </div>
+  <div class="content">
+    <div class="comprobante-aviso">
+      Comprobante local de demostración — no fue firmado ni enviado a SUNAT. No tiene validez tributaria.
+    </div>
+
+    <div class="comprobante">
+      <div class="comprobante-header">
+        <div>
+          <h2>HOTELES TUNKI</h2>
+          <p>RUC 20000000001 (demo)</p>
+          <p>Av. Ejemplo 123, Lima - Perú</p>
+        </div>
+        <div class="comprobante-numero">
+          <p>COMPROBANTE DE PAGO</p>
+          <h1 th:text="${comprobante.numeroCompleto}"></h1>
+          <p th:text="${'Emitido: ' + #temporals.format(comprobante.fechaEmision, 'dd/MM/yyyy HH:mm')}"></p>
+        </div>
+      </div>
+
+      <div class="comprobante-cliente">
+        <h3>Cliente</h3>
+        <p th:text="${registro.cliente.nombres + ' ' + registro.cliente.apellidos}"></p>
+        <p th:text="${'DNI: ' + registro.cliente.identificacion}"></p>
+      </div>
+
+      <table class="comprobante-detalle">
+        <tr class="table-header">
+          <th>Descripción</th>
+          <th>Monto</th>
+        </tr>
+        <tr>
+          <td th:text="${'Estadía - Habitación ' + registro.habitacion.numero + ' (' + registro.habitacion.categoria.nombre + ') - ' + registro.noches + ' noche(s)'}"></td>
+          <td th:text="${'S/. ' + #numbers.formatDecimal(registro.tarifa, 1, 2)}"></td>
+        </tr>
+        <tr th:each="consumo : ${registro.consumos}">
+          <td th:text="${consumo.descripcion}"></td>
+          <td th:text="${'S/. ' + #numbers.formatDecimal(consumo.monto, 1, 2)}"></td>
+        </tr>
+      </table>
+
+      <div class="comprobante-totales">
+        <div><span>Valor venta</span><span th:text="${'S/. ' + #numbers.formatDecimal(comprobante.valorVenta, 1, 2)}"></span></div>
+        <div><span>IGV (18%)</span><span th:text="${'S/. ' + #numbers.formatDecimal(comprobante.igv, 1, 2)}"></span></div>
+        <div class="total"><span>Total</span><span th:text="${'S/. ' + #numbers.formatDecimal(comprobante.total, 1, 2)}"></span></div>
+      </div>
+    </div>
+
+    <div class="comprobante-acciones no-print">
+      <button type="button" onclick="window.print()">Imprimir</button>
+      <a th:href="@{/}">Volver a registros</a>
+    </div>
+  </div>
+</body>
+
+</html>

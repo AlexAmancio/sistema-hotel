@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head th:replace="~{header-fragment :: headertag(title='Consumos')}">
+
+<body>
+  <div th:replace="~{navegacion :: menu}"></div>
+  <div class="content">
+    <div class="header-form" style="margin-top:0; text-align:left; margin-bottom: 30px;">
+      <h1 th:text="${'Consumos — ' + registro.cliente.nombres + ' en Hab.' + registro.habitacion.numero}"></h1>
+    </div>
+
+    <div class="table-wrapper">
+    <table>
+      <tr class="table-header">
+        <th>Descripción</th>
+        <th>Fecha</th>
+        <th>Monto</th>
+        <th></th>
+      </tr>
+      <tr th:each="consumo : ${listaConsumos}" class="table-item">
+        <td th:text="${consumo.descripcion}"></td>
+        <td th:text="${#temporals.format(consumo.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+        <td th:text="${'S/. ' + #numbers.formatDecimal(consumo.monto, 1, 2)}"></td>
+        <td>
+          <form class="form-eliminar" th:action="${'/consumos/eliminar/' + consumo.id + '/'}" method="post"
+                data-confirm-titulo="¿Eliminar este consumo?"
+                data-confirm-texto="Se quita de la cuenta de la estadía."
+                data-confirm-boton="Eliminar">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" style="background:none; border:none; cursor:pointer;">
+              <img th:src="@{/icons/delete-outline.svg}" alt="Eliminar" width="18">
+            </button>
+          </form>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(listaConsumos)}">
+        <td colspan="4" style="color: var(--color-plomo-oscuro);">Todavía no hay consumos registrados.</td>
+      </tr>
+    </table>
+    </div>
+
+    <p style="margin: 20px 0; font-size: 18px;">
+      <b th:text="${'Total consumos: S/. ' + #numbers.formatDecimal(registro.totalConsumos, 1, 2)}"></b>
+      &nbsp;·&nbsp;
+      <span th:text="${'Total estadía: S/. ' + #numbers.formatDecimal(registro.totalEstadia, 1, 2)}"></span>
+    </p>
+
+    <form th:if="${registro.estado.name() == 'ACTIVA'}" th:action="${'/consumos/agregar/' + registro.id + '/'}" method="post" style="max-width: 500px;">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+      <div class="group-field">
+        <label for="descripcion">Descripción</label>
+        <input type="text" id="descripcion" name="descripcion" placeholder="Ej. Minibar, Room service, Lavandería" required>
+      </div>
+      <div class="group-field">
+        <label for="monto">Monto (S/.)</label>
+        <input type="number" id="monto" name="monto" min="0" step="0.1" required>
+      </div>
+      <div class="actions-form" style="width: 100%; justify-content: flex-start; column-gap: 12px;">
+        <button type="submit">
+          <span>Agregar consumo</span>
+        </button>
+      </div>
+    </form>
+    <p th:unless="${registro.estado.name() == 'ACTIVA'}" style="color: var(--color-plomo-oscuro);">
+      Esta estadía ya no está activa — no se pueden agregar más consumos.
+    </p>
+
+    <a th:href="@{/}" style="display:inline-block; margin-top: 20px; color: var(--color-plomo-oscuro);">← Volver a registros</a>
+  </div>
+  <div th:replace="~{confirm-modal-fragment :: confirmModal}"></div>
+  <script th:src="@{/js/script.js}"></script>
+  <script th:src="@{/js/script-listas.js}"></script>
+  <script th:src="@{/js/script-confirm-delete.js}"></script>
+</body>
+
+</html>

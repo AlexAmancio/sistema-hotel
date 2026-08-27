@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head th:replace="~{header-fragment :: headertag(title='Hoy')}">
+
+<body>
+  <div th:replace="~{navegacion :: menu}"></div>
+  <div class="content">
+    <div class="header-form" style="margin-top:0; text-align:left; margin-bottom: 30px;">
+      <h1>Hoy</h1>
+    </div>
+
+    <div class="hoy-grid">
+      <div class="hoy-columna">
+        <h3>Llegan hoy <span class="hoy-contador" th:text="${#lists.size(llegan)}"></span></h3>
+        <div class="hoy-card" th:each="registro : ${llegan}">
+          <a th:href="${'/editar/' + registro.id + '/'}">
+            <b th:text="${registro.cliente.nombres + ' ' + registro.cliente.apellidos}"></b>
+            <span th:text="${'Hab. ' + registro.habitacion.numero}"></span>
+            <span th:text="${#dates.format(registro.checkIn, 'HH:mm')}"></span>
+          </a>
+        </div>
+        <p th:if="${#lists.isEmpty(llegan)}" class="hoy-vacio">Nadie llega hoy.</p>
+      </div>
+
+      <div class="hoy-columna">
+        <h3>Salen hoy <span class="hoy-contador" th:text="${#lists.size(salen)}"></span></h3>
+        <div class="hoy-card" th:each="registro : ${salen}">
+          <a th:href="${'/editar/' + registro.id + '/'}">
+            <b th:text="${registro.cliente.nombres + ' ' + registro.cliente.apellidos}"></b>
+            <span th:text="${'Hab. ' + registro.habitacion.numero}"></span>
+            <span th:text="${#dates.format(registro.calcularCheckoutEstimado(), 'HH:mm')}"></span>
+          </a>
+        </div>
+        <p th:if="${#lists.isEmpty(salen)}" class="hoy-vacio">Nadie sale hoy.</p>
+      </div>
+
+      <div class="hoy-columna">
+        <h3>Vencidas <span class="hoy-contador hoy-contador-alerta" th:text="${#lists.size(vencidas)}"></span></h3>
+        <div class="hoy-card hoy-card-alerta" th:each="registro : ${vencidas}">
+          <a th:href="${'/editar/' + registro.id + '/'}">
+            <b th:text="${registro.cliente.nombres + ' ' + registro.cliente.apellidos}"></b>
+            <span th:text="${'Hab. ' + registro.habitacion.numero}"></span>
+            <span th:text="${#dates.format(registro.calcularCheckoutEstimado(), 'dd/MM HH:mm')}"></span>
+          </a>
+        </div>
+        <p th:if="${#lists.isEmpty(vencidas)}" class="hoy-vacio">No hay reservas vencidas.</p>
+      </div>
+    </div>
+  </div>
+  <script th:src="@{/js/script.js}"></script>
+</body>
+
+</html>

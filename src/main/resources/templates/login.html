@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&display=swap');
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Outfit";
+      }
+      .fondo {
+        background-image: url('./fondologin.png');
+        background-size: 100%;
+        width: 100%;
+        height: 100vh;
+        background-repeat: no-repeat;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .container {
+        width: 534px;
+        height: 477px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        border: 0.5px solid #8B8B8B;
+        background: rgba(255, 255, 255, 0.90);
+        box-shadow: 4px 4px 14px 0px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(13px);
+        display: flex;
+        align-items: center;
+        /* justify-content: center; */
+
+        padding: 50px 50px;
+      }
+      form {
+        width: 100%;
+      }
+      .title {
+        color: #000;
+        font-family: 'Outfit';
+        font-size: 44px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: normal;
+        text-align: center;
+      }
+      /* for */
+      /* Estilos de boton de login */
+      button[type="submit"] {
+        width: 100%;
+        padding: 15px 50px;
+        border-radius: 6px;
+        background: #00AF65;
+        border: none;
+        color: #FFF;
+        font-family: 'Outfit';
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+        cursor: pointer;
+      }
+      .container input {
+        font-size: 18px;
+        border-radius: 6px;
+        padding: 10px;
+        background:#e7e7e7;
+        border-style: none; 
+        width: 100%;
+        margin-top: 10px;
+        border: solid 1px rgb(145, 145, 145);
+        outline: none;
+      }
+      
+      .container label {
+        font-size: 18px;
+      }
+      .campos {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+    </style>
+
+  </head>
+  <body>
+
+    
+
+    <section class="fondo" >
+      <div class="container">
+        <form th:action="@{/login}" method="post">
+          <h5
+            class="title"
+            style="letter-spacing: 1px"
+          >
+            Inicia Sesión
+          </h5>
+                  <!-- Mostrar mensaje de error si está presente en la URL -->
+        <div th:if="${param.error}" style="color: red; font-size: 14px; text-align: center" >
+          <p th:text="${param.error}"></p>
+          <span id="error-details"></span>
+        </div>
+          <div class="campos" style="margin-top: 50px;">
+            <div class="campo">
+              <label for="username">Nombre de Usuario</label>
+              <input
+                name="username"
+                type="text"
+                id="username"
+                placeholder="Ingresa tu nombre de usuario"
+                autofocus
+              />
+            </div>
+            
+
+            <div class="campo">
+              <label for="password">Contraseña</label>
+              <input
+                name="password"
+                type="password"
+                id="password"
+                placeholder="Ingresa tu contraseña"
+              />
+            </div>
+            
+            <div class="campo">
+              
+              <button
+                class="btn btn-dark btn-lg btn-block"
+                type="submit"
+                id="btnSubmitLogin"
+              >
+                Iniciar Sesión
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+
+    <script>
+      const submitButton = document.querySelector("#btnSubmitLogin");
+
+      // Obtén la query string de la URL
+      const queryString = window.location.search;
+
+      // Usa URLSearchParams para analizar la query string
+      const params = new URLSearchParams(queryString);
+
+      // Obtén el valor del parámetro 'error'
+      const errorMessage = params.get('error');
+
+      // Verificar la existencia de loginBlockedUntil en el localStorage
+      const blockedUntil = localStorage.getItem('loginBlockedUntil');
+
+      if (errorMessage && blockedUntil === null ) {
+          // Decodifica el mensaje para procesar correctamente los caracteres especiales
+          const decodedMessage = decodeURIComponent(errorMessage);
+
+          // Verifica si contiene la palabra "minutos"
+          if (decodedMessage.includes("minutos")) {
+              // Extrae el número que precede a "minutos"
+              const match = decodedMessage.match(/(\d+)\s*minutos/); // Busca un número seguido de "minutos"
+
+              if (match) {
+                  const minutesToAdd = parseInt(match[1], 10); // Convierte el número extraído a entero
+
+                  // Obtén la fecha y hora actual
+                  const nowExtra = new Date();
+
+                  // Suma los minutos extraídos a la hora actual
+                  nowExtra.setMinutes(nowExtra.getMinutes() + minutesToAdd);
+
+                  // Guarda la fecha resultante en localStorage (como ejemplo de almacenamiento)
+                  localStorage.setItem("loginBlockedUntil", nowExtra.toISOString());
+
+                  document.querySelector("#error-details").textContent = "Bloqueado hasta: " + nowExtra;
+                  submitButton.disabled = true;
+                  submitButton.style.backgroundColor = "gray";
+
+                  console.log("Login bloqueado hasta:", nowExtra);
+
+              }
+          }
+      }
+
+      // Cuando recargue la página se mantenga el estado de bloqueo si esta asignado en el localStorage
+      if (blockedUntil) {
+          const now = new Date();
+          const unblockTime = new Date(blockedUntil);
+          if (now < unblockTime) {
+              console.log("Login bloqueado. Intente después de:", unblockTime); 
+              document.querySelector("#error-details").textContent = "Bloqueado hasta: " + unblockTime;
+              submitButton.disabled = true;
+              submitButton.style.backgroundColor = "gray";
+          } else {
+              console.log("Bloqueo finalizado. Puede iniciar sesión.");
+              submitButton.disable = false;
+              submitButton.style.backgroundColor = "#00AF65";
+              localStorage.removeItem('loginBlockedUntil');
+              
+              // Obtiene la URL actual
+              let currentUrl = window.location.href;
+
+              // Elimina los parámetros de la query (todo después del primer '?')
+              let cleanUrl = currentUrl.split('?')[0];
+
+              // Redirige a la URL limpia
+              window.location.href = cleanUrl;
+          }
+      }
+    </script>
+  </body>
+</html>
