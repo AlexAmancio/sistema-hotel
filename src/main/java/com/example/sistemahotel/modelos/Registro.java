@@ -45,7 +45,7 @@ public class Registro {
     private Double montoPagado = 0.0;
 
     @Enumerated(EnumType.STRING)
-    private MetodoPago metodoPago;
+    private MetodoPago metodoPago = MetodoPago.EFECTIVO;
 
     @ManyToOne
     @JoinColumn(name="cliente_id")
