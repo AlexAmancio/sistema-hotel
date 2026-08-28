@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.sistemahotel.interfaces.IClienteService;
 import com.example.sistemahotel.modelos.Cliente;
+import com.example.sistemahotel.util.TextoUtils;
 
 @RequestMapping("/clientes/")
 @Controller
@@ -67,7 +68,16 @@ public class ClientesController {
         RedirectAttributes redirectAttributes
     ) {
         cliente.setFechaNacimiento(new Date());
-        
+
+        // Nombres, apellidos, ciudad y país se guardan con la primera letra de
+        // cada palabra en mayúscula, sin importar cómo los haya tipeado el
+        // recepcionista (o cómo vengan de la API de DNI, que devuelve todo en
+        // mayúsculas). El correo NO se toca.
+        cliente.setNombres(TextoUtils.capitalizarNombre(cliente.getNombres()));
+        cliente.setApellidos(TextoUtils.capitalizarNombre(cliente.getApellidos()));
+        cliente.setCiudad(TextoUtils.capitalizarNombre(cliente.getCiudad()));
+        cliente.setPais(TextoUtils.capitalizarNombre(cliente.getPais()));
+
         if(cliente.getId()<1){
             Optional<Cliente> clienteExistente = service.consultarPorIdentificacion(cliente.getIdentificacion());
             if (clienteExistente.isPresent()) {

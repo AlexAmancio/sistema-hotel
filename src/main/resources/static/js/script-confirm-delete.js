@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
             formPendiente = form;
             titulo.textContent = form.dataset.confirmTitulo || "¿Eliminar este elemento?";
             texto.textContent = form.dataset.confirmTexto || "Esta acción no se puede deshacer.";
+            texto.classList.toggle("peligro", form.dataset.confirmPeligro === "true");
             confirmar.textContent = form.dataset.confirmBoton || "Eliminar";
             overlay.classList.remove("hidden");
         });

@@ -31,10 +31,11 @@
             <div class="cliente-item-header">
               <h3 th:text="${registro.cliente.nombres + ' en Hab.' + registro.habitacion.numero}"></h3>
 
-              <span th:text="${'Huespedes ' + registro.numHuespedes}"></span>
-              <span th:if="${registro.reserva != null}" class="col-tag" style="margin-left: 8px; font-size: 12px;"
-                    th:text="${'Reserva #' + registro.reserva.id}"></span>
-
+              <div class="cliente-item-meta">
+                <span th:text="${'Huespedes ' + registro.numHuespedes}"></span>
+                <span th:if="${registro.reserva != null}" class="col-tag tag-reserva"
+                      th:text="${'Reserva #' + registro.reserva.id}"></span>
+              </div>
             </div>
           </a>
         </td>
@@ -106,7 +107,10 @@
                 <form th:if="${registro.estado.name() == 'ACTIVA'}" class="form-eliminar"
                       th:action="${'/checkout/' + registro.id + '/'}" method="post"
                       data-confirm-titulo="¿Hacer check-out?"
-                      data-confirm-texto="La habitación quedará marcada 'En limpieza' y disponible para un próximo huésped."
+                      th:attr="data-confirm-texto=${registro.saldoPendiente > 0
+                                  ? ('Ojo: queda un saldo pendiente de S/. ' + #numbers.formatDecimal(registro.saldoPendiente, 1, 2) + ' sin cobrar. Si hacés check-out ahora, va a quedar sin cobrar. ¿Confirmás igual?')
+                                  : 'La habitación quedará marcada En limpieza y disponible para un próximo huésped.'},
+                              data-confirm-peligro=${registro.saldoPendiente > 0}"
                       data-confirm-boton="Hacer check-out">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <button type="submit">

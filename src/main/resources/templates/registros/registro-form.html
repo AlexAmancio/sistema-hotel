@@ -31,12 +31,7 @@
             </div>
             <div class="group-field">
                 <label for="noches">N° Noches (calculado):</label>
-                <input id="noches" th:field="*{noches}" type="number" readonly/>
-                <button type="button" class="btn btnbusqueda" id="busqueda">Buscar
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="bi bi-search" viewBox="0 0 16 16">
-                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                    </svg>
-                </button>
+                <input id="noches" th:field="*{noches}" type="number" readonly placeholder="—"/>
             </div>
             <p id="fechas-warning" class="hidden" style="color: var(--color-rojo); margin: -8px 0 12px 250px;">
                 La fecha de salida tiene que ser después del ingreso.
@@ -48,8 +43,9 @@
                 </select>
             </div>
             <div class="group-field">
-                <label for="tarifa">Tarifa (en soles):</label>
-                <input id="tarifaCalculada" th:field="*{tarifa}" type="number" readonly/>
+                <label for="tarifaMostrada">Tarifa (en soles):</label>
+                <input id="tarifaMostrada" type="text" readonly placeholder="—"/>
+                <input id="tarifaCalculada" th:field="*{tarifa}" type="hidden"/>
             </div>
             <div class="group-field">
                 <label for="numHuespedes">N° Huéspedes:</label>
@@ -73,7 +69,11 @@
             </div>
             <div class="group-field">
                 <label for="montoPagado">Monto pagado (S/.)</label>
-                <input th:field="*{montoPagado}" type="number" min="0" step="0.1"/>
+                <input id="montoPagado" th:field="*{montoPagado}" type="number" min="0" step="0.1"/>
+            </div>
+            <div id="resumen-vivo" class="resumen-vivo hidden">
+                <p id="resumen-calculo"></p>
+                <p id="resumen-saldo"></p>
             </div>
             <div class="group-field">
                 <label for="usuario">Usuario</label>
@@ -158,6 +158,16 @@
             .catch(error => console.error('Error al obtener las habitaciones disponibles:', error));
     }
 
+    function formatearSoles(numero) {
+        return numero.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function mostrarTarifa(valor) {
+        const tarifa = parseFloat(valor) || 0;
+        document.getElementById('tarifaCalculada').value = tarifa;
+        document.getElementById('tarifaMostrada').value = tarifa > 0 ? `S/. ${formatearSoles(tarifa)}` : '';
+    }
+
     function calcularTarifaAutomatica() {
         const habitacionSelect = document.getElementById('habitacion');
         const habitacionID = habitacionSelect.value;
@@ -171,9 +181,38 @@
         fetch(`/habitaciones/calcular-tarifa/${habitacionID}?noches=${noches}&checkIn=${encodeURIComponent(checkIn)}`)
             .then(response => response.json())
             .then(data => {
-                document.getElementById('tarifaCalculada').value = data;
+                mostrarTarifa(data);
+                actualizarResumen();
             })
             .catch(error => console.error('Error al calcular tarifa:', error));
+    }
+
+    function actualizarResumen() {
+        const noches = parseInt(document.getElementById('noches').value, 10) || 0;
+        const tarifa = parseFloat(document.getElementById('tarifaCalculada').value) || 0;
+        const pagado = parseFloat(document.getElementById('montoPagado').value) || 0;
+        const resumen = document.getElementById('resumen-vivo');
+        const calculo = document.getElementById('resumen-calculo');
+        const saldoEl = document.getElementById('resumen-saldo');
+
+        if (noches < 1 || tarifa <= 0) {
+            resumen.classList.add('hidden');
+            return;
+        }
+        resumen.classList.remove('hidden');
+
+        const precioPorNoche = tarifa / noches;
+        let texto = `${noches} noche${noches === 1 ? '' : 's'} × S/. ${formatearSoles(precioPorNoche)} = S/. ${formatearSoles(tarifa)}`;
+        calculo.textContent = texto;
+
+        const saldo = tarifa - pagado;
+        if (saldo > 0) {
+            saldoEl.textContent = `Saldo pendiente: S/. ${formatearSoles(saldo)}`;
+            saldoEl.className = 'saldo-pendiente';
+        } else {
+            saldoEl.textContent = 'Pagado completo';
+            saldoEl.className = 'saldo-cero';
+        }
     }
 
     function verificarAforo() {
@@ -193,8 +232,7 @@
     }
 
     // Búsqueda automática (con una pequeña espera) apenas las dos fechas son
-    // válidas — el botón "Buscar" sigue ahí como atajo manual, por si
-    // cambian el cliente u otra cosa y quieren re-disparar la búsqueda.
+    // válidas.
     function programarBusquedaAutomatica() {
         clearTimeout(busquedaTimeout);
         busquedaTimeout = setTimeout(buscarHabitacionesDisponibles, 400);
@@ -202,25 +240,36 @@
 
     document.getElementById('checkIn').addEventListener('input', programarBusquedaAutomatica);
     document.getElementById('salida').addEventListener('input', programarBusquedaAutomatica);
-    document.getElementById('busqueda').addEventListener('click', buscarHabitacionesDisponibles);
 
     document.getElementById('numHuespedes').addEventListener('input', verificarAforo);
     document.getElementById('habitacion').addEventListener('change', function () {
         verificarAforo();
         calcularTarifaAutomatica();
     });
+    document.getElementById('montoPagado').addEventListener('input', actualizarResumen);
 
-    // Si estamos editando un registro existente, precargar la fecha de
-    // salida a partir de checkIn + noches (para no dejarla vacía).
-    (function precargarSalida() {
+    // Si estamos editando un registro existente: precargar la fecha de
+    // salida a partir de checkIn + noches, y mostrar la tarifa/resumen ya
+    // guardados con el mismo formato que usaría la búsqueda automática.
+    // Si es un registro NUEVO, el campo noches viene en "0" (int por
+    // defecto en el backend) sin que el usuario haya elegido nada todavía:
+    // se limpia para no mostrar un cero engañoso.
+    (function precargarEstadoInicial() {
         const checkInVal = document.getElementById('checkIn').value;
-        const nochesVal = document.getElementById('noches').value;
-        if (checkInVal && nochesVal) {
+        const nochesInput = document.getElementById('noches');
+        const nochesVal = nochesInput.value;
+
+        if (checkInVal && nochesVal && nochesVal !== '0') {
             const checkIn = new Date(checkInVal);
             checkIn.setDate(checkIn.getDate() + parseInt(nochesVal, 10));
             const pad = n => String(n).padStart(2, '0');
             const salidaStr = `${checkIn.getFullYear()}-${pad(checkIn.getMonth() + 1)}-${pad(checkIn.getDate())}T${pad(checkIn.getHours())}:${pad(checkIn.getMinutes())}`;
             document.getElementById('salida').value = salidaStr;
+
+            mostrarTarifa(document.getElementById('tarifaCalculada').value);
+            actualizarResumen();
+        } else {
+            nochesInput.value = '';
         }
     })();
 </script>

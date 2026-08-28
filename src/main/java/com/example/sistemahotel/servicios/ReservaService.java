@@ -3,6 +3,7 @@ package com.example.sistemahotel.servicios;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class ReservaService implements IReservaService {
 
     @Override
     @Transactional
-    public Reserva crear(Cliente cliente, Usuario usuario, Date checkIn, int noches, int huespedesPorHabitacion, List<Integer> habitacionIds) {
+    public Reserva crear(Cliente cliente, Usuario usuario, Date checkIn, int noches, Map<Integer, Integer> huespedesPorHabitacion, List<Integer> habitacionIds) {
         if (habitacionIds == null || habitacionIds.isEmpty()) {
             throw new IllegalArgumentException("Elegí al menos una habitación para la reserva.");
         }
@@ -51,10 +52,11 @@ public class ReservaService implements IReservaService {
             Habitacion habitacion = habitacionService.consultarId(habitacionId)
                 .orElseThrow(() -> new IllegalArgumentException("Una de las habitaciones seleccionadas ya no existe."));
 
-            if (huespedesPorHabitacion > habitacion.getAforo()) {
+            int huespedes = huespedesPorHabitacion.getOrDefault(habitacionId, 1);
+            if (huespedes > habitacion.getAforo()) {
                 throw new IllegalArgumentException(
                     "La habitación " + habitacion.getNumero() + " tiene aforo para " + habitacion.getAforo() +
-                    " persona(s), y pediste " + huespedesPorHabitacion + ".");
+                    " persona(s), y pediste " + huespedes + ".");
             }
 
             if (registroService.existeSolapamiento(habitacion, checkIn, noches, null)) {
@@ -79,7 +81,7 @@ public class ReservaService implements IReservaService {
             registro.setHabitacion(habitacion);
             registro.setCheckIn(checkIn);
             registro.setNoches(noches);
-            registro.setNumHuespedes(huespedesPorHabitacion);
+            registro.setNumHuespedes(huespedesPorHabitacion.getOrDefault(habitacion.getId(), 1));
             registro.setTarifa(precioPorNoche * noches);
             registro.setReserva(reserva);
             registroService.guardar(registro);

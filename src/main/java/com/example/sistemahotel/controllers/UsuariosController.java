@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.sistemahotel.interfaces.IUsuarioService;
 import com.example.sistemahotel.modelos.Usuario;
+import com.example.sistemahotel.util.TextoUtils;
 
 
 @RequestMapping("/usuarios/")
@@ -71,6 +72,11 @@ public class UsuariosController {
 
     @PostMapping("/guardar/")
     public String guardar(@ModelAttribute("usuario") Usuario usuario, Model model, RedirectAttributes redirectAttributes) {
+        // Igual que en Clientes: nombres y apellidos con inicial mayúscula,
+        // sin tocar username ni correo.
+        usuario.setNombres(TextoUtils.capitalizarNombre(usuario.getNombres()));
+        usuario.setApellidos(TextoUtils.capitalizarNombre(usuario.getApellidos()));
+
         if(usuario.getId()<1){
             if(usuario.getContrasena() == null || usuario.getContrasena().isBlank()){
                 redirectAttributes.addFlashAttribute("error", "La contraseña es obligatoria para un nuevo usuario");

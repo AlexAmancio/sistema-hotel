@@ -3,7 +3,9 @@ package com.example.sistemahotel.controllers;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -45,8 +47,8 @@ public class ReservaController {
         @RequestParam int usuario,
         @RequestParam String checkIn,
         @RequestParam int noches,
-        @RequestParam int huespedesPorHabitacion,
         @RequestParam(name = "habitaciones", required = false) List<Integer> habitacionIds,
+        @RequestParam Map<String, String> params,
         RedirectAttributes redirectAttributes
     ) {
         try {
@@ -55,6 +57,24 @@ public class ReservaController {
                 .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado."));
             var usuarioObj = usuarioService.consultarId(usuario)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
+
+            // Cada habitación manda su propio "huespedes_<id>" (ver reserva-form.html);
+            // si por algo no llega, se asume 1 huésped en esa habitación.
+            Map<Integer, Integer> huespedesPorHabitacion = new HashMap<>();
+            if (habitacionIds != null) {
+                for (Integer id : habitacionIds) {
+                    String raw = params.get("huespedes_" + id);
+                    int huespedes = 1;
+                    if (raw != null && !raw.isBlank()) {
+                        try {
+                            huespedes = Integer.parseInt(raw);
+                        } catch (NumberFormatException ignored) {
+                            // Se queda en 1 si llega algo no numérico.
+                        }
+                    }
+                    huespedesPorHabitacion.put(id, huespedes);
+                }
+            }
 
             var reserva = reservaService.crear(clienteObj, usuarioObj, checkInDate, noches, huespedesPorHabitacion, habitacionIds);
             return "redirect:/reservas/" + reserva.getId() + "/";

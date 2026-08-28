@@ -221,6 +221,7 @@ table {
     font-size: 14px;
     padding: 10px 20px;
     border-radius: 45px;
+    white-space: nowrap;
 }
 .btnbusqueda {
     background-color: #00AF65; 
@@ -390,6 +391,22 @@ table {
 /* Pading emjorable */
 .cliente-item-header {
     padding: 15px 0;
+    display: flex;
+    flex-direction: column;
+    row-gap: 6px;
+}
+.cliente-item-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    column-gap: 10px;
+    row-gap: 4px;
+}
+.col-tag.tag-reserva {
+    padding: 4px 10px;
+    font-size: 12px;
+    background-color: #E4E4E4;
+    color: #555;
 }
 
 
@@ -482,6 +499,10 @@ table {
     font-weight: 500;
     margin-bottom: 12px;
 }
+#confirm-modal-texto.peligro {
+    color: var(--color-rojo);
+    font-weight: 600;
+}
 .modal-confirm p {
     font-size: 15px;
     color: var(--color-plomo-oscuro);
@@ -522,9 +543,6 @@ table {
 .table-registros {
     min-width: 1180px;
 }
-.table-registros .tag-estado {
-    white-space: nowrap;
-}
 .table-header th {
     white-space: nowrap;
 }
@@ -554,6 +572,9 @@ table {
     }
     .group-field label {
         width: auto;
+    }
+    .resumen-vivo {
+        margin-left: 0;
     }
 }
 
@@ -594,7 +615,61 @@ table {
 .col-tag.estado-no-show { background-color: var(--color-rojo); color: #7A0000; }
 
 .saldo-pendiente { color: var(--color-rojo); font-weight: 600; }
-.saldo-cero { color: var(--color-verde-secundario); }
+.saldo-cero { color: var(--color-verde-secundario); font-weight: 600; }
+
+/* ======================= RESERVA MÚLTIPLE: filas de habitación ===========================*/
+.reserva-habitacion-row {
+    border: 1px solid var(--color-plomo);
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+.reserva-habitacion-info {
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+    cursor: pointer;
+}
+.reserva-habitacion-info span:first-of-type {
+    flex: 1;
+}
+.reserva-habitacion-precio {
+    font-weight: 600;
+    color: var(--color-verde-secundario);
+}
+.reserva-habitacion-huespedes {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+    margin: 10px 0 0 26px;
+}
+.reserva-habitacion-huespedes input {
+    width: 70px;
+    font-size: 16px;
+    border-radius: 6px;
+    padding: 6px 10px;
+    background: #e7e7e7;
+    border-style: none;
+}
+.reserva-aforo-warning {
+    color: var(--color-rojo);
+    font-size: 13px;
+}
+
+/* ======================= RESUMEN EN VIVO (form de registro) ===========================*/
+.resumen-vivo {
+    margin: -4px 0 16px 250px;
+    padding: 10px 14px;
+    background: var(--color-plomo-seleccion);
+    border-radius: 6px;
+    font-size: 15px;
+}
+.resumen-vivo p {
+    margin: 0;
+}
+.resumen-vivo p + p {
+    margin-top: 4px;
+    font-weight: 600;
+}
 
 /* ======================= COMPROBANTE ===========================*/
 .comprobante-aviso {
