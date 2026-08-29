@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head th:replace="~{header-fragment :: headertag(title='Mi cuenta')}">
+
+<body>
+  <div th:replace="~{navegacion :: menu}"></div>
+  <div class="content">
+    <div class="header-form" style="margin-top:0; text-align:left; margin-bottom: 30px;">
+      <h1>Mi cuenta</h1>
+    </div>
+
+    <div style="max-width: 500px;">
+      <p style="margin-bottom: 24px;">
+        <b th:text="${usuario.nombres + ' ' + usuario.apellidos}"></b><br>
+        <span style="color: var(--color-plomo-oscuro);" th:text="${'@' + usuario.username + ' — ' + usuario.correo}"></span>
+      </p>
+
+      <h3 style="margin-bottom: 14px;">Cambiar contraseña</h3>
+
+      <div th:if="${error}" class="alert alert-danger" style="margin-bottom: 16px;">
+        <p th:text="${error}"></p>
+      </div>
+      <div th:if="${exito}" style="background-color: #D9F2E4; color: #00854D; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px;">
+        <p th:text="${exito}"></p>
+      </div>
+
+      <form th:action="@{/perfil/cambiar-contrasena/}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <div class="group-field">
+          <label for="actual">Contraseña actual</label>
+          <input type="password" id="actual" name="actual" required>
+        </div>
+        <div class="group-field">
+          <label for="nueva">Nueva contraseña</label>
+          <input type="password" id="nueva" name="nueva" required>
+        </div>
+        <div class="group-field">
+          <label for="confirmar">Confirmar nueva contraseña</label>
+          <input type="password" id="confirmar" name="confirmar" required>
+        </div>
+        <div class="actions-form">
+          <button type="submit">
+            <span>Actualizar contraseña</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script th:src="@{/js/script.js}"></script>
+</body>
+
+</html>

@@ -23,6 +23,7 @@ public class Usuario {
     private String correo;
     private String contrasena;
     private boolean esAdmin;
+    private boolean activo = true;
 
     private LocalDateTime logoutTime;
 }

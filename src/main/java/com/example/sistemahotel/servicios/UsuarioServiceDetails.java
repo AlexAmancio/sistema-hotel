@@ -9,11 +9,13 @@ import com.example.sistemahotel.modelos.Usuario;
 public class UsuarioServiceDetails implements UserDetails {
     private final String username;
     private final String password;
+    private final boolean activo;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public UsuarioServiceDetails(Usuario usuario) {
         username = usuario.getUsername();
         password = usuario.getContrasena();
+        activo = usuario.isActivo();
         authorities = usuario.isEsAdmin()
             ? AuthorityUtils.createAuthorityList("ROLE_ADMIN", "ROLE_STAFF")
             : AuthorityUtils.createAuthorityList("ROLE_STAFF");
@@ -51,6 +53,6 @@ public class UsuarioServiceDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return activo;
     }
 }

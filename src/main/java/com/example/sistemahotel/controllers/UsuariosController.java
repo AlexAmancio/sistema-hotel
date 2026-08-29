@@ -1,5 +1,6 @@
 package com.example.sistemahotel.controllers;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.sistemahotel.interfaces.IRegistroService;
 import com.example.sistemahotel.interfaces.IUsuarioService;
 import com.example.sistemahotel.modelos.Usuario;
 import com.example.sistemahotel.util.TextoUtils;
@@ -27,6 +29,9 @@ public class UsuariosController {
 
     @Autowired
     private IUsuarioService service;
+
+    @Autowired
+    private IRegistroService registroService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -109,9 +114,69 @@ public class UsuariosController {
     @PostMapping("/eliminar/{usuarioID}/")
     public String eliminar(
         @PathVariable(name="usuarioID", required = true) int id,
-        Model model
+        RedirectAttributes redirectAttributes
     ) {
+        Optional<Usuario> usuario = service.consultarId(id);
+        if (usuario.isEmpty()) {
+            return "redirect:/usuarios/";
+        }
+
+        if (usuario.get().isEsAdmin() && esElUnicoAdmin(id)) {
+            redirectAttributes.addFlashAttribute("error", "No se puede eliminar al único administrador del sistema.");
+            return "redirect:/usuarios/";
+        }
+
+        boolean tieneRegistros = registroService.listar().stream()
+            .anyMatch(r -> r.getUsuario() != null && r.getUsuario().getId() == id);
+        if (tieneRegistros) {
+            redirectAttributes.addFlashAttribute("error",
+                "No se puede eliminar: este usuario tiene registros asociados. Desactivalo en su lugar.");
+            return "redirect:/usuarios/";
+        }
+
         service.eliminar(id);
-        return listar(model);
+        return "redirect:/usuarios/";
+    }
+
+    @PostMapping("/desactivar/{usuarioID}/")
+    public String desactivar(
+        @PathVariable(name="usuarioID", required = true) int id,
+        RedirectAttributes redirectAttributes
+    ) {
+        Optional<Usuario> usuarioOpt = service.consultarId(id);
+        if (usuarioOpt.isEmpty()) {
+            return "redirect:/usuarios/";
+        }
+        Usuario usuario = usuarioOpt.get();
+
+        if (usuario.isEsAdmin() && esElUnicoAdmin(id)) {
+            redirectAttributes.addFlashAttribute("error", "No se puede desactivar al único administrador del sistema.");
+            return "redirect:/usuarios/";
+        }
+
+        usuario.setActivo(false);
+        service.guardar(usuario);
+        return "redirect:/usuarios/";
+    }
+
+    @PostMapping("/activar/{usuarioID}/")
+    public String activar(
+        @PathVariable(name="usuarioID", required = true) int id
+    ) {
+        service.consultarId(id).ifPresent(usuario -> {
+            usuario.setActivo(true);
+            service.guardar(usuario);
+        });
+        return "redirect:/usuarios/";
+    }
+
+    // True si, de todos los administradores ACTIVOS, el único es el que tiene este id
+    // (o si ya no queda ninguno activo aparte de él).
+    private boolean esElUnicoAdmin(int id) {
+        List<Usuario> admins = service.listar().stream()
+            .filter(Usuario::isEsAdmin)
+            .filter(Usuario::isActivo)
+            .toList();
+        return admins.size() <= 1 && admins.stream().anyMatch(a -> a.getId() == id);
     }
 }

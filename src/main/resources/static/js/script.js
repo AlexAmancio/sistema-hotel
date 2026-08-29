@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", function() {
     // Divide la ruta en un array utilizando "/"
     let elementosDeRuta = ruta.split("/");
 
-    let elemento = document.getElementById("item-registros");
-    
+    let elemento = null;
+
     // Muestra los elementos de la ruta en la consola
     switch (elementosDeRuta[1]) {
         case "":
@@ -34,6 +34,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     console.log(elementosDeRuta[1]);
-    elemento.classList.add("active");
+    if (elemento) {
+        elemento.classList.add("active");
+    }
 
 });

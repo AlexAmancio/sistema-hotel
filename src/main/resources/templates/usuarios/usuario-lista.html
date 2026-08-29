@@ -13,6 +13,9 @@
     <p th:unless="${esAdmin}" style="color: var(--color-plomo-oscuro); margin-bottom: 20px;">
       Solo un administrador puede crear, editar o eliminar usuarios.
     </p>
+    <div th:if="${error}" class="alert alert-danger" style="margin-bottom: 20px;">
+      <p th:text="${error}"></p>
+    </div>
 
     <div class="table-wrapper">
     <table>
@@ -21,6 +24,7 @@
         <th>Nombre y apellidos</th>
         <th>Correo</th>
         <th>Privilegios</th>
+        <th>Estado</th>
         <th></th>
       </tr>
       <tr th:each="usuario : ${listaUsuarios}" class="table-item">
@@ -29,6 +33,10 @@
         <td th:text="${usuario.correo}"></td>
         <td th:if="${usuario.esAdmin}">Administrador</td>
         <td th:unless="${usuario.esAdmin}">Usuario Normal</td>
+        <td>
+          <span class="col-tag estado-activa" th:if="${usuario.activo}">Activo</span>
+          <span class="col-tag estado-cancelada" th:unless="${usuario.activo}">Inactivo</span>
+        </td>
         <td th:if="${esAdmin}">
           <div class="wrapper-options">
             <div class="icon-three">
@@ -52,7 +60,31 @@
                     <span>Editar</span>
                   </li>
                 </a>
-                <form class="form-eliminar" th:action="${'/usuarios/eliminar/' + usuario.id + '/'}" method="post">
+                <form th:if="${usuario.activo}" class="form-eliminar" th:action="${'/usuarios/desactivar/' + usuario.id + '/'}" method="post"
+                      data-confirm-titulo="¿Desactivar este usuario?"
+                      data-confirm-texto="No va a poder iniciar sesión hasta que lo reactives. Su historial de registros se conserva."
+                      data-confirm-boton="Desactivar">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <button type="submit">
+                    <li>
+                      <img th:src="@{/icons/edit-outline.svg}" alt="Icono de desactivar">
+                      <span>Desactivar</span>
+                    </li>
+                  </button>
+                </form>
+                <form th:unless="${usuario.activo}" th:action="${'/usuarios/activar/' + usuario.id + '/'}" method="post">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <button type="submit">
+                    <li>
+                      <img th:src="@{/icons/edit-outline.svg}" alt="Icono de activar">
+                      <span>Activar</span>
+                    </li>
+                  </button>
+                </form>
+                <form class="form-eliminar" th:action="${'/usuarios/eliminar/' + usuario.id + '/'}" method="post"
+                      data-confirm-titulo="¿Eliminar este usuario?"
+                      data-confirm-texto="Esta acción no se puede deshacer. Si el usuario tiene registros asociados, no se va a poder eliminar."
+                      data-confirm-boton="Eliminar">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <button type="submit">
                     <li>
