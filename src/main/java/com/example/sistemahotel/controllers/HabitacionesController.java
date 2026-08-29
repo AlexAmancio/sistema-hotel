@@ -93,10 +93,18 @@ public class HabitacionesController {
     @PostMapping("/eliminar/{habitacionID}/")
     public String eliminar(
         @PathVariable(name="habitacionID", required = true) int id,
-        Model model
+        RedirectAttributes redirectAttributes
     ) {
+        boolean tieneRegistros = registroService.listar().stream()
+            .anyMatch(r -> r.getHabitacion() != null && r.getHabitacion().getId() == id);
+        if (tieneRegistros) {
+            redirectAttributes.addFlashAttribute("error",
+                "No se puede eliminar: esta habitación tiene registros asociados.");
+            return "redirect:/habitaciones/";
+        }
+
         service.eliminar(id);
-        return listar(model);
+        return "redirect:/habitaciones/";
     }
 
     // Atajo de un clic para cuando housekeeping termina de limpiar, sin pasar

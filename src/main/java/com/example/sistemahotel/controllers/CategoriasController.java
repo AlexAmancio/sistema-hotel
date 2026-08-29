@@ -13,15 +13,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.sistemahotel.interfaces.ICategoriaService;
+import com.example.sistemahotel.interfaces.IHabitacionService;
 import com.example.sistemahotel.modelos.Categoria;
 
 @RequestMapping("/categorias/")
 @Controller
 public class CategoriasController {
     String carpeta = "categorias/";
-    
+
     @Autowired
     private ICategoriaService service;
+
+    @Autowired
+    private IHabitacionService habitacionService;
 
     @GetMapping("/")
     public String listar(Model model) {
@@ -69,9 +73,17 @@ public class CategoriasController {
     @PostMapping("/eliminar/{categoriaID}/")
     public String eliminar(
         @PathVariable(name="categoriaID", required=true) int id,
-        Model model
+        RedirectAttributes redirectAttributes
     ) {
+        boolean enUso = habitacionService.listar().stream()
+            .anyMatch(h -> h.getCategoria() != null && h.getCategoria().getId() == id);
+        if (enUso) {
+            redirectAttributes.addFlashAttribute("error",
+                "No se puede eliminar: hay habitaciones que usan esta categoría.");
+            return "redirect:/categorias/";
+        }
+
         service.eliminar(id);
-        return listar(model);
+        return "redirect:/categorias/";
     }
 }

@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.sistemahotel.interfaces.IClienteService;
+import com.example.sistemahotel.interfaces.IRegistroService;
 import com.example.sistemahotel.modelos.Cliente;
 import com.example.sistemahotel.util.TextoUtils;
 
@@ -29,6 +30,9 @@ public class ClientesController {
 
     @Autowired
     private IClienteService service;
+
+    @Autowired
+    private IRegistroService registroService;
 
     @Value("${apiperu.token}")
     private String apiPeruToken;
@@ -94,10 +98,18 @@ public class ClientesController {
     @PostMapping("/eliminar/{idCliente}/")
     public String eliminar(
         @PathVariable(name="idCliente", required = true) int id,
-        Model model
+        RedirectAttributes redirectAttributes
     ) {
+        boolean tieneRegistros = registroService.listar().stream()
+            .anyMatch(r -> r.getCliente() != null && r.getCliente().getId() == id);
+        if (tieneRegistros) {
+            redirectAttributes.addFlashAttribute("error",
+                "No se puede eliminar: este cliente tiene registros asociados.");
+            return "redirect:/clientes/";
+        }
+
         service.eliminar(id);
-        return listar(model);
+        return "redirect:/clientes/";
     }
 
     // Proxy server-side a apiperu.dev: el token nunca viaja al navegador.

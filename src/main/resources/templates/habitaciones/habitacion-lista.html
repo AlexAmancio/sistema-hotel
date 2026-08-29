@@ -7,6 +7,9 @@
   <div th:replace="~{navegacion :: menu}"></div>
   <div class="content">
     <div th:replace="~{button-fragment(url=@{/habitaciones/nuevo/}, texto='Agregar habitación')}"></div>
+    <div th:if="${error}" class="alert alert-danger" style="margin: 20px 0;">
+      <p th:text="${error}"></p>
+    </div>
 
     <div class="table-wrapper">
     <table>
@@ -41,7 +44,7 @@
                 <path
                   d="M17.8325 13.2894C17.5975 13.2895 17.3647 13.2433 17.1475 13.1534C16.9303 13.0635 16.7329 12.9317 16.5667 12.7655C16.4004 12.5994 16.2685 12.4021 16.1785 12.185C16.0884 11.9678 16.0421 11.7351 16.042 11.5C16.0419 11.2649 16.0881 11.0322 16.178 10.815C16.2679 10.5978 16.3997 10.4004 16.5659 10.2341C16.732 10.0679 16.9293 9.93595 17.1464 9.84592C17.3636 9.7559 17.5963 9.70953 17.8314 9.70945C18.3061 9.7093 18.7615 9.89774 19.0973 10.2333C19.4331 10.5689 19.6218 11.0241 19.6219 11.4988C19.6221 11.9736 19.4337 12.4289 19.0981 12.7647C18.7625 13.1005 18.3073 13.2892 17.8325 13.2894Z"
                   fill="black" />
-                < <path
+                <path
                   d="M11.6893 13.2894C12.6776 13.2894 13.4787 12.4883 13.4787 11.5C13.4787 10.5117 12.6776 9.7106 11.6893 9.7106C10.701 9.7106 9.8999 10.5117 9.8999 11.5C9.8999 12.4883 10.701 13.2894 11.6893 13.2894Z"
                   fill="black" />
                 <path
@@ -66,7 +69,10 @@
                     </li>
                   </button>
                 </form>
-                <form class="form-eliminar" th:action="${'/habitaciones/eliminar/' + habitacion.id + '/'}" method="post">
+                <form class="form-eliminar" th:action="${'/habitaciones/eliminar/' + habitacion.id + '/'}" method="post"
+                      data-confirm-titulo="¿Eliminar esta habitación?"
+                      data-confirm-texto="Esta acción no se puede deshacer. Si la habitación tiene registros asociados, no se va a poder eliminar."
+                      data-confirm-boton="Eliminar">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <button type="submit">
                     <li>
