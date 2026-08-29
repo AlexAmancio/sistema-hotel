@@ -65,7 +65,7 @@
 
       </form>
 
-      <div th:if="${historial != null and !historial.isEmpty()}" style="max-width: 700px; margin: 40px auto 0;">
+      <div th:if="${historial != null and !historial.isEmpty()}" style="max-width: 900px; margin: 40px auto 0;">
         <h3 style="margin-bottom: 14px;">Historial de reservas</h3>
         <div class="table-wrapper">
           <table>
@@ -97,7 +97,7 @@
           </table>
         </div>
       </div>
-      <p th:if="${historial != null and historial.isEmpty()}" style="max-width: 700px; margin: 40px auto 0; color: var(--color-plomo-oscuro);">
+      <p th:if="${historial != null and historial.isEmpty()}" style="max-width: 900px; margin: 40px auto 0; color: var(--color-plomo-oscuro);">
         Este cliente todavía no tiene reservas registradas.
       </p>
     </div>
