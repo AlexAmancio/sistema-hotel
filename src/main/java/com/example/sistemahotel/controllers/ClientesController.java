@@ -1,6 +1,8 @@
 package com.example.sistemahotel.controllers;
 
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +64,13 @@ public class ClientesController {
         model.addAttribute("cliente", service.consultarId(id));
         model.addAttribute("titulo", "Editar cliente");
         model.addAttribute("txtboton", "Actualizar");
+
+        List<com.example.sistemahotel.modelos.Registro> historial = registroService.listar().stream()
+            .filter(r -> r.getCliente() != null && r.getCliente().getId() == id)
+            .sorted(Comparator.comparing(com.example.sistemahotel.modelos.Registro::getCheckIn).reversed())
+            .toList();
+        model.addAttribute("historial", historial);
+
         return carpeta + "cliente-form";
     }
 

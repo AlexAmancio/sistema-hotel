@@ -64,6 +64,42 @@
         </div>
 
       </form>
+
+      <div th:if="${historial != null and !historial.isEmpty()}" style="max-width: 700px; margin: 40px auto 0;">
+        <h3 style="margin-bottom: 14px;">Historial de reservas</h3>
+        <div class="table-wrapper">
+          <table>
+            <tr class="table-header">
+              <th>Habitación</th>
+              <th>Check-in</th>
+              <th>Estado</th>
+              <th>Total</th>
+              <th>Saldo</th>
+            </tr>
+            <tr class="table-item" th:each="registro : ${historial}">
+              <td>
+                <a th:href="${'/editar/' + registro.id + '/'}"
+                   th:text="${registro.habitacion != null ? ('Hab. ' + registro.habitacion.numero) : '—'}"></a>
+              </td>
+              <td th:text="${#dates.format(registro.checkIn, 'dd/MM/yyyy HH:mm')}"></td>
+              <td>
+                <span class="col-tag estado-activa" th:if="${registro.estado.name() == 'ACTIVA'}">Activa</span>
+                <span class="col-tag estado-finalizada" th:if="${registro.estado.name() == 'FINALIZADA'}">Check-out hecho</span>
+                <span class="col-tag estado-cancelada" th:if="${registro.estado.name() == 'CANCELADA'}">Cancelada</span>
+                <span class="col-tag estado-no-show" th:if="${registro.estado.name() == 'NO_SHOW'}">No-show</span>
+              </td>
+              <td th:text="${'S/. ' + #numbers.formatDecimal(registro.totalEstadia, 1, 2)}"></td>
+              <td>
+                <span th:if="${registro.saldoPendiente > 0}" class="saldo-pendiente" th:text="${'S/. ' + #numbers.formatDecimal(registro.saldoPendiente, 1, 2)}"></span>
+                <span th:unless="${registro.saldoPendiente > 0}" class="saldo-cero">Pagado</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <p th:if="${historial != null and historial.isEmpty()}" style="max-width: 700px; margin: 40px auto 0; color: var(--color-plomo-oscuro);">
+        Este cliente todavía no tiene reservas registradas.
+      </p>
     </div>
     <script th:src="@{/js/script.js}"></script>
     <script th:src="@{/js/script-forms.js}"></script>
