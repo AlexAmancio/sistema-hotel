@@ -6,6 +6,16 @@
     <input type="text" name="q" placeholder="Buscar cliente, DNI o habitación...">
   </form>
   <ul class="items">
+    <li class="item-menu" id="item-dashboard">
+      <a th:href="@{/dashboard/}" class="a-general">
+        <div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 13H10V4H4V13ZM4 20H10V15H4V20ZM12 20H18V11H12V20ZM12 4V9H18V4H12Z" fill="black"/>
+          </svg>
+          <span>Dashboard</span>
+        </div>
+      </a>
+    </li>
     <li class="item-menu" id="item-hoy">
       <a th:href="@{/hoy/}" class="a-general">
         <div>

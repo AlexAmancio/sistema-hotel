@@ -28,6 +28,9 @@ document.addEventListener("DOMContentLoaded", function() {
         case "hoy":
             elemento = document.getElementById("item-hoy");
             break;
+        case "dashboard":
+            elemento = document.getElementById("item-dashboard");
+            break;
     }
 
     console.log(elementosDeRuta[1]);

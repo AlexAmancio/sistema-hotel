@@ -1,6 +1,5 @@
 package com.example.sistemahotel.controllers;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +28,7 @@ import com.example.sistemahotel.modelos.EstadoHabitacion;
 import com.example.sistemahotel.modelos.EstadoRegistro;
 import com.example.sistemahotel.modelos.Habitacion;
 import com.example.sistemahotel.modelos.Registro;
+import com.example.sistemahotel.util.FechaUtils;
 
 @RequestMapping("/")
 @Controller
@@ -74,11 +74,11 @@ public class RegistrosController {
         Date hoy = new Date();
 
         List<Registro> llegan = activos.stream()
-            .filter(r -> esMismoDia(r.getCheckIn(), hoy))
+            .filter(r -> FechaUtils.mismoDia(r.getCheckIn(), hoy))
             .collect(Collectors.toList());
 
         List<Registro> salen = activos.stream()
-            .filter(r -> esMismoDia(r.calcularCheckoutEstimado(), hoy))
+            .filter(r -> FechaUtils.mismoDia(r.calcularCheckoutEstimado(), hoy))
             .collect(Collectors.toList());
 
         List<Registro> vencidas = activos.stream()
@@ -90,18 +90,6 @@ public class RegistrosController {
         model.addAttribute("vencidas", vencidas);
 
         return carpeta + "hoy";
-    }
-
-    private boolean esMismoDia(Date d1, Date d2) {
-        if (d1 == null || d2 == null) {
-            return false;
-        }
-        Calendar c1 = Calendar.getInstance();
-        c1.setTime(d1);
-        Calendar c2 = Calendar.getInstance();
-        c2.setTime(d2);
-        return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR)
-            && c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR);
     }
 
     @GetMapping("/nuevo/")

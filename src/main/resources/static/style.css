@@ -923,6 +923,9 @@ table {
 .hoy-card-alerta {
     background-color: #FDEBEA;
 }
+[data-theme="dark"] .hoy-card-alerta {
+    background-color: rgba(255, 107, 107, 0.15);
+}
 .hoy-card a {
     display: flex;
     flex-direction: column;
@@ -942,5 +945,46 @@ table {
 @media (max-width: 900px) {
     .hoy-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* ======================= DASHBOARD ===========================*/
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+}
+.dashboard-grid-habitaciones {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.stat-card {
+    background-color: var(--color-plomo-seleccion);
+    border-radius: 10px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 6px;
+}
+.stat-card-chico {
+    padding: 16px 18px;
+}
+.stat-card-alerta {
+    background-color: var(--color-rojo);
+}
+.stat-label {
+    font-size: 14px;
+    color: var(--color-plomo-oscuro);
+}
+.stat-value {
+    font-size: 30px;
+    font-weight: 600;
+}
+.stat-detalle {
+    font-size: 13px;
+    color: var(--color-plomo-oscuro);
+}
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
     }
 }

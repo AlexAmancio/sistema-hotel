@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head th:replace="~{header-fragment :: headertag(title='Dashboard')}">
+
+<body>
+  <div th:replace="~{navegacion :: menu}"></div>
+  <div class="content">
+    <div class="header-form" style="margin-top:0; text-align:left; margin-bottom: 30px;">
+      <h1>Dashboard</h1>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="stat-card">
+        <span class="stat-label">Ocupación actual</span>
+        <span class="stat-value" th:text="${porcentajeOcupacion + '%'}"></span>
+        <span class="stat-detalle" th:text="${ocupadas + ' de ' + totalHabitaciones + ' habitaciones'}"></span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Check-ins de hoy</span>
+        <span class="stat-value" th:text="${checkInsHoy}"></span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Check-outs pendientes hoy</span>
+        <span class="stat-value" th:text="${checkOutsPendientesHoy}"></span>
+      </div>
+
+      <div class="stat-card" th:classappend="${vencidas > 0} ? 'stat-card-alerta'">
+        <span class="stat-label">Estadías vencidas</span>
+        <span class="stat-value" th:text="${vencidas}"></span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Ingresos de hoy</span>
+        <span class="stat-value" th:text="${'S/. ' + #numbers.formatDecimal(ingresosHoy, 1, 2)}"></span>
+      </div>
+
+      <div class="stat-card" th:classappend="${saldoPendienteTotal > 0} ? 'stat-card-alerta'">
+        <span class="stat-label">Saldo pendiente total</span>
+        <span class="stat-value" th:text="${'S/. ' + #numbers.formatDecimal(saldoPendienteTotal, 1, 2)}"></span>
+      </div>
+    </div>
+
+    <h3 style="margin: 32px 0 14px;">Estado de habitaciones</h3>
+    <div class="dashboard-grid dashboard-grid-habitaciones">
+      <div class="stat-card stat-card-chico">
+        <span class="stat-label">Disponibles</span>
+        <span class="stat-value" th:text="${disponibles}"></span>
+      </div>
+      <div class="stat-card stat-card-chico">
+        <span class="stat-label">Ocupadas</span>
+        <span class="stat-value" th:text="${ocupadas}"></span>
+      </div>
+      <div class="stat-card stat-card-chico">
+        <span class="stat-label">En limpieza</span>
+        <span class="stat-value" th:text="${enLimpieza}"></span>
+      </div>
+      <div class="stat-card stat-card-chico">
+        <span class="stat-label">En mantenimiento</span>
+        <span class="stat-value" th:text="${enMantenimiento}"></span>
+      </div>
+    </div>
+  </div>
+  <script th:src="@{/js/script.js}"></script>
+</body>
+
+</html>
