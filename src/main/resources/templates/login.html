@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Iniciar sesión</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&display=swap');
       * {
@@ -85,6 +85,51 @@
         flex-direction: column;
         gap: 20px;
       }
+      .brand {
+        text-align: center;
+        color: #00AF65;
+        font-family: 'Outfit';
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .campo-password {
+        position: relative;
+      }
+      .campo-password input {
+        padding-right: 45px;
+      }
+      .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 42px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+      }
+      .campo-recuerdame {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .campo-recuerdame label {
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .campo-recuerdame input {
+        width: auto;
+        margin-top: 0;
+        cursor: pointer;
+      }
+      button[type="submit"]:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
     </style>
 
   </head>
@@ -94,7 +139,8 @@
 
     <section class="fondo" >
       <div class="container">
-        <form th:action="@{/login}" method="post">
+        <form th:action="@{/login}" method="post" id="loginForm">
+          <p class="brand">Estadía</p>
           <h5
             class="title"
             style="letter-spacing: 1px"
@@ -119,7 +165,7 @@
             </div>
             
 
-            <div class="campo">
+            <div class="campo campo-password">
               <label for="password">Contraseña</label>
               <input
                 name="password"
@@ -127,10 +173,21 @@
                 id="password"
                 placeholder="Ingresa tu contraseña"
               />
+              <button type="button" class="toggle-password" id="togglePassword" aria-label="Mostrar contraseña" tabindex="-1">
+                <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
             </div>
-            
+
+            <div class="campo campo-recuerdame">
+              <input type="checkbox" name="remember-me" id="remember-me" />
+              <label for="remember-me">Recuérdame</label>
+            </div>
+
             <div class="campo">
-              
+
               <button
                 class="btn btn-dark btn-lg btn-block"
                 type="submit"
@@ -147,6 +204,24 @@
 
     <script>
       const submitButton = document.querySelector("#btnSubmitLogin");
+
+      // Mostrar/ocultar contraseña
+      const togglePassword = document.querySelector("#togglePassword");
+      const passwordInput = document.querySelector("#password");
+      const eyeIcon = document.querySelector("#eyeIcon");
+      togglePassword.addEventListener("click", () => {
+        const isPassword = passwordInput.type === "password";
+        passwordInput.type = isPassword ? "text" : "password";
+        eyeIcon.innerHTML = isPassword
+          ? '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.7 19.7 0 0 1 4.22-5.44M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a19.86 19.86 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+          : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+      });
+
+      // Estado de carga al enviar el formulario
+      document.querySelector("#loginForm").addEventListener("submit", () => {
+        submitButton.disabled = true;
+        submitButton.textContent = "Iniciando sesión...";
+      });
 
       // Obtén la query string de la URL
       const queryString = window.location.search;

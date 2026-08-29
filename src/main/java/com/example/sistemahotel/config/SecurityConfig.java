@@ -59,6 +59,11 @@ public class SecurityConfig {
                 formLogin.failureHandler(customAuthenticationFailureHandlerBean());
                 formLogin.permitAll();
             })
+            .rememberMe(rememberMe -> {
+                rememberMe.key("estadia-remember-me-key");
+                rememberMe.tokenValiditySeconds(14 * 24 * 60 * 60);
+                rememberMe.userDetailsService(userDetailsService());
+            })
             // .authorizeHttpRequests((authorizeHttpRequest) -> {
             //     authorizeHttpRequest.requestMatchers("/**").permitAll();
             // })
