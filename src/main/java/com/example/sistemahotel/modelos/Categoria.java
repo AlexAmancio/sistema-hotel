@@ -20,7 +20,6 @@ public class Categoria {
     private int id;
     private String nombre;
     private String urlImagen;
-    private String slug;
     private double precio;
     private String descripcion;
 

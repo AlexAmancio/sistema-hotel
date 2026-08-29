@@ -56,18 +56,30 @@ public class CategoriasController {
     }
 
     @PostMapping("/guardar/")
-    public String guardar(@ModelAttribute("categoria") Categoria categoria, Model model,RedirectAttributes redirectAttributes) {
-        if(categoria.getId()<1){
-            Optional<Categoria> categoriaexistente = service.consultarPorNombrecategoria(categoria.getNombre());
-            if(categoriaexistente.isPresent()){
-                redirectAttributes.addFlashAttribute("error", "No se pudo registrar la categoria. N° de categoria repetido");
-                return "redirect:/categorias/nuevo/";
-            }
-            service.guardar(categoria);
-            return listar(model);
+    public String guardar(@ModelAttribute("categoria") Categoria categoria, RedirectAttributes redirectAttributes) {
+        String redirectError = categoria.getId() < 1
+            ? "redirect:/categorias/nuevo/"
+            : "redirect:/categorias/editar/" + categoria.getId() + "/";
+
+        if (categoria.getPrecio() <= 0) {
+            redirectAttributes.addFlashAttribute("error", "El precio debe ser mayor a cero.");
+            return redirectError;
         }
+        if (categoria.getTemporadaAltaInicio() != null && categoria.getTemporadaAltaFin() != null
+                && categoria.getTemporadaAltaFin().before(categoria.getTemporadaAltaInicio())) {
+            redirectAttributes.addFlashAttribute("error", "La fecha de fin de temporada alta debe ser posterior a la de inicio.");
+            return redirectError;
+        }
+
+        Optional<Categoria> categoriaExistente = service.consultarPorNombrecategoria(categoria.getNombre());
+        boolean nombreRepetido = categoriaExistente.isPresent() && categoriaExistente.get().getId() != categoria.getId();
+        if (nombreRepetido) {
+            redirectAttributes.addFlashAttribute("error", "No se pudo guardar la categoría. Nombre repetido.");
+            return redirectError;
+        }
+
         service.guardar(categoria);
-        return listar(model);
+        return "redirect:/categorias/";
     }
 
     @PostMapping("/eliminar/{categoriaID}/")
