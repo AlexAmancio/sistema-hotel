@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,14 +38,12 @@ public class ReservaController {
     @GetMapping("/nueva/")
     public String nueva(Model model) {
         model.addAttribute("listaClientes", clienteService.listar());
-        model.addAttribute("listaUsuarios", usuarioService.listar());
         return "reservas/reserva-form";
     }
 
     @PostMapping("/guardar/")
     public String guardar(
         @RequestParam int cliente,
-        @RequestParam int usuario,
         @RequestParam String checkIn,
         @RequestParam int noches,
         @RequestParam(name = "habitaciones", required = false) List<Integer> habitacionIds,
@@ -55,7 +54,8 @@ public class ReservaController {
             Date checkInDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm").parse(checkIn);
             var clienteObj = clienteService.consultarId(cliente)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado."));
-            var usuarioObj = usuarioService.consultarId(usuario)
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            var usuarioObj = usuarioService.consultarpornombreusuario(username)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
 
             // Cada habitación manda su propio "huespedes_<id>" (ver reserva-form.html);

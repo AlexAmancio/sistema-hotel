@@ -46,12 +46,6 @@
                 <p id="resumen-calculo"></p>
             </div>
 
-            <div class="group-field">
-                <label for="usuario">Usuario</label>
-                <select id="usuario" name="usuario">
-                    <option th:each="usuario : ${listaUsuarios}" th:value="${usuario.id}" th:text="${usuario.nombres + ' ' + usuario.apellidos}"></option>
-                </select>
-            </div>
         </div>
         <div class="actions-form">
             <button type="submit">

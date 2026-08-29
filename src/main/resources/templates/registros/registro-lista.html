@@ -35,6 +35,8 @@
                 <span th:text="${'Huespedes ' + registro.numHuespedes}"></span>
                 <span th:if="${registro.reserva != null}" class="col-tag tag-reserva"
                       th:text="${'Reserva #' + registro.reserva.id}"></span>
+                <span th:if="${registro.usuario != null}"
+                      th:text="${'Registrado por ' + registro.usuario.nombres}"></span>
               </div>
             </div>
           </a>

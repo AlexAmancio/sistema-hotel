@@ -10,6 +10,9 @@
       <h1 th:text="${'Reserva #' + reserva.id}"></h1>
       <p style="color: var(--color-plomo-oscuro); margin-top: 6px;"
          th:text="${reserva.cliente.nombres + ' ' + reserva.cliente.apellidos + ' — ' + #lists.size(reserva.registros) + ' habitación(es)'}"></p>
+      <p th:if="${!#lists.isEmpty(reserva.registros) and reserva.registros[0].usuario != null}"
+         style="color: var(--color-plomo-oscuro); font-size: 14px; margin-top: 4px;"
+         th:text="${'Registrado por ' + reserva.registros[0].usuario.nombres + ' ' + reserva.registros[0].usuario.apellidos}"></p>
     </div>
 
     <div class="table-wrapper">

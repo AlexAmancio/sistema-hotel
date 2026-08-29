@@ -75,12 +75,11 @@
                 <p id="resumen-calculo"></p>
                 <p id="resumen-saldo"></p>
             </div>
-            <div class="group-field">
-                <label for="usuario">Usuario</label>
-                <select th:field="*{usuario}">
-                    <option th:each="usuario : ${listaUsuarios}" th:value="${usuario.id}" th:text="${usuario.nombres + ' ' + usuario.apellidos}"></option>
-                </select>
+            <div class="group-field" th:if="${registro.usuario != null}">
+                <label>Registrado por</label>
+                <input type="text" readonly th:value="${registro.usuario.nombres + ' ' + registro.usuario.apellidos}"/>
             </div>
+            <input th:if="${registro.usuario != null}" th:field="*{usuario}" type="hidden"/>
             <div class="actions-form">
                 <button type="submit">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

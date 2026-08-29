@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -108,7 +109,6 @@ public class RegistrosController {
         model.addAttribute("registro", new Registro());
         model.addAttribute("listaClientes", clienteService.listar());
         model.addAttribute("listaHabitaciones", habitacionService.listar());
-        model.addAttribute("listaUsuarios", usuarioService.listar());
 
         model.addAttribute("titulo", "Nuevo registro");
         model.addAttribute("txtboton", "Agregar");
@@ -139,6 +139,13 @@ public class RegistrosController {
             }
         }
 
+        // Un check-in nuevo queda atribuido al usuario logueado, no al que
+        // el form haya podido mandar (evita que se falsee quién lo registró).
+        if (registro.getId() == 0) {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            usuarioService.consultarpornombreusuario(username).ifPresent(registro::setUsuario);
+        }
+
         try {
             service.guardar(registro);
         } catch (ObjectOptimisticLockingFailureException e) {
@@ -165,7 +172,6 @@ public class RegistrosController {
         model.addAttribute("registro", service.consultarId(id));
         model.addAttribute("listaClientes", clienteService.listar());
         model.addAttribute("listaHabitaciones", habitacionService.listar());
-        model.addAttribute("listaUsuarios", usuarioService.listar());
 
         model.addAttribute("titulo", "Editar registro");
         model.addAttribute("txtboton", "Actualizar");
