@@ -56,7 +56,8 @@ public class RegistroService implements IRegistroService {
             .collect(Collectors.toList());
 
         return todasHabitaciones.stream()
-            .filter(habitacion -> habitacion.getEstado() != EstadoHabitacion.MANTENIMIENTO)
+            .filter(habitacion -> habitacion.getEstado() != EstadoHabitacion.MANTENIMIENTO
+                                && habitacion.getEstado() != EstadoHabitacion.LIMPIEZA)
             .filter(habitacion -> !habitacionesOcupadas.contains(habitacion))
             .collect(Collectors.toList());
     }

@@ -70,24 +70,26 @@ public class HabitacionesController {
     }
 
     @PostMapping("/guardar/")
-    public String guardar(@ModelAttribute("habitacion") Habitacion habitacion, Model model,RedirectAttributes redirectAttributes) {
-        if(habitacion.getId()<1){
-            Optional<Habitacion> habitacionexistente = service.consultarPornumerohabitacion(habitacion.getNumero());
-            if(habitacionexistente.isPresent()){
-                redirectAttributes.addFlashAttribute("error", "No se pudo registrar la habitacion. N° de habitacion repetido");
-                return "redirect:/habitaciones/nuevo/";
-            }
-            service.guardar(habitacion);
-            return listar(model);
+    public String guardar(@ModelAttribute("habitacion") Habitacion habitacion, RedirectAttributes redirectAttributes) {
+        String redirectError = habitacion.getId() < 1
+            ? "redirect:/habitaciones/nuevo/"
+            : "redirect:/habitaciones/editar/" + habitacion.getId() + "/";
+
+        Optional<Habitacion> habitacionExistente = service.consultarPornumerohabitacion(habitacion.getNumero());
+        boolean numeroRepetido = habitacionExistente.isPresent() && habitacionExistente.get().getId() != habitacion.getId();
+        if (numeroRepetido) {
+            redirectAttributes.addFlashAttribute("error", "No se pudo guardar la habitación. N° de habitación repetido.");
+            return redirectError;
         }
+
         try {
             service.guardar(habitacion);
         } catch (ObjectOptimisticLockingFailureException e) {
             redirectAttributes.addFlashAttribute("error",
                 "Esta habitación fue modificada por otra persona mientras la editabas. Recargá la página e intentá de nuevo.");
-            return "redirect:/habitaciones/editar/" + habitacion.getId() + "/";
+            return redirectError;
         }
-        return listar(model);
+        return "redirect:/habitaciones/";
     }
 
     @PostMapping("/eliminar/{habitacionID}/")
