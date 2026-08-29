@@ -12,6 +12,20 @@
       <div th:replace="~{button-fragment(url=@{/reservas/nueva/}, texto='Reserva múltiple')}"></div>
     </div>
 
+    <div class="filtro-bar">
+      <form method="get" th:action="@{/}" id="filtro-estado-form">
+        <label for="filtro-estado">Estado:</label>
+        <select id="filtro-estado" name="estado" onchange="document.getElementById('filtro-estado-form').submit()">
+          <option value="" th:selected="${estadoSeleccionado == ''}">Todos</option>
+          <option value="ACTIVA" th:selected="${estadoSeleccionado == 'ACTIVA'}">Activa</option>
+          <option value="FINALIZADA" th:selected="${estadoSeleccionado == 'FINALIZADA'}">Check-out hecho</option>
+          <option value="CANCELADA" th:selected="${estadoSeleccionado == 'CANCELADA'}">Cancelada</option>
+          <option value="NO_SHOW" th:selected="${estadoSeleccionado == 'NO_SHOW'}">No-show</option>
+        </select>
+      </form>
+      <a class="btn-exportar" th:href="@{/exportar/(estado=${estadoSeleccionado})}">Exportar CSV</a>
+    </div>
+
     <div class="table-wrapper">
     <table class="table-registros">
       <tr class="table-header">

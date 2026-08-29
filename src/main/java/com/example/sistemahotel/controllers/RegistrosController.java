@@ -1,10 +1,15 @@
 package com.example.sistemahotel.controllers;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -51,9 +56,10 @@ public class RegistrosController {
     private IComprobanteService comprobanteService;
 
     @GetMapping("/")
-    public String listar(Model model) {
-        List<Registro> registros = service.listar();
+    public String listar(@RequestParam(required = false) String estado, Model model) {
+        List<Registro> registros = filtrarPorEstado(service.listar(), estado);
         model.addAttribute("registros", registros);
+        model.addAttribute("estadoSeleccionado", estado != null ? estado : "");
 
         Map<Integer, Comprobante> comprobantesPorRegistro = new HashMap<>();
         for (Registro registro : registros) {
@@ -63,6 +69,49 @@ public class RegistrosController {
         model.addAttribute("comprobantes", comprobantesPorRegistro);
 
         return carpeta + "registro-lista";
+    }
+
+    // Usada tanto por la lista como por el export a CSV, para que ambos filtren igual.
+    private List<Registro> filtrarPorEstado(List<Registro> registros, String estado) {
+        if (estado == null || estado.isBlank()) {
+            return registros;
+        }
+        try {
+            EstadoRegistro filtro = EstadoRegistro.valueOf(estado);
+            return registros.stream().filter(r -> r.getEstado() == filtro).collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            return registros;
+        }
+    }
+
+    @GetMapping("/exportar/")
+    public void exportar(@RequestParam(required = false) String estado, HttpServletResponse response) throws IOException {
+        List<Registro> registros = filtrarPorEstado(service.listar(), estado);
+
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"registros.csv\"");
+
+        PrintWriter writer = response.getWriter();
+        writer.write('﻿'); // BOM para que Excel detecte UTF-8
+        writer.println("Cliente,Habitacion,Check-in,Checkout estimado,Estado,Tarifa,Saldo pendiente,Registrado por");
+        for (Registro r : registros) {
+            writer.println(String.join(",",
+                csv(r.getCliente().getNombres() + " " + r.getCliente().getApellidos()),
+                csv(r.getHabitacion() != null ? r.getHabitacion().getNumero() : ""),
+                csv(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(r.getCheckIn())),
+                csv(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(r.calcularCheckoutEstimado())),
+                csv(r.getEstado().name()),
+                csv(String.valueOf(r.getTarifa())),
+                csv(String.valueOf(r.getSaldoPendiente())),
+                csv(r.getUsuario() != null ? r.getUsuario().getNombres() + " " + r.getUsuario().getApellidos() : "")
+            ));
+        }
+        writer.flush();
+    }
+
+    private String csv(String valor) {
+        String escapado = valor == null ? "" : valor.replace("\"", "\"\"");
+        return "\"" + escapado + "\"";
     }
 
     @GetMapping("/hoy/")

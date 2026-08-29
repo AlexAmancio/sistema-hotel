@@ -988,3 +988,37 @@ table {
         grid-template-columns: 1fr 1fr;
     }
 }
+
+/* ======================= FILTRO Y EXPORTAR ===========================*/
+.filtro-bar {
+    display: flex;
+    align-items: center;
+    column-gap: 16px;
+    margin: 20px 0;
+}
+.filtro-bar label {
+    font-size: 15px;
+    margin-right: 8px;
+}
+.filtro-bar select {
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-color);
+    cursor: pointer;
+}
+.btn-exportar {
+    font-size: 15px;
+    padding: 9px 18px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-color);
+    cursor: pointer;
+}
+.btn-exportar:hover {
+    background-color: var(--bg-hover);
+}
