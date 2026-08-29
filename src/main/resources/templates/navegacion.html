@@ -225,25 +225,39 @@
   </ul>
 
   <div class="sidebar-footer">
-    <div class="current-user-card" th:if="${usuarioActualNombre}">
-      <div>
-        <div class="user-avatar" th:text="${#strings.substring(usuarioActualNombre, 0, 1)}"></div>
-        <span>
-          <div th:text="${usuarioActualNombre}" style="font-size: 15px;"></div>
-          <div th:text="${usuarioActualRol}" style="font-size: 12px; color: var(--color-plomo-oscuro);"></div>
-        </span>
+    <div class="perfil-menu-wrapper" th:if="${usuarioActualNombre}">
+      <button type="button" id="btn-perfil-trigger" class="current-user-card">
+        <div>
+          <div class="user-avatar" th:text="${#strings.substring(usuarioActualNombre, 0, 1)}"></div>
+          <span>
+            <div th:text="${usuarioActualNombre}" style="font-size: 15px;"></div>
+            <div th:text="${usuarioActualRol}" style="font-size: 12px; color: var(--color-plomo-oscuro);"></div>
+          </span>
+        </div>
+      </button>
+      <div class="perfil-menu hidden" id="perfil-menu">
+        <button type="button" id="btn-toggle-tema" class="btn-toggle-tema">
+          <svg id="icono-tema-luna" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" fill="black"/>
+          </svg>
+          <svg id="icono-tema-sol" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="hidden">
+            <circle cx="12" cy="12" r="4" fill="black"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="black" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span id="texto-tema">Modo oscuro</span>
+        </button>
+        <form method="post" th:action="@{/logout}" id="logout-form">
+          <!-- Necesitas incluir el token CSRF en cada formulario para asegurarte de que la solicitud sea legítima -->
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <button type="button" id="btn-logout-trigger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M17 7L15.59 8.41L18.17 11H8V13H18.17L15.59 15.58L17 17L22 12L17 7ZM4 5H12V3H4C2.9 3 2 3.9 2 5V19C2 20.1 2.9 21 4 21H12V19H4V5Z" fill="black"/>
+            </svg>
+            <span>Cerrar sesión</span>
+          </button>
+        </form>
       </div>
     </div>
-    <form method="post" th:action="@{/logout}" id="logout-form">
-      <!-- Necesitas incluir el token CSRF en cada formulario para asegurarte de que la solicitud sea legítima -->
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-      <button type="button" id="btn-logout-trigger">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M17 7L15.59 8.41L18.17 11H8V13H18.17L15.59 15.58L17 17L22 12L17 7ZM4 5H12V3H4C2.9 3 2 3.9 2 5V19C2 20.1 2.9 21 4 21H12V19H4V5Z" fill="black"/>
-        </svg>
-        <span>Cerrar sesión</span>
-      </button>
-    </form>
   </div>
 
   <div class="modal-overlay hidden" id="logout-modal-overlay">
@@ -278,6 +292,53 @@
       });
       confirmar.addEventListener("click", function () {
         form.submit();
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var trigger = document.getElementById("btn-perfil-trigger");
+      var menu = document.getElementById("perfil-menu");
+      if (!trigger || !menu) return;
+
+      trigger.addEventListener("click", function (e) {
+        e.stopPropagation();
+        menu.classList.toggle("hidden");
+      });
+      document.addEventListener("click", function (e) {
+        if (!menu.classList.contains("hidden") && !menu.contains(e.target) && e.target !== trigger) {
+          menu.classList.add("hidden");
+        }
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var boton = document.getElementById("btn-toggle-tema");
+      var iconoLuna = document.getElementById("icono-tema-luna");
+      var iconoSol = document.getElementById("icono-tema-sol");
+      var texto = document.getElementById("texto-tema");
+
+      function actualizarBoton(esOscuro) {
+        iconoLuna.classList.toggle("hidden", esOscuro);
+        iconoSol.classList.toggle("hidden", !esOscuro);
+        texto.textContent = esOscuro ? "Modo claro" : "Modo oscuro";
+      }
+
+      actualizarBoton(document.documentElement.getAttribute("data-theme") === "dark");
+
+      boton.addEventListener("click", function () {
+        var esOscuro = document.documentElement.getAttribute("data-theme") === "dark";
+        if (esOscuro) {
+          document.documentElement.removeAttribute("data-theme");
+          localStorage.setItem("tema", "light");
+        } else {
+          document.documentElement.setAttribute("data-theme", "dark");
+          localStorage.setItem("tema", "dark");
+        }
+        actualizarBoton(!esOscuro);
       });
     })();
   </script>

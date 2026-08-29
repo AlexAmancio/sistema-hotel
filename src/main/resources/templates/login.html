@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script>
+      (function () {
+        if (localStorage.getItem('tema') === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iniciar sesión</title>
@@ -129,6 +136,23 @@
       button[type="submit"]:disabled {
         opacity: 0.7;
         cursor: not-allowed;
+      }
+      [data-theme="dark"] .container {
+        background: rgba(20, 20, 20, 0.88);
+        border-color: #444;
+      }
+      [data-theme="dark"] .title,
+      [data-theme="dark"] .container label,
+      [data-theme="dark"] .campo-recuerdame label {
+        color: #e8e8e8;
+      }
+      [data-theme="dark"] .container input {
+        background: #2a2a2a;
+        color: #e8e8e8;
+        border-color: #444;
+      }
+      [data-theme="dark"] .toggle-password svg {
+        stroke: #e8e8e8;
       }
     </style>
 

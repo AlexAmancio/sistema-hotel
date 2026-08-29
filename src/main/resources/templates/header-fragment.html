@@ -1,4 +1,11 @@
 <head th:fragment="headertag">
+  <script>
+    (function () {
+      if (localStorage.getItem('tema') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
   <title th:text="${title}"></title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />

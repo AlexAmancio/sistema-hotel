@@ -8,7 +8,7 @@
 }
 a {
     text-decoration: none;
-    color: black;
+    color: var(--text-color);
 }
 :root {
     --color-plomo: #EEEEEE;
@@ -16,6 +16,43 @@ a {
     --color-plomo-seleccion: #f7f7f7;
     --color-verde-secundario: #00854D;
     --color-rojo: #f7070793;
+
+    --bg-body: #ffffff;
+    --bg-surface: #ffffff;
+    --bg-input: #e7e7e7;
+    --bg-hover: #D5DFDB;
+    --text-color: #000000;
+    --border-color: #cbcbcb;
+    --icon-color: #000000;
+}
+
+[data-theme="dark"] {
+    --color-plomo: #2a2a2a;
+    --color-plomo-oscuro: #a8a8a8;
+    --color-plomo-seleccion: #262626;
+    --color-verde-secundario: #2ecc82;
+    --color-rojo: #ff6b6b;
+
+    --bg-body: #121212;
+    --bg-surface: #1e1e1e;
+    --bg-input: #2a2a2a;
+    --bg-hover: #2a3b34;
+    --text-color: #e8e8e8;
+    --border-color: #3a3a3a;
+    --icon-color: #e8e8e8;
+}
+
+body {
+    background-color: var(--bg-body);
+    color: var(--text-color);
+}
+
+svg path {
+    fill: var(--icon-color);
+}
+
+[data-theme="dark"] img[src*="/icons/"] {
+    filter: invert(1);
 }
 
 ::selection {
@@ -36,7 +73,7 @@ a {
     position: fixed;
     width: 328px;
     height: 100vh;
-    background-color: #eee;
+    background-color: var(--color-plomo);
     display: flex;
     flex-direction: column;
 }
@@ -67,7 +104,7 @@ a {
 }
 
 .item-menu:hover {
-    background: #D5DFDB;
+    background: var(--bg-hover);
     cursor: pointer;
 }
 
@@ -107,7 +144,7 @@ a {
 
 
 .item-menu.active {
-    background-color: #D5DFDB;
+    background-color: var(--bg-hover);
 }
 .item-menu.active a {
     color: var(--color-verde-secundario);
@@ -121,32 +158,82 @@ a {
 /* Sección del Logout del Sidebar */
 #logout-form {
     display: block;
-    border-top: 1px solid #cbcbcb;
+    border-top: 1px solid var(--border-color);
 }
 #logout-form button {
     display: flex;
     column-gap: 20px;
     border: none;
+    background: none;
+    color: var(--text-color);
     width: 100%;
     padding: 20px 28px;
     text-align: start;
     cursor: pointer;
 }
 #logout-form button:hover {
-    background-color: rgba(0, 0, 0, 0.051);
+    background-color: rgba(128, 128, 128, 0.15);
 }
 #logout-form span {
     font-size: 18px;
 }
 
+.btn-toggle-tema {
+    display: flex;
+    align-items: center;
+    column-gap: 20px;
+    border: none;
+    width: 100%;
+    padding: 20px 28px;
+    text-align: start;
+    cursor: pointer;
+    background: none;
+    font-family: 'Outfit', sans-serif;
+}
+.btn-toggle-tema:hover {
+    background-color: rgba(128, 128, 128, 0.15);
+}
+.btn-toggle-tema span {
+    font-size: 18px;
+    color: var(--text-color);
+}
+
 /* Seccion de usuario logueado */
+.perfil-menu-wrapper {
+    position: relative;
+}
 .current-user-card {
     display: flex;
     align-items: center;
     padding: 16px 28px;
-    background-color: #DDDDDD;
+    background-color: var(--color-plomo);
     width: 100%;
-    border-top: 1px solid #cbcbcb;
+    border: none;
+    border-top: 1px solid var(--border-color);
+    cursor: pointer;
+    text-align: start;
+    font-family: 'Outfit', sans-serif;
+}
+.current-user-card:hover {
+    background-color: var(--bg-hover);
+}
+.perfil-menu {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+.perfil-menu #logout-form {
+    border: none;
+}
+.perfil-menu #logout-form button {
+    border-top: 1px solid var(--border-color);
 }
 .current-user-card div {
     display: flex;
@@ -254,7 +341,7 @@ table {
 .table-item-header a h3 {
     font-size: 18px;
     font-weight: 400;
-    color: #000;
+    color: var(--text-color);
 }
 .table-item-header a span {
     font-size: 14px;
@@ -304,13 +391,13 @@ table {
     position: absolute;
     width: 710px;
     height: 100%;
-    background-color: white;
+    background-color: var(--bg-surface);
     right: 0px;
 }
 .modal-form .header {
     width: 100%;
     height: 130px;
-    background-color: rgb(245, 245, 245);
+    background-color: var(--color-plomo);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -346,7 +433,8 @@ table {
     justify-content: center;
     column-gap: 20px;
     border: none;
-    background-color: #D9D9D9;
+    background-color: var(--bg-input);
+    color: var(--text-color);
     cursor: pointer;
 }
 .actions-form button span {
@@ -380,8 +468,9 @@ table {
     font-size: 18px;
     border-radius: 6px;
     padding: 10px;
-    background:#e7e7e7;
-    border-style: none; 
+    background: var(--bg-input);
+    color: var(--text-color);
+    border-style: none;
     width: 100%;
 }
 /* .group-field select {
@@ -432,9 +521,9 @@ table {
     display: flex;
     column-gap: 15px;
     align-items: center;
-    background-color: white;
+    background-color: var(--bg-surface);
     padding: 20px 20px;
-    border-bottom: solid 1px #ececec;
+    border-bottom: solid 1px var(--border-color);
     user-select: none;
 }
 .submenu-options li:hover {
@@ -452,7 +541,7 @@ table {
 
 .wrapper-dev {
     width: 100%;
-    background-color: #ececec;
+    background-color: var(--bg-input);
     height: 80vh;
     border-radius: 6px;
     display: flex;
@@ -487,7 +576,7 @@ table {
     display: none;
 }
 .modal-confirm {
-    background-color: white;
+    background-color: var(--bg-surface);
     width: 360px;
     max-width: calc(100vw - 40px);
     padding: 28px;
@@ -789,8 +878,9 @@ table {
     font-size: 15px;
     padding: 10px 14px;
     border-radius: 6px;
-    border: 1px solid #cbcbcb;
-    background: white;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-color);
 }
 .busqueda-seccion {
     margin: 28px 0 12px;
