@@ -42,7 +42,7 @@ public class SecurityConfig {
     public SecurityFilterChain customfilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
             .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/fondologin.png").permitAll();
+                auth.requestMatchers("/fondologin.png", "/LogoSistema.png", "/favicon.png").permitAll();
                 auth.requestMatchers("/login**").permitAll();
                 // Cualquier cuenta autenticada puede ver la lista de usuarios,
                 // pero solo un administrador puede crear, editar o eliminar

@@ -13,6 +13,12 @@
     <title>Iniciar sesión</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&display=swap');
+      :root {
+        color-scheme: light;
+      }
+      [data-theme="dark"] {
+        color-scheme: dark;
+      }
       * {
         margin: 0;
         padding: 0;
@@ -20,8 +26,11 @@
         font-family: "Outfit";
       }
       .fondo {
-        background-image: url('./fondologin.png');
-        background-size: 100%;
+        background-image:
+          linear-gradient(115deg, rgba(20, 8, 8, 0.35) 0%, rgba(20, 8, 8, 0.05) 45%, rgba(20, 8, 8, 0.35) 100%),
+          url('./fondologin.png');
+        background-size: cover;
+        background-position: center;
         width: 100%;
         height: 100vh;
         background-repeat: no-repeat;
@@ -30,27 +39,44 @@
         align-items: center;
       }
       .container {
-        width: 534px;
-        height: 477px;
+        width: 500px;
         flex-shrink: 0;
-        border-radius: 10px;
-        border: 0.5px solid #8B8B8B;
-        background: rgba(255, 255, 255, 0.90);
-        box-shadow: 4px 4px 14px 0px rgba(0, 0, 0, 0.25);
-        backdrop-filter: blur(13px);
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 24px 60px rgba(15, 20, 15, 0.35), 0 2px 8px rgba(15, 20, 15, 0.12);
+        backdrop-filter: blur(16px);
         display: flex;
+        flex-direction: column;
         align-items: center;
-        /* justify-content: center; */
-
-        padding: 50px 50px;
+        padding: 44px 48px 40px;
+        position: relative;
+        overflow: hidden;
+      }
+      .container::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #7A1618, var(--primary, #0EA968) 55%, #C89A2E);
       }
       form {
         width: 100%;
       }
+      .login-logo {
+        display: block;
+        width: auto;
+        max-width: 220px;
+        height: 68px;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(122, 22, 24, 0.3);
+        margin: 0 auto 18px;
+      }
       .title {
-        color: #000;
+        color: #14181F;
         font-family: 'Outfit';
-        font-size: 44px;
+        font-size: 32px;
         font-style: normal;
         font-weight: 700;
         line-height: normal;
@@ -61,46 +87,62 @@
       button[type="submit"] {
         width: 100%;
         padding: 15px 50px;
-        border-radius: 6px;
-        background: #00AF65;
+        border-radius: 10px;
+        background: #0EA968;
         border: none;
         color: #FFF;
         font-family: 'Outfit';
-        font-size: 18px;
-        font-style: normal;
-        font-weight: 400;
+        font-size: 17px;
+        font-weight: 600;
         line-height: normal;
         cursor: pointer;
+        box-shadow: 0 8px 20px rgba(14, 169, 104, 0.35);
+        transition: background-color .15s ease, transform .1s ease, box-shadow .15s ease;
+      }
+      button[type="submit"]:hover:not(:disabled) {
+        background: #0C8F58;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(14, 169, 104, 0.42);
       }
       .container input {
-        font-size: 18px;
-        border-radius: 6px;
-        padding: 10px;
-        background:#e7e7e7;
-        border-style: none; 
+        font-size: 16px;
+        border-radius: 10px;
+        padding: 12px 14px;
+        background: #F0F1F3;
+        border-style: none;
         width: 100%;
-        margin-top: 10px;
-        border: solid 1px rgb(145, 145, 145);
+        margin-top: 8px;
+        border: 1.5px solid transparent;
         outline: none;
+        transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
       }
-      
+      .container input:focus {
+        background: #ffffff;
+        border-color: #0EA968;
+        box-shadow: 0 0 0 3px rgba(14, 169, 104, 0.15);
+      }
+
       .container label {
-        font-size: 18px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #3A4048;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
       }
       .campos {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 18px;
       }
       .brand {
         text-align: center;
-        color: #00AF65;
+        color: #7A1618;
         font-family: 'Outfit';
-        font-size: 18px;
+        font-size: 14px;
         font-weight: 700;
         letter-spacing: 3px;
         text-transform: uppercase;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
       }
       .campo-password {
         position: relative;
@@ -138,21 +180,35 @@
         cursor: not-allowed;
       }
       [data-theme="dark"] .container {
-        background: rgba(20, 20, 20, 0.88);
-        border-color: #444;
+        background: rgba(23, 27, 34, 0.92);
+        border-color: rgba(255, 255, 255, 0.08);
       }
-      [data-theme="dark"] .title,
+      [data-theme="dark"] .title {
+        color: #EDEFF2;
+      }
       [data-theme="dark"] .container label,
       [data-theme="dark"] .campo-recuerdame label {
-        color: #e8e8e8;
+        color: #9BA3AF;
       }
       [data-theme="dark"] .container input {
-        background: #2a2a2a;
-        color: #e8e8e8;
-        border-color: #444;
+        background: #232832;
+        color: #EDEFF2;
+        border-color: transparent;
+      }
+      [data-theme="dark"] .container input:focus {
+        background: #1c2028;
+        border-color: #22C77D;
+        box-shadow: 0 0 0 3px rgba(34, 199, 125, 0.18);
       }
       [data-theme="dark"] .toggle-password svg {
-        stroke: #e8e8e8;
+        stroke: #9BA3AF;
+      }
+      [data-theme="dark"] button[type="submit"] {
+        background: #22C77D;
+        color: #06170F;
+      }
+      [data-theme="dark"] button[type="submit"]:hover:not(:disabled) {
+        background: #34D68F;
       }
     </style>
 
@@ -164,10 +220,11 @@
     <section class="fondo" >
       <div class="container">
         <form th:action="@{/login}" method="post" id="loginForm">
+          <img class="login-logo" th:src="@{/LogoSistema.png}" alt="Hoteles Tunki" />
           <p class="brand">Estadía</p>
           <h5
             class="title"
-            style="letter-spacing: 1px"
+            style="letter-spacing: -0.01em; margin-bottom: 4px;"
           >
             Inicia Sesión
           </h5>
@@ -302,7 +359,7 @@
           } else {
               console.log("Bloqueo finalizado. Puede iniciar sesión.");
               submitButton.disable = false;
-              submitButton.style.backgroundColor = "#00AF65";
+              submitButton.style.backgroundColor = "";
               localStorage.removeItem('loginBlockedUntil');
               
               // Obtiene la URL actual
