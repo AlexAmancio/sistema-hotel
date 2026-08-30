@@ -6,9 +6,6 @@
     <div th:replace="~{navegacion :: menu}"></div>
     <div class="content">
       <div th:replace="~{button-fragment(url=@{/categorias/nuevo/}, texto='Agregar categoría')}"></div>
-      <div th:if="${error}" class="alert alert-danger" style="margin: 20px 0;">
-        <p th:text="${error}"></p>
-      </div>
 
       <div class="table-wrapper">
       <table>

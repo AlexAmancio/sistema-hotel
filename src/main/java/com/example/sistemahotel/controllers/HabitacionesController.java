@@ -82,6 +82,7 @@ public class HabitacionesController {
             return redirectError;
         }
 
+        boolean esNueva = habitacion.getId() < 1;
         try {
             service.guardar(habitacion);
         } catch (ObjectOptimisticLockingFailureException e) {
@@ -89,6 +90,7 @@ public class HabitacionesController {
                 "Esta habitación fue modificada por otra persona mientras la editabas. Recargá la página e intentá de nuevo.");
             return redirectError;
         }
+        redirectAttributes.addFlashAttribute("exito", esNueva ? "Habitación creada correctamente." : "Habitación actualizada correctamente.");
         return "redirect:/habitaciones/";
     }
 
@@ -106,6 +108,7 @@ public class HabitacionesController {
         }
 
         service.eliminar(id);
+        redirectAttributes.addFlashAttribute("exito", "Habitación eliminada correctamente.");
         return "redirect:/habitaciones/";
     }
 

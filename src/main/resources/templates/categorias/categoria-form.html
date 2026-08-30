@@ -10,9 +10,6 @@
           <h1 th:text="${titulo}"></h1>
         </div>
         <div class="content-form">
-          <div th:if="${error}" class="alert alert-danger">
-            <p th:text="${error}"></p>
-          </div>
           <input th:field="*{id}" type="hidden" />
           <div class="group-field">
             <label for="numero">Nombre</label>

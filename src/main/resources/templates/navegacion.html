@@ -1,4 +1,16 @@
 <div class="sidebar" th:fragment="menu">
+  <div id="toast-container" class="toast-container"></div>
+  <script th:src="@{/js/toast.js}"></script>
+  <script th:if="${error != null}" th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      mostrarToast(/*[[${error}]]*/ '', 'error');
+    });
+  </script>
+  <script th:if="${exito != null}" th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      mostrarToast(/*[[${exito}]]*/ '', 'exito');
+    });
+  </script>
   <div style="width: 328px; height: 146px">
     <img class="logo" src="/LogoSistema.png" alt="alt" width="100%" />
   </div>

@@ -98,9 +98,11 @@ public class ClientesController {
                 return "redirect:/clientes/nuevo/";
             }
             service.guardar(cliente);
+            model.addAttribute("exito", "Cliente registrado correctamente.");
             return listar(model);
         }
         service.guardar(cliente);
+        model.addAttribute("exito", "Cliente actualizado correctamente.");
         return listar(model);
     }
 
@@ -118,6 +120,7 @@ public class ClientesController {
         }
 
         service.eliminar(id);
+        redirectAttributes.addFlashAttribute("exito", "Cliente eliminado correctamente.");
         return "redirect:/clientes/";
     }
 

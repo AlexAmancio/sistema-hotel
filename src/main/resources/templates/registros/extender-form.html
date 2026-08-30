@@ -11,9 +11,6 @@
         <h1>Extender estadía</h1>
       </div>
       <div class="content-form">
-        <div th:if="${error}" class="alert alert-danger">
-          <p th:text="${error}"></p>
-        </div>
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
         <div class="group-field">

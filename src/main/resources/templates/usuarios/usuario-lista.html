@@ -13,9 +13,6 @@
     <p th:unless="${esAdmin}" style="color: var(--color-plomo-oscuro); margin-bottom: 20px;">
       Solo un administrador puede crear, editar o eliminar usuarios.
     </p>
-    <div th:if="${error}" class="alert alert-danger" style="margin-bottom: 20px;">
-      <p th:text="${error}"></p>
-    </div>
 
     <div class="table-wrapper">
     <table>

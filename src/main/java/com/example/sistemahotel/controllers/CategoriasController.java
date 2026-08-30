@@ -78,7 +78,9 @@ public class CategoriasController {
             return redirectError;
         }
 
+        boolean esNueva = categoria.getId() < 1;
         service.guardar(categoria);
+        redirectAttributes.addFlashAttribute("exito", esNueva ? "Categoría creada correctamente." : "Categoría actualizada correctamente.");
         return "redirect:/categorias/";
     }
 
@@ -96,6 +98,7 @@ public class CategoriasController {
         }
 
         service.eliminar(id);
+        redirectAttributes.addFlashAttribute("exito", "Categoría eliminada correctamente.");
         return "redirect:/categorias/";
     }
 }

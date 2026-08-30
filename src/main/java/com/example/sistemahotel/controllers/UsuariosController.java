@@ -96,6 +96,7 @@ public class UsuariosController {
             usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
             // Guardar usuario
             service.guardar(usuario);
+            model.addAttribute("exito", "Usuario creado correctamente.");
             return listar(model);
         }
         // Edición: el campo de contraseña llega vacío salvo que el admin quiera cambiarla.
@@ -108,6 +109,7 @@ public class UsuariosController {
         }
         // Guardar usuario
         service.guardar(usuario);
+        model.addAttribute("exito", "Usuario actualizado correctamente.");
         return listar(model);
     }
 
@@ -135,6 +137,7 @@ public class UsuariosController {
         }
 
         service.eliminar(id);
+        redirectAttributes.addFlashAttribute("exito", "Usuario eliminado correctamente.");
         return "redirect:/usuarios/";
     }
 
@@ -156,17 +159,20 @@ public class UsuariosController {
 
         usuario.setActivo(false);
         service.guardar(usuario);
+        redirectAttributes.addFlashAttribute("exito", "Usuario desactivado correctamente.");
         return "redirect:/usuarios/";
     }
 
     @PostMapping("/activar/{usuarioID}/")
     public String activar(
-        @PathVariable(name="usuarioID", required = true) int id
+        @PathVariable(name="usuarioID", required = true) int id,
+        RedirectAttributes redirectAttributes
     ) {
         service.consultarId(id).ifPresent(usuario -> {
             usuario.setActivo(true);
             service.guardar(usuario);
         });
+        redirectAttributes.addFlashAttribute("exito", "Usuario activado correctamente.");
         return "redirect:/usuarios/";
     }
 
