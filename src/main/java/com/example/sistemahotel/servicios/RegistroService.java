@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.example.sistemahotel.interfaces.IRegistroService;
 import com.example.sistemahotel.modelos.EstadoHabitacion;
@@ -27,6 +29,11 @@ public class RegistroService implements IRegistroService {
     @Override
     public List<Registro> listar() {
         return (List<Registro>) repositorio.findAll();
+    }
+
+    @Override
+    public Page<Registro> listarPaginado(EstadoRegistro estado, Pageable pageable) {
+        return estado == null ? repositorio.findAll(pageable) : repositorio.findByEstado(estado, pageable);
     }
 
     @Override

@@ -1,0 +1,9 @@
+<div class="pagination" th:if="${totalPaginas > 1}">
+  <a th:if="${paginaActual > 0}" th:href="${urlBase + (paginaActual - 1)}" class="pagination-btn">&larr; Anterior</a>
+  <span th:unless="${paginaActual > 0}" class="pagination-btn pagination-disabled">&larr; Anterior</span>
+
+  <span class="pagination-info" th:text="'Página ' + (${paginaActual} + 1) + ' de ' + ${totalPaginas}"></span>
+
+  <a th:if="${paginaActual + 1 < totalPaginas}" th:href="${urlBase + (paginaActual + 1)}" class="pagination-btn">Siguiente &rarr;</a>
+  <span th:unless="${paginaActual + 1 < totalPaginas}" class="pagination-btn pagination-disabled">Siguiente &rarr;</span>
+</div>

@@ -77,6 +77,8 @@
     </table>
     </div>
 
+    <div th:replace="~{pagination-fragment(paginaActual=${paginaActual}, totalPaginas=${totalPaginas}, urlBase='/clientes/?pagina=')}"></div>
+
   </div>
   <div th:replace="~{confirm-modal-fragment :: confirmModal}"></div>
   <script th:src="@{/js/script.js}"></script>

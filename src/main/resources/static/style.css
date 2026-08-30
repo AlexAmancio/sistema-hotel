@@ -1218,3 +1218,38 @@ table {
     from { opacity: 1; transform: translateX(0); }
     to { opacity: 0; transform: translateX(24px); }
 }
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+    padding: 4px 0;
+}
+.pagination-btn {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-color);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+.pagination-btn:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--primary);
+}
+.pagination-btn.pagination-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.pagination-info {
+    font-size: 14px;
+    color: var(--color-plomo-oscuro);
+    font-weight: 500;
+}

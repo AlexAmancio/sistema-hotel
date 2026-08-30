@@ -7,6 +7,8 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -29,6 +32,7 @@ import com.example.sistemahotel.util.TextoUtils;
 @Controller
 public class ClientesController {
     String carpeta = "clientes/";
+    private static final int TAMANO_PAGINA = 15;
 
     @Autowired
     private IClienteService service;
@@ -42,8 +46,11 @@ public class ClientesController {
     private final RestTemplate restTemplate = new RestTemplate();
 
     @GetMapping("/")
-    public String listar(Model model) {
-        model.addAttribute("listaClientes", service.listar());
+    public String listar(@RequestParam(defaultValue = "0") int pagina, Model model) {
+        Page<Cliente> paginaClientes = service.listarPaginado(PageRequest.of(pagina, TAMANO_PAGINA));
+        model.addAttribute("listaClientes", paginaClientes.getContent());
+        model.addAttribute("paginaActual", paginaClientes.getNumber());
+        model.addAttribute("totalPaginas", paginaClientes.getTotalPages());
 
         return carpeta + "cliente-lista";
     }
@@ -99,11 +106,11 @@ public class ClientesController {
             }
             service.guardar(cliente);
             model.addAttribute("exito", "Cliente registrado correctamente.");
-            return listar(model);
+            return listar(0, model);
         }
         service.guardar(cliente);
         model.addAttribute("exito", "Cliente actualizado correctamente.");
-        return listar(model);
+        return listar(0, model);
     }
 
     @PostMapping("/eliminar/{idCliente}/")

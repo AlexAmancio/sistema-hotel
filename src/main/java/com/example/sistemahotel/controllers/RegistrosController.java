@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -39,6 +41,7 @@ import com.example.sistemahotel.util.FechaUtils;
 @Controller
 public class RegistrosController {
     String carpeta = "registros/";
+    private static final int TAMANO_PAGINA = 15;
 
     @Autowired
     private IRegistroService service;
@@ -56,10 +59,18 @@ public class RegistrosController {
     private IComprobanteService comprobanteService;
 
     @GetMapping("/")
-    public String listar(@RequestParam(required = false) String estado, Model model) {
-        List<Registro> registros = filtrarPorEstado(service.listar(), estado);
+    public String listar(
+        @RequestParam(required = false) String estado,
+        @RequestParam(defaultValue = "0") int pagina,
+        Model model
+    ) {
+        EstadoRegistro filtro = parseEstado(estado);
+        Page<Registro> paginaRegistros = service.listarPaginado(filtro, PageRequest.of(pagina, TAMANO_PAGINA));
+        List<Registro> registros = paginaRegistros.getContent();
         model.addAttribute("registros", registros);
         model.addAttribute("estadoSeleccionado", estado != null ? estado : "");
+        model.addAttribute("paginaActual", paginaRegistros.getNumber());
+        model.addAttribute("totalPaginas", paginaRegistros.getTotalPages());
 
         Map<Integer, Comprobante> comprobantesPorRegistro = new HashMap<>();
         for (Registro registro : registros) {
@@ -71,17 +82,24 @@ public class RegistrosController {
         return carpeta + "registro-lista";
     }
 
-    // Usada tanto por la lista como por el export a CSV, para que ambos filtren igual.
-    private List<Registro> filtrarPorEstado(List<Registro> registros, String estado) {
+    private EstadoRegistro parseEstado(String estado) {
         if (estado == null || estado.isBlank()) {
-            return registros;
+            return null;
         }
         try {
-            EstadoRegistro filtro = EstadoRegistro.valueOf(estado);
-            return registros.stream().filter(r -> r.getEstado() == filtro).collect(Collectors.toList());
+            return EstadoRegistro.valueOf(estado);
         } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    // Usada por el export a CSV, que siempre necesita el listado completo sin paginar.
+    private List<Registro> filtrarPorEstado(List<Registro> registros, String estado) {
+        EstadoRegistro filtro = parseEstado(estado);
+        if (filtro == null) {
             return registros;
         }
+        return registros.stream().filter(r -> r.getEstado() == filtro).collect(Collectors.toList());
     }
 
     @GetMapping("/exportar/")

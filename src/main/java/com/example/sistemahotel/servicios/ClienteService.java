@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.example.sistemahotel.interfaces.IClienteService;
 import com.example.sistemahotel.modelos.Cliente;
@@ -18,6 +20,11 @@ public class ClienteService implements IClienteService{
     @Override
     public List<Cliente> listar() {
         return (List<Cliente>)repositorio.findAll();
+    }
+
+    @Override
+    public Page<Cliente> listarPaginado(Pageable pageable) {
+        return repositorio.findAll(pageable);
     }
 
     @Override
