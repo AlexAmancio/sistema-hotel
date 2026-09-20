@@ -47,6 +47,16 @@ a {
     --bg-dot: rgba(20, 24, 31, 0.05);
     --bg-wash-primary: rgba(14, 169, 104, 0.07);
     --bg-wash-gold: rgba(200, 154, 46, 0.06);
+
+    /* Estados de habitación / registro, reusados en tags y tarjetas */
+    --estado-disponible: #00854D;
+    --estado-disponible-bg: #D9F2E4;
+    --estado-ocupada: #B5651D;
+    --estado-ocupada-bg: #FCE4D6;
+    --estado-limpieza: #8A6D00;
+    --estado-limpieza-bg: #FFF3CD;
+    --estado-mantenimiento: #5F5F5F;
+    --estado-mantenimiento-bg: #E4E4E4;
 }
 
 [data-theme="dark"] {
@@ -80,6 +90,15 @@ a {
     --bg-dot: rgba(255, 255, 255, 0.045);
     --bg-wash-primary: rgba(34, 199, 125, 0.10);
     --bg-wash-gold: rgba(226, 184, 74, 0.08);
+
+    --estado-disponible: #4ADE9C;
+    --estado-disponible-bg: rgba(74, 222, 156, 0.14);
+    --estado-ocupada: #F0A868;
+    --estado-ocupada-bg: rgba(240, 168, 104, 0.14);
+    --estado-limpieza: #E5C158;
+    --estado-limpieza-bg: rgba(229, 193, 88, 0.16);
+    --estado-mantenimiento: #9AA0A6;
+    --estado-mantenimiento-bg: rgba(154, 160, 166, 0.16);
 }
 
 body {
@@ -813,14 +832,14 @@ table {
 }
 
 /* ======================= ESTADOS (tags) ===========================*/
-.col-tag.estado-disponible { background-color: #D9F2E4; color: #00854D; }
-.col-tag.estado-ocupada { background-color: #FCE4D6; color: #B5651D; }
-.col-tag.estado-limpieza { background-color: #FFF3CD; color: #8A6D00; }
-.col-tag.estado-mantenimiento { background-color: #E4E4E4; color: #555; }
+.col-tag.estado-disponible { background-color: var(--estado-disponible-bg); color: var(--estado-disponible); }
+.col-tag.estado-ocupada { background-color: var(--estado-ocupada-bg); color: var(--estado-ocupada); }
+.col-tag.estado-limpieza { background-color: var(--estado-limpieza-bg); color: var(--estado-limpieza); }
+.col-tag.estado-mantenimiento { background-color: var(--estado-mantenimiento-bg); color: var(--estado-mantenimiento); }
 
-.col-tag.estado-activa { background-color: #D9F2E4; color: #00854D; }
-.col-tag.estado-finalizada { background-color: #E4E4E4; color: #555; }
-.col-tag.estado-cancelada { background-color: #FCE4D6; color: #B5651D; }
+.col-tag.estado-activa { background-color: var(--estado-disponible-bg); color: var(--estado-disponible); }
+.col-tag.estado-finalizada { background-color: var(--estado-mantenimiento-bg); color: var(--estado-mantenimiento); }
+.col-tag.estado-cancelada { background-color: var(--estado-ocupada-bg); color: var(--estado-ocupada); }
 .col-tag.estado-no-show { background-color: var(--color-rojo); color: white; }
 
 .saldo-pendiente { color: var(--color-rojo); font-weight: 600; }
@@ -1097,6 +1116,17 @@ table {
     padding: 16px 18px;
     border-left-color: var(--border-color);
 }
+.stat-card-chico .stat-value {
+    font-size: 24px;
+}
+.stat-card-estado-disponible { border-left-color: var(--estado-disponible); }
+.stat-card-estado-disponible .stat-value { color: var(--estado-disponible); }
+.stat-card-estado-ocupada { border-left-color: var(--estado-ocupada); }
+.stat-card-estado-ocupada .stat-value { color: var(--estado-ocupada); }
+.stat-card-estado-limpieza { border-left-color: var(--estado-limpieza); }
+.stat-card-estado-limpieza .stat-value { color: var(--estado-limpieza); }
+.stat-card-estado-mantenimiento { border-left-color: var(--estado-mantenimiento); }
+.stat-card-estado-mantenimiento .stat-value { color: var(--estado-mantenimiento); }
 .stat-card-alerta {
     background-color: var(--color-rojo);
     border-left-color: #7A0000;

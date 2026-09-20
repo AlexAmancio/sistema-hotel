@@ -45,19 +45,19 @@
 
     <h3 style="margin: 32px 0 14px;">Estado de habitaciones</h3>
     <div class="dashboard-grid dashboard-grid-habitaciones">
-      <div class="stat-card stat-card-chico">
+      <div class="stat-card stat-card-chico stat-card-estado-disponible">
         <span class="stat-label">Disponibles</span>
         <span class="stat-value" th:text="${disponibles}"></span>
       </div>
-      <div class="stat-card stat-card-chico">
+      <div class="stat-card stat-card-chico stat-card-estado-ocupada">
         <span class="stat-label">Ocupadas</span>
         <span class="stat-value" th:text="${ocupadas}"></span>
       </div>
-      <div class="stat-card stat-card-chico">
+      <div class="stat-card stat-card-chico stat-card-estado-limpieza">
         <span class="stat-label">En limpieza</span>
         <span class="stat-value" th:text="${enLimpieza}"></span>
       </div>
-      <div class="stat-card stat-card-chico">
+      <div class="stat-card stat-card-chico stat-card-estado-mantenimiento">
         <span class="stat-label">En mantenimiento</span>
         <span class="stat-value" th:text="${enMantenimiento}"></span>
       </div>
