@@ -16,6 +16,9 @@ document.addEventListener("DOMContentLoaded", function() {
         case "habitaciones":
             elemento = document.getElementById("item-habitaciones");
             break;
+        case "ocupacion":
+            elemento = document.getElementById("item-ocupacion");
+            break;
         case "categorias":
             elemento = document.getElementById("item-categorias");
             break;
