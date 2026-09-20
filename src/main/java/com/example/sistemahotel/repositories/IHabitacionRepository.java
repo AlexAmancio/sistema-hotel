@@ -1,5 +1,6 @@
 package com.example.sistemahotel.repositories;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
@@ -10,4 +11,6 @@ import com.example.sistemahotel.modelos.Habitacion;
 @Repository
 public interface IHabitacionRepository extends CrudRepository<Habitacion, Integer> {
     Optional<Habitacion> findByNumero(String numero);
+
+    List<Habitacion> findByNumeroContainingIgnoreCase(String numero);
 }

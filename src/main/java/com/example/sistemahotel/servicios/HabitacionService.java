@@ -38,5 +38,10 @@ public class HabitacionService implements IHabitacionService {
     public Optional<Habitacion> consultarPornumerohabitacion(String numero) {
         return repositorio.findByNumero(numero);
     }
-    
+
+    @Override
+    public List<Habitacion> buscar(String query) {
+        return repositorio.findByNumeroContainingIgnoreCase(query);
+    }
+
 }

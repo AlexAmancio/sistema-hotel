@@ -166,4 +166,9 @@ public class RegistroService implements IRegistroService {
         return calendar.getTime();
     }
 
+    @Override
+    public List<Registro> buscarPorNumeroHabitacion(String query) {
+        return repositorio.findByHabitacion_NumeroContainingIgnoreCase(query);
+    }
+
 }

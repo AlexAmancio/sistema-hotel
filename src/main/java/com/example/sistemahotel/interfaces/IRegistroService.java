@@ -24,4 +24,5 @@ public interface IRegistroService {
     void marcarNoShow(int registroId);
     // Devuelve false si la extensión chocaría con otra reserva activa.
     boolean extenderEstadia(int registroId, int nuevasNoches);
+    List<Registro> buscarPorNumeroHabitacion(String query);
 }

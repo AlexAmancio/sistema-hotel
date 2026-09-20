@@ -22,7 +22,7 @@ import com.example.sistemahotel.interfaces.ICategoriaService;
 import com.example.sistemahotel.interfaces.IHabitacionService;
 import com.example.sistemahotel.modelos.EstadoHabitacion;
 import com.example.sistemahotel.modelos.Habitacion;
-import com.example.sistemahotel.servicios.RegistroService;
+import com.example.sistemahotel.interfaces.IRegistroService;
 
 
 @RequestMapping("/habitaciones/")
@@ -36,7 +36,7 @@ public class HabitacionesController {
     @Autowired
     private ICategoriaService categoriaService;
     @Autowired
-    private RegistroService registroService;
+    private IRegistroService registroService;
     
     @GetMapping("/")
     public String listar(Model model) {

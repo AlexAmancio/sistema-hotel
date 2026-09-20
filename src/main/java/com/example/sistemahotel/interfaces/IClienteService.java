@@ -15,4 +15,5 @@ public interface IClienteService {
     public void guardar(Cliente cliente);
     public void eliminar(int id);
     public  Optional<Cliente> consultarPorIdentificacion(String identificacion);
+    public List<Cliente> buscar(String query);
 }

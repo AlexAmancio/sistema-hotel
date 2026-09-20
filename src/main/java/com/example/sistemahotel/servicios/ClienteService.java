@@ -45,5 +45,11 @@ public class ClienteService implements IClienteService{
     public Optional<Cliente> consultarPorIdentificacion(String identificacion) {
         return repositorio.findByIdentificacion(identificacion);
     }
-    
+
+    @Override
+    public List<Cliente> buscar(String query) {
+        return repositorio.findByNombresContainingIgnoreCaseOrApellidosContainingIgnoreCaseOrIdentificacionContainingIgnoreCase(
+            query, query, query);
+    }
+
 }

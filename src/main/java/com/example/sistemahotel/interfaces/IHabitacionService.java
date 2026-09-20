@@ -11,4 +11,5 @@ public interface IHabitacionService {
     public void guardar(Habitacion habitacion);
     public void eliminar(int id);
     public Optional<Habitacion> consultarPornumerohabitacion(String numero);
+    public List<Habitacion> buscar(String query);
 }
