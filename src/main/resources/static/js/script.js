@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function() {
             elemento = document.getElementById("item-hoy");
             break;
         case "dashboard":
-            elemento = document.getElementById("item-dashboard");
+            elemento = document.getElementById("item-reportes");
             break;
     }
 

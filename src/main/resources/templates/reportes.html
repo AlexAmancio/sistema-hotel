@@ -10,6 +10,61 @@
       <h1>Reportes</h1>
     </div>
 
+    <h3 style="margin-bottom: 14px;">Hoy</h3>
+    <div class="dashboard-grid">
+      <div class="stat-card">
+        <span class="stat-label">Ocupación actual</span>
+        <span class="stat-value" th:text="${porcentajeOcupacion + '%'}"></span>
+        <span class="stat-detalle" th:text="${ocupadas + ' de ' + totalHabitaciones + ' habitaciones'}"></span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Check-ins de hoy</span>
+        <span class="stat-value" th:text="${checkInsHoy}"></span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Check-outs pendientes hoy</span>
+        <span class="stat-value" th:text="${checkOutsPendientesHoy}"></span>
+      </div>
+
+      <div class="stat-card" th:classappend="${vencidas > 0} ? 'stat-card-alerta'">
+        <span class="stat-label">Estadías vencidas</span>
+        <span class="stat-value" th:text="${vencidas}"></span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Ingresos de hoy</span>
+        <span class="stat-value" th:text="${'S/. ' + #numbers.formatDecimal(ingresosHoy, 1, 2)}"></span>
+      </div>
+
+      <div class="stat-card" th:classappend="${saldoPendienteTotal > 0} ? 'stat-card-alerta'">
+        <span class="stat-label">Saldo pendiente total</span>
+        <span class="stat-value" th:text="${'S/. ' + #numbers.formatDecimal(saldoPendienteTotal, 1, 2)}"></span>
+      </div>
+    </div>
+
+    <h3 style="margin: 32px 0 14px;">Estado de habitaciones</h3>
+    <div class="dashboard-grid dashboard-grid-habitaciones">
+      <div class="stat-card stat-card-chico stat-card-estado-disponible">
+        <span class="stat-label">Disponibles</span>
+        <span class="stat-value" th:text="${disponibles}"></span>
+      </div>
+      <div class="stat-card stat-card-chico stat-card-estado-ocupada">
+        <span class="stat-label">Ocupadas</span>
+        <span class="stat-value" th:text="${ocupadas}"></span>
+      </div>
+      <div class="stat-card stat-card-chico stat-card-estado-limpieza">
+        <span class="stat-label">En limpieza</span>
+        <span class="stat-value" th:text="${enLimpieza}"></span>
+      </div>
+      <div class="stat-card stat-card-chico stat-card-estado-mantenimiento">
+        <span class="stat-label">En mantenimiento</span>
+        <span class="stat-value" th:text="${enMantenimiento}"></span>
+      </div>
+    </div>
+
+    <h3 style="margin: 40px 0 14px;">Por período</h3>
     <div class="dashboard-grid">
       <div class="stat-card">
         <span class="stat-label" th:text="${'Ingresos de ' + mesActual.mes}"></span>
@@ -31,7 +86,7 @@
       </div>
     </div>
 
-    <h3 style="margin: 32px 0 14px;">Ingresos y ocupación por mes</h3>
+    <h4 style="margin: 28px 0 14px; font-size: 15px; color: var(--color-plomo-oscuro);">Últimos 6 meses</h4>
     <div class="table-wrapper">
       <table>
         <tr class="table-header">
