@@ -39,6 +39,15 @@ values ('Musk', '$2a$12$gx4jBU180qN4ohLJiyokkuRMZpnhtVmlsVJoCQFrKIeHaXTjI5m5G', 
 
 Usuario: `elon` — Contraseña: `admin123`
 
+También hay un segundo usuario administrador de prueba:
+
+```sql
+insert into usuario (apellidos, contrasena, correo, es_admin, nombres, username)
+values ('', '$2a$10$FFF.RpX0QIMsOS8m.t13wuyr.naioWiRvNydZ.tvWrUX1FWxj79NK', 'gerardo@hoteltunki.com', true, 'Gerardo', 'gerardo');
+```
+
+Usuario: `gerardo` — Contraseña: `12345`
+
 **3. Arrancar la app**
 
 ```bash
