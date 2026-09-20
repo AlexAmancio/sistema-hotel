@@ -68,11 +68,16 @@ public class UsuariosController {
         @PathVariable(name="usuarioID", required=true) int id,
         Model model
     ) {
-        model.addAttribute("usuario", service.consultarId(id));
-        model.addAttribute("titulo", "Editar usuario");
-        model.addAttribute("txtboton", "Actualizar");
-
-        return carpeta + "usuario-form";
+        // service.consultarId devuelve un Optional: pasarlo directo al modelo
+        // rompía cualquier expresión SpEL del template que no fuera un simple
+        // th:field (ej. "usuario.id > 0"), porque esas no desenvuelven el
+        // Optional automáticamente.
+        return service.consultarId(id).map(usuario -> {
+            model.addAttribute("usuario", usuario);
+            model.addAttribute("titulo", "Editar usuario");
+            model.addAttribute("txtboton", "Actualizar");
+            return carpeta + "usuario-form";
+        }).orElse("redirect:/usuarios/");
     }
 
     @PostMapping("/guardar/")

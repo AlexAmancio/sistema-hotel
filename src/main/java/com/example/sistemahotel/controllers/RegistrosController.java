@@ -239,14 +239,18 @@ public class RegistrosController {
         @PathVariable(name="registroID", required=true) int id,
         Model model
     ) {
-        model.addAttribute("registro", service.consultarId(id));
-        model.addAttribute("listaClientes", clienteService.listar());
-        model.addAttribute("listaHabitaciones", habitacionService.listar());
-
-        model.addAttribute("titulo", "Editar registro");
-        model.addAttribute("txtboton", "Actualizar");
-
-        return carpeta + "registro-form";
+        // service.consultarId devuelve un Optional: pasarlo directo al modelo
+        // rompía cualquier expresión SpEL del template que no fuera un simple
+        // th:field (ej. "registro.usuario != null"), porque esas no
+        // desenvuelven el Optional automáticamente.
+        return service.consultarId(id).map(registro -> {
+            model.addAttribute("registro", registro);
+            model.addAttribute("listaClientes", clienteService.listar());
+            model.addAttribute("listaHabitaciones", habitacionService.listar());
+            model.addAttribute("titulo", "Editar registro");
+            model.addAttribute("txtboton", "Actualizar");
+            return carpeta + "registro-form";
+        }).orElse("redirect:/");
     }
 
 
