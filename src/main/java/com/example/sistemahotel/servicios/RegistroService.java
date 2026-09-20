@@ -123,6 +123,11 @@ public class RegistroService implements IRegistroService {
             return false;
         }
         registro.setNoches(nuevasNoches);
+        // Recalcular la tarifa con las noches nuevas: si no se hace, la extensión
+        // queda cobrada al precio de las noches originales (ver precioParaFecha,
+        // misma lógica que usa el check-in para respetar temporada alta).
+        double precioPorNoche = registro.getHabitacion().getCategoria().precioParaFecha(registro.getCheckIn());
+        registro.setTarifa(precioPorNoche * nuevasNoches);
         repositorio.save(registro);
         return true;
     }

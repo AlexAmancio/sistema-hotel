@@ -38,4 +38,17 @@ document.addEventListener("DOMContentLoaded", function() {
         elemento.classList.add("active");
     }
 
+    // Evita doble submit (doble clic, doble Enter) en cualquier formulario normal:
+    // deshabilita el botón apenas se envía. No interfiere con los formularios de
+    // confirmación de borrado, que interceptan el submit con preventDefault() y
+    // lo disparan después vía form.submit(), el cual no vuelve a emitir este evento.
+    document.querySelectorAll("form:not(.form-eliminar)").forEach(function (form) {
+        form.addEventListener("submit", function () {
+            var boton = form.querySelector("button[type='submit']");
+            if (boton && !boton.disabled) {
+                boton.disabled = true;
+            }
+        });
+    });
+
 });
