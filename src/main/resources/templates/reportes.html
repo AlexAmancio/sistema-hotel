@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head th:replace="~{header-fragment :: headertag(title='Reportes')}">
+
+<body>
+  <div th:replace="~{navegacion :: menu}"></div>
+  <div class="content">
+    <div class="header-form" style="margin-top:0; text-align:left; margin-bottom: 30px;">
+      <h1>Reportes</h1>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="stat-card">
+        <span class="stat-label" th:text="${'Ingresos de ' + mesActual.mes}"></span>
+        <span class="stat-value" th:text="${'S/. ' + #numbers.formatDecimal(mesActual.ingresos, 1, 2)}"></span>
+        <span class="stat-detalle" th:if="${mesActual.variacionPct != null}">
+          <span th:if="${mesActual.variacionPct >= 0}" class="reporte-variacion reporte-variacion-positiva"
+                th:text="${'▲ ' + #numbers.formatDecimal(mesActual.variacionPct, 1, 1) + '%'}"></span>
+          <span th:if="${mesActual.variacionPct lt 0}" class="reporte-variacion reporte-variacion-negativa"
+                th:text="${'▼ ' + #numbers.formatDecimal(mesActual.variacionPct, 1, 1) + '%'}"></span>
+          <span>vs. mes anterior</span>
+        </span>
+        <span class="stat-detalle" th:unless="${mesActual.variacionPct != null}">Sin mes anterior para comparar.</span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Ocupación promedio del trimestre</span>
+        <span class="stat-value" th:text="${#numbers.formatDecimal(ocupacionTrimestre, 1, 1) + '%'}"></span>
+        <span class="stat-detalle">Últimos 3 meses (hasta hoy en el mes en curso)</span>
+      </div>
+    </div>
+
+    <h3 style="margin: 32px 0 14px;">Ingresos y ocupación por mes</h3>
+    <div class="table-wrapper">
+      <table>
+        <tr class="table-header">
+          <th>Mes</th>
+          <th>Ingresos</th>
+          <th>Variación</th>
+          <th>Ocupación promedio</th>
+        </tr>
+        <tr class="table-item" th:each="fila : ${filas}">
+          <td th:text="${fila.mes}"></td>
+          <td th:text="${'S/. ' + #numbers.formatDecimal(fila.ingresos, 1, 2)}"></td>
+          <td>
+            <span th:if="${fila.variacionPct == null}" style="color: var(--color-plomo-oscuro);">—</span>
+            <span th:if="${fila.variacionPct != null and fila.variacionPct >= 0}"
+                  class="reporte-variacion reporte-variacion-positiva"
+                  th:text="${'▲ ' + #numbers.formatDecimal(fila.variacionPct, 1, 1) + '%'}"></span>
+            <span th:if="${fila.variacionPct != null and fila.variacionPct lt 0}"
+                  class="reporte-variacion reporte-variacion-negativa"
+                  th:text="${'▼ ' + #numbers.formatDecimal(fila.variacionPct, 1, 1) + '%'}"></span>
+          </td>
+          <td th:text="${#numbers.formatDecimal(fila.ocupacionPromedio, 1, 1) + '%'}"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <script th:src="@{/js/script.js}"></script>
+</body>
+
+</html>

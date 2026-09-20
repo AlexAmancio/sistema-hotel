@@ -1414,3 +1414,15 @@ table {
 .ocupacion-swatch-finalizada {
     background: var(--color-plomo);
 }
+
+/* ======================= REPORTES ===========================*/
+.reporte-variacion {
+    font-weight: 600;
+    font-size: 13px;
+}
+.reporte-variacion-positiva {
+    color: var(--estado-disponible);
+}
+.reporte-variacion-negativa {
+    color: var(--color-rojo);
+}
