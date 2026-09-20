@@ -33,8 +33,8 @@ Creá una base de datos MySQL llamada `alquiler` (o cambiá el nombre en
 Para poder loguearte, insertá un usuario administrador:
 
 ```sql
-insert into usuario (apellidos, contrasena, correo, es_admin, nombres, username)
-values ('Musk', '$2a$12$gx4jBU180qN4ohLJiyokkuRMZpnhtVmlsVJoCQFrKIeHaXTjI5m5G', 'musk@gmail.com', true, 'Elon', 'elon');
+insert into usuario (activo, apellidos, contrasena, correo, es_admin, nombres, username)
+values (true, 'Musk', '$2a$12$gx4jBU180qN4ohLJiyokkuRMZpnhtVmlsVJoCQFrKIeHaXTjI5m5G', 'musk@gmail.com', true, 'Elon', 'elon');
 ```
 
 Usuario: `elon` — Contraseña: `admin123`
@@ -42,11 +42,18 @@ Usuario: `elon` — Contraseña: `admin123`
 También hay un segundo usuario administrador de prueba:
 
 ```sql
-insert into usuario (apellidos, contrasena, correo, es_admin, nombres, username)
-values ('', '$2a$10$FFF.RpX0QIMsOS8m.t13wuyr.naioWiRvNydZ.tvWrUX1FWxj79NK', 'gerardo@hoteltunki.com', true, 'Gerardo', 'gerardo');
+insert into usuario (activo, apellidos, contrasena, correo, es_admin, nombres, username)
+values (true, '', '$2a$10$FFF.RpX0QIMsOS8m.t13wuyr.naioWiRvNydZ.tvWrUX1FWxj79NK', 'gerardo@hoteltunki.com', true, 'Gerardo', 'gerardo');
 ```
 
 Usuario: `gerardo` — Contraseña: `12345`
+
+Para crear otros usuarios sin pasar por la interfaz, hay un script que genera
+el `insert` con la contraseña ya encriptada en bcrypt:
+
+```bash
+./scripts/crear-usuario.sh <username> <contraseña> <nombres> <apellidos> <correo> [admin]
+```
 
 **3. Arrancar la app**
 
