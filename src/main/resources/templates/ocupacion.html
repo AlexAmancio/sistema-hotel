@@ -31,10 +31,16 @@
           </div>
           <div class="ocupacion-fila-dias"
                th:style="'grid-column: 2 / span ' + ${#lists.size(dias)} + '; grid-template-columns: repeat(' + ${#lists.size(dias)} + ', minmax(64px, 1fr));'">
+            <a th:each="dia, iter : ${dias}"
+               class="ocupacion-dia-vacio"
+               th:style="'grid-row: 1; grid-column: ' + (${iter.index} + 1) + ';'"
+               th:href="@{/nuevo/(habitacion=${fila.habitacion.id}, checkIn=${#dates.format(dia, 'yyyy-MM-dd') + 'T12:00'})}"
+               title="Crear una reserva este día">
+            </a>
             <a th:each="bloque : ${fila.bloques}"
                class="ocupacion-bloque"
                th:classappend="${bloque.registro.estado.name() == 'FINALIZADA'} ? ' ocupacion-bloque-finalizada'"
-               th:style="'grid-column: ' + (${bloque.colInicio} + 1) + ' / span ' + ${bloque.span} + ';'"
+               th:style="'grid-row: 1; grid-column: ' + (${bloque.colInicio} + 1) + ' / span ' + ${bloque.span} + ';'"
                th:href="${'/editar/' + bloque.registro.id + '/'}"
                th:title="${bloque.registro.cliente.nombres + ' ' + bloque.registro.cliente.apellidos + ' — ' + #dates.format(bloque.registro.checkIn, 'dd/MM') + ' (' + bloque.registro.noches + ' noches)'}"
                th:text="${bloque.registro.cliente.apellidos}">

@@ -93,11 +93,17 @@
 </div>
 <script th:src="@{/js/script.js}"></script>
 <script th:src="@{/js/script-forms.js}"></script>
+<script th:inline="javascript">
+    // Llega distinto de null solo cuando el formulario se abrió desde un
+    // clic en un día libre del calendario de ocupación.
+    const habitacionPreseleccionada = /*[[${habitacionPreseleccionada}]]*/ null;
+</script>
 <script>
     // Las noches ya no se escriben a mano: se calculan solas a partir de
     // ingreso/salida. El campo #noches sigue existiendo (readonly) porque
     // el backend sigue guardando un número de noches, sin cambios ahí.
     let busquedaTimeout = null;
+    let habitacionAPreseleccionar = null;
 
     function calcularNoches() {
         const checkInVal = document.getElementById('checkIn').value;
@@ -146,6 +152,18 @@
                     option.textContent = `Habitación ${habitacion.numero} (aforo ${habitacion.aforo})`;
                     habitacionSelect.appendChild(option);
                 });
+
+                // Si venimos del calendario de ocupación con una habitación ya
+                // elegida, seleccionarla apenas aparece entre las disponibles.
+                // Se aplica una sola vez: si el usuario cambia las fechas
+                // después, su elección manual ya no debe ser pisada.
+                if (habitacionAPreseleccionar !== null) {
+                    const opcion = habitacionSelect.querySelector(`option[value="${habitacionAPreseleccionar}"]`);
+                    if (opcion) {
+                        habitacionSelect.value = habitacionAPreseleccionar;
+                    }
+                    habitacionAPreseleccionar = null;
+                }
 
                 document.getElementById('habitacion-group').classList.remove('hidden');
                 verificarAforo();
@@ -267,6 +285,30 @@
         } else {
             nochesInput.value = '';
         }
+    })();
+
+    // Si el formulario se abrió desde el calendario de ocupación (clic en un
+    // día libre), ya hay checkIn y habitación destino: se completa la salida
+    // por defecto a una noche y se dispara la búsqueda para preseleccionar
+    // esa habitación apenas llegue en la lista de disponibles.
+    (function precargarDesdeCalendario() {
+        if (habitacionPreseleccionada === null || habitacionPreseleccionada === undefined) {
+            return;
+        }
+        const checkInVal = document.getElementById('checkIn').value;
+        if (!checkInVal) {
+            return;
+        }
+        habitacionAPreseleccionar = habitacionPreseleccionada;
+
+        const checkIn = new Date(checkInVal);
+        checkIn.setDate(checkIn.getDate() + 1);
+        const pad = n => String(n).padStart(2, '0');
+        document.getElementById('salida').value =
+            `${checkIn.getFullYear()}-${pad(checkIn.getMonth() + 1)}-${pad(checkIn.getDate())}T${pad(checkIn.getHours())}:${pad(checkIn.getMinutes())}`;
+
+        calcularNoches();
+        buscarHabitacionesDisponibles();
     })();
 </script>
 </body>

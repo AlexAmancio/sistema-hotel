@@ -160,10 +160,25 @@ public class RegistrosController {
     }
 
     @GetMapping("/nuevo/")
-    public String nuevo(Model model) {
-        model.addAttribute("registro", new Registro());
+    public String nuevo(
+        @RequestParam(required = false) Integer habitacion,
+        @RequestParam(required = false) String checkIn,
+        Model model
+    ) {
+        Registro registro = new Registro();
+        // Precarga desde el calendario de ocupacion: clic en un dia libre de
+        // una habitacion ya trae la fecha y esa habitacion seleccionadas.
+        if (checkIn != null && !checkIn.isBlank()) {
+            try {
+                registro.setCheckIn(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm").parse(checkIn));
+            } catch (java.text.ParseException ignored) {
+                // Si no se puede parsear, el formulario queda sin fecha precargada.
+            }
+        }
+        model.addAttribute("registro", registro);
         model.addAttribute("listaClientes", clienteService.listar());
         model.addAttribute("listaHabitaciones", habitacionService.listar());
+        model.addAttribute("habitacionPreseleccionada", habitacion);
 
         model.addAttribute("titulo", "Nuevo registro");
         model.addAttribute("txtboton", "Agregar");
