@@ -43,6 +43,7 @@ public class SecurityConfig {
         return httpSecurity
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/fondologin.png", "/LogoSistema.png", "/favicon.png").permitAll();
+                auth.requestMatchers("/carrusel-login/**").permitAll();
                 auth.requestMatchers("/login**").permitAll();
                 auth.requestMatchers("/login/**").permitAll();
                 // Cualquier cuenta autenticada puede ver la lista de usuarios,

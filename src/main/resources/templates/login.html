@@ -36,41 +36,128 @@
       .foto-lateral {
         flex: 1 1 50%;
         position: relative;
-        background-image: url('./fondologin.png');
-        background-size: cover;
-        background-position: left top;
+        overflow: hidden;
       }
-      .clima-boton {
+      .foto-lateral::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.5) 100%);
+        pointer-events: none;
+      }
+      .carrusel-slide {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 1.4s ease;
+      }
+      .carrusel-slide.activa {
+        opacity: 1;
+      }
+      .clima-widget {
         position: absolute;
         left: 24px;
         bottom: 24px;
         display: flex;
+        flex-direction: column-reverse;
+        gap: 10px;
+        max-width: 230px;
+      }
+      .clima-chip {
+        display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        border-radius: 999px;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 16px;
         border: none;
         background: rgba(20, 15, 12, 0.55);
-        backdrop-filter: blur(6px);
+        backdrop-filter: blur(8px);
+        color: #FFF;
+        cursor: pointer;
+        text-align: left;
+      }
+      .clima-chip:hover {
+        background: rgba(20, 15, 12, 0.7);
+      }
+      .clima-icono {
+        display: flex;
+        flex-shrink: 0;
+      }
+      .clima-chip-texto {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.15;
+      }
+      .clima-temp {
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .clima-ciudad {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.75);
+      }
+      .clima-chevron {
+        margin-left: auto;
+        flex-shrink: 0;
+        transition: transform .2s ease;
+      }
+      .clima-widget.abierto .clima-chevron {
+        transform: rotate(180deg);
+      }
+      .clima-detalle {
+        max-height: 0;
+        min-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        width: 230px;
+        border-radius: 14px;
+        background: rgba(20, 15, 12, 0.68);
+        backdrop-filter: blur(8px);
+        transition: max-height .3s ease, opacity .2s ease;
+      }
+      .clima-widget.abierto .clima-detalle {
+        max-height: 180px;
+        opacity: 1;
+      }
+      .clima-escena {
+        position: relative;
+        height: 86px;
+        border-radius: 14px 14px 0 0;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, #7C8A99 0%, #AEB8C2 100%);
+      }
+      .clima-escena-icono {
+        position: relative;
+        z-index: 1;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+      }
+      .clima-montanas {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 60%;
+      }
+      .clima-texto {
+        padding: 10px 16px 12px;
+      }
+      .clima-descripcion {
         color: #FFF;
         font-size: 14px;
         font-weight: 600;
-        cursor: pointer;
       }
-      .clima-boton:hover {
-        background: rgba(20, 15, 12, 0.72);
-      }
-      .clima-info {
-        display: none;
-        position: absolute;
-        left: 24px;
-        bottom: 68px;
-        padding: 10px 16px;
-        border-radius: 12px;
-        background: rgba(20, 15, 12, 0.72);
-        backdrop-filter: blur(6px);
-        color: #FFF;
-        font-size: 14px;
+      .clima-actualizado {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 12px;
+        margin-top: 4px;
       }
       .panel-formulario {
         flex: 1 1 50%;
@@ -236,13 +323,34 @@
 
     <section class="pagina-login">
       <div class="foto-lateral">
-        <div class="clima-info" id="climaInfo"></div>
-        <button type="button" class="clima-boton" id="climaBoton">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-          </svg>
-          Clima en Oxapampa
-        </button>
+        <div class="carrusel-slide activa" th:style="'background-image:url(' + @{/carrusel-login/foto-1.jpg} + ')'"></div>
+        <div class="carrusel-slide" th:style="'background-image:url(' + @{/carrusel-login/foto-4.jpg} + ')'"></div>
+        <div class="carrusel-slide" th:style="'background-image:url(' + @{/carrusel-login/foto-2.jpg} + ')'"></div>
+        <div class="carrusel-slide" th:style="'background-image:url(' + @{/carrusel-login/foto-3.jpg} + ')'"></div>
+        <div class="clima-widget" id="climaWidget">
+          <button type="button" class="clima-chip" id="climaChip">
+            <span class="clima-icono" id="climaIcono"></span>
+            <span class="clima-chip-texto">
+              <span class="clima-temp" id="climaTemp">Oxapampa</span>
+              <span class="clima-ciudad">Clima ahora</span>
+            </span>
+            <svg class="clima-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="clima-detalle" id="climaDetalle">
+            <div class="clima-escena" id="climaEscena">
+              <div class="clima-escena-icono" id="climaEscenaIcono"></div>
+              <svg class="clima-montanas" viewBox="0 0 300 50" preserveAspectRatio="none">
+                <path d="M0 50 L35 18 L65 40 L100 8 L140 36 L175 14 L210 38 L245 20 L280 44 L300 32 L300 50 Z" fill="rgba(10,10,10,0.4)"></path>
+              </svg>
+            </div>
+            <div class="clima-texto">
+              <p class="clima-descripcion" id="climaDescripcion">Consultando...</p>
+              <p class="clima-actualizado" id="climaActualizado"></p>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="panel-formulario">
         <div class="container">
@@ -313,32 +421,94 @@
 
 
     <script>
-      // Clima de Oxapampa (donde está ubicado el hotel), vía Open-Meteo (gratis, sin API key).
-      const climaBoton = document.querySelector("#climaBoton");
-      const climaInfo = document.querySelector("#climaInfo");
-      let climaYaCargado = false;
-      climaBoton.addEventListener("click", async () => {
-        const estaVisible = climaInfo.style.display === "block";
-        if (estaVisible) {
-          climaInfo.style.display = "none";
-          return;
-        }
-        climaInfo.style.display = "block";
-        if (climaYaCargado) return;
+      // Carrusel de fotos reales de Oxapampa / Tunki Lodge, con transición automática.
+      const carruselSlides = document.querySelectorAll(".carrusel-slide");
+      let carruselActual = 0;
+      setInterval(() => {
+        carruselSlides[carruselActual].classList.remove("activa");
+        carruselActual = (carruselActual + 1) % carruselSlides.length;
+        carruselSlides[carruselActual].classList.add("activa");
+      }, 5000);
 
-        climaInfo.textContent = "Consultando...";
+      // Clima de Oxapampa (donde está ubicado el hotel), vía Open-Meteo (gratis, sin API key).
+      const CLIMA_COLORES = {
+        sol: "#FFC857",
+        nublado: "#D8DEE6",
+        niebla: "#D8DEE6",
+        lluvia: "#6CB4EE",
+        nieve: "#D8DEE6",
+        tormenta: "#F4A259",
+      };
+
+      const CLIMA_FONDOS = {
+        sol: "linear-gradient(180deg, #6EC6FF 0%, #FFD56B 65%, #D98A3D 100%)",
+        nublado: "linear-gradient(180deg, #7C8A99 0%, #AEB8C2 100%)",
+        niebla: "linear-gradient(180deg, #9AA5AD 0%, #C9D1D6 100%)",
+        lluvia: "linear-gradient(180deg, #3B4A5A 0%, #5C7083 100%)",
+        nieve: "linear-gradient(180deg, #CBD8E3 0%, #EAF2F8 100%)",
+        tormenta: "linear-gradient(180deg, #232B36 0%, #4A4F5C 100%)",
+      };
+
+      function iconoSvg(tipo, tamano) {
+        const color = CLIMA_COLORES[tipo] || "#FFF";
+        const atributos = 'width="' + tamano + '" height="' + tamano + '" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+        const formas = {
+          sol: '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>',
+          nublado: '<path d="M17.5 19H8a5 5 0 1 1 1.9-9.63A6 6 0 0 1 21 10.5a4.5 4.5 0 0 1-3.5 8.5z"></path>',
+          niebla: '<path d="M5 5h14M3 9h18M5 13h14M3 17h18M5 21h14"></path>',
+          lluvia: '<path d="M16 13H8a5 5 0 1 1 1.9-9.63A6 6 0 0 1 20 10.5a4.5 4.5 0 0 1-4 2.5z"></path><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"></path>',
+          nieve: '<path d="M16 13H8a5 5 0 1 1 1.9-9.63A6 6 0 0 1 20 10.5a4.5 4.5 0 0 1-4 2.5z"></path><path d="M8 19h.01M12 19h.01M16 19h.01M8 22h.01M12 22h.01M16 22h.01"></path>',
+          tormenta: '<path d="M16 13H8a5 5 0 1 1 1.9-9.63A6 6 0 0 1 20 10.5a4.5 4.5 0 0 1-4 2.5z"></path><polyline points="13 15 10 20 14 20 11 24"></polyline>',
+        };
+        return '<svg ' + atributos + '>' + (formas[tipo] || formas.nublado) + '</svg>';
+      }
+
+      function interpretarClima(codigo) {
+        if (codigo === 0) return { icono: "sol", descripcion: "Despejado" };
+        if (codigo <= 2) return { icono: "sol", descripcion: "Parcialmente nublado" };
+        if (codigo === 3) return { icono: "nublado", descripcion: "Nublado" };
+        if (codigo === 45 || codigo === 48) return { icono: "niebla", descripcion: "Neblina" };
+        if (codigo >= 51 && codigo <= 67) return { icono: "lluvia", descripcion: "Lluvia ligera" };
+        if (codigo >= 71 && codigo <= 77) return { icono: "nieve", descripcion: "Nieve" };
+        if (codigo >= 80 && codigo <= 82) return { icono: "lluvia", descripcion: "Chubascos" };
+        if (codigo >= 95) return { icono: "tormenta", descripcion: "Tormenta eléctrica" };
+        return { icono: "nublado", descripcion: "Variable" };
+      }
+
+      const climaWidget = document.querySelector("#climaWidget");
+      const climaChip = document.querySelector("#climaChip");
+      const climaIcono = document.querySelector("#climaIcono");
+      const climaTemp = document.querySelector("#climaTemp");
+      const climaEscena = document.querySelector("#climaEscena");
+      const climaEscenaIcono = document.querySelector("#climaEscenaIcono");
+      const climaDescripcion = document.querySelector("#climaDescripcion");
+      const climaActualizado = document.querySelector("#climaActualizado");
+
+      climaChip.addEventListener("click", () => {
+        climaWidget.classList.toggle("abierto");
+      });
+
+      (async () => {
         try {
           const respuesta = await fetch(
             "https://api.open-meteo.com/v1/forecast?latitude=-10.5767&longitude=-75.4012&current_weather=true"
           );
           const datos = await respuesta.json();
           const temperatura = Math.round(datos.current_weather.temperature);
-          climaInfo.textContent = "Oxapampa: " + temperatura + "°C";
-          climaYaCargado = true;
+          const { icono, descripcion } = interpretarClima(datos.current_weather.weathercode);
+          const hora = new Date(datos.current_weather.time).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
+
+          climaIcono.innerHTML = iconoSvg(icono, 22);
+          climaEscenaIcono.innerHTML = iconoSvg(icono, 38);
+          climaEscena.style.background = CLIMA_FONDOS[icono];
+          climaTemp.textContent = "Oxapampa, " + temperatura + "°C";
+          climaDescripcion.textContent = descripcion;
+          climaActualizado.textContent = "Actualizado a las " + hora;
         } catch (error) {
-          climaInfo.textContent = "No se pudo consultar el clima";
+          climaTemp.textContent = "Oxapampa";
+          climaDescripcion.textContent = "No se pudo consultar el clima";
         }
-      });
+      })();
 
       const submitButton = document.querySelector("#btnSubmitLogin");
 
