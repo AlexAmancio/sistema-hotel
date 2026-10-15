@@ -8,8 +8,110 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    name: Ejecutar pruebas Spring Boot
+  unitarias:
+    name: Pruebas unitarias puras
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: maven
+
+      - name: Dar permisos al wrapper de Maven
+        run: chmod +x mvnw
+
+      - name: Ejecutar pruebas
+        shell: bash
+        run: |
+          set +e
+          ./mvnw test -Dtest=TextoUtilsTest,RegistroTest,UsuarioServiceDetailsTest | tee test-output.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          exit $EXIT_CODE
+
+      - name: Resumen de pruebas
+        if: always()
+        shell: bash
+        run: |
+          SUMMARY_LINE=$(grep -E "^\[INFO\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" test-output.txt | tail -1)
+          RUN=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Tests run: )\d+' || true)
+          FAILURES=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Failures: )\d+' || true)
+          ERRORS=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Errors: )\d+' || true)
+          SKIPPED=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Skipped: )\d+' || true)
+          RUN=${RUN:-0}; FAILURES=${FAILURES:-0}; ERRORS=${ERRORS:-0}; SKIPPED=${SKIPPED:-0}
+          PASSED=$((RUN - FAILURES - ERRORS - SKIPPED))
+          {
+            echo "### Pruebas unitarias puras"
+            echo ""
+            echo '```'
+            echo "Pruebas: $PASSED passed, $FAILURES failed, $ERRORS errors, $SKIPPED skipped (de $RUN totales)."
+            echo '```'
+            if [ "$FAILURES" != "0" ] || [ "$ERRORS" != "0" ]; then
+              echo ""
+              echo "**Pruebas fallidas:**"
+              grep -E "<<< FAILURE|<<< ERROR" test-output.txt || echo "(no se pudo listar el detalle, revisa el log completo)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  unitarias-mockito:
+    name: Pruebas unitarias con Mockito
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: maven
+
+      - name: Dar permisos al wrapper de Maven
+        run: chmod +x mvnw
+
+      - name: Ejecutar pruebas
+        shell: bash
+        run: |
+          set +e
+          ./mvnw test -Dtest=RegistroServiceTest,LoginAttemptServiceTest,CategoriaServiceTest,ClienteServiceTest,ComprobanteServiceTest,ConsumoServiceTest,HabitacionServiceTest,ReservaServiceTest,UsuarioServiceTest | tee test-output.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          exit $EXIT_CODE
+
+      - name: Resumen de pruebas
+        if: always()
+        shell: bash
+        run: |
+          SUMMARY_LINE=$(grep -E "^\[INFO\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" test-output.txt | tail -1)
+          RUN=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Tests run: )\d+' || true)
+          FAILURES=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Failures: )\d+' || true)
+          ERRORS=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Errors: )\d+' || true)
+          SKIPPED=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Skipped: )\d+' || true)
+          RUN=${RUN:-0}; FAILURES=${FAILURES:-0}; ERRORS=${ERRORS:-0}; SKIPPED=${SKIPPED:-0}
+          PASSED=$((RUN - FAILURES - ERRORS - SKIPPED))
+          {
+            echo "### Pruebas unitarias con Mockito"
+            echo ""
+            echo '```'
+            echo "Pruebas: $PASSED passed, $FAILURES failed, $ERRORS errors, $SKIPPED skipped (de $RUN totales)."
+            echo '```'
+            if [ "$FAILURES" != "0" ] || [ "$ERRORS" != "0" ]; then
+              echo ""
+              echo "**Pruebas fallidas:**"
+              grep -E "<<< FAILURE|<<< ERROR" test-output.txt || echo "(no se pudo listar el detalle, revisa el log completo)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  integracion:
+    name: Pruebas de integración (controlador + contexto Spring)
     runs-on: ubuntu-latest
 
     services:
@@ -41,14 +143,12 @@ jobs:
         run: chmod +x mvnw
 
       - name: Ejecutar pruebas
-        id: tests
         shell: bash
         run: |
           set +e
-          ./mvnw test | tee test-output.txt
+          ./mvnw test -Dtest=ConsumoControllerTest,SistemahotelApplicationTests | tee test-output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
-          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
           exit $EXIT_CODE
 
       - name: Resumen de pruebas
@@ -56,19 +156,14 @@ jobs:
         shell: bash
         run: |
           SUMMARY_LINE=$(grep -E "^\[INFO\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" test-output.txt | tail -1)
-
           RUN=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Tests run: )\d+' || true)
           FAILURES=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Failures: )\d+' || true)
           ERRORS=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Errors: )\d+' || true)
           SKIPPED=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Skipped: )\d+' || true)
-          RUN=${RUN:-0}
-          FAILURES=${FAILURES:-0}
-          ERRORS=${ERRORS:-0}
-          SKIPPED=${SKIPPED:-0}
+          RUN=${RUN:-0}; FAILURES=${FAILURES:-0}; ERRORS=${ERRORS:-0}; SKIPPED=${SKIPPED:-0}
           PASSED=$((RUN - FAILURES - ERRORS - SKIPPED))
-
           {
-            echo "### Resultado de las pruebas"
+            echo "### Pruebas de integración"
             echo ""
             echo '```'
             echo "Pruebas: $PASSED passed, $FAILURES failed, $ERRORS errors, $SKIPPED skipped (de $RUN totales)."
