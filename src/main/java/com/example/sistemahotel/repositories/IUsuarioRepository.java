@@ -9,4 +9,5 @@ import com.example.sistemahotel.modelos.Usuario;
 @Repository
 public interface IUsuarioRepository extends CrudRepository<Usuario, Integer> {
     public Optional<Usuario> findByUsername(String username);
+    public Optional<Usuario> findByCorreo(String correo);
 }

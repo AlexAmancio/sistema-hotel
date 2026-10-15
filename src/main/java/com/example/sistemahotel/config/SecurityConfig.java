@@ -44,6 +44,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/fondologin.png", "/LogoSistema.png", "/favicon.png").permitAll();
                 auth.requestMatchers("/login**").permitAll();
+                auth.requestMatchers("/login/**").permitAll();
                 // Cualquier cuenta autenticada puede ver la lista de usuarios,
                 // pero solo un administrador puede crear, editar o eliminar
                 // (evita que el staff se autopromueva a admin).

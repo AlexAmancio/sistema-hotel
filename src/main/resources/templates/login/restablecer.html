@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Restablecer contraseña</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&display=swap');
+      * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Outfit"; }
+      .fondo {
+        background-image:
+          linear-gradient(115deg, rgba(20, 8, 8, 0.35) 0%, rgba(20, 8, 8, 0.05) 45%, rgba(20, 8, 8, 0.35) 100%),
+          url('/fondologin.png');
+        background-size: cover;
+        background-position: center;
+        width: 100%;
+        height: 100vh;
+        background-repeat: no-repeat;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .container {
+        width: 460px;
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 24px 60px rgba(15, 20, 15, 0.35), 0 2px 8px rgba(15, 20, 15, 0.12);
+        backdrop-filter: blur(16px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 44px 48px 40px;
+        position: relative;
+        overflow: hidden;
+      }
+      .container::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #7A1618, #0EA968 55%, #C89A2E);
+      }
+      .login-logo {
+        display: block;
+        max-width: 220px;
+        height: 68px;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(122, 22, 24, 0.3);
+        margin: 0 auto 18px;
+      }
+      .title { color: #14181F; font-size: 26px; font-weight: 700; text-align: center; }
+      form { width: 100%; margin-top: 28px; }
+      label { font-size: 14px; font-weight: 600; color: #3A4048; text-transform: uppercase; letter-spacing: 0.03em; }
+      input {
+        font-size: 16px;
+        border-radius: 10px;
+        padding: 12px 14px;
+        background: #F0F1F3;
+        border: 1.5px solid transparent;
+        width: 100%;
+        margin-top: 8px;
+        outline: none;
+      }
+      input:focus { background: #ffffff; border-color: #0EA968; }
+      button[type="submit"] {
+        width: 100%;
+        margin-top: 18px;
+        padding: 15px 50px;
+        border-radius: 10px;
+        background: #0EA968;
+        border: none;
+        color: #FFF;
+        font-size: 17px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .volver { text-align: center; margin-top: 24px; }
+      .volver a { color: #7A1618; font-weight: 600; text-decoration: none; }
+      .exito { text-align: center; margin-top: 10px; color: #0C8F58; font-weight: 600; }
+      .invalido { text-align: center; margin-top: 10px; color: #C0392B; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <section class="fondo">
+      <div class="container">
+        <img class="login-logo" th:src="@{/LogoSistema.png}" alt="Hoteles Tunki" />
+        <h5 class="title">Restablecer contraseña</h5>
+
+        <p th:if="${estado == 'exito'}" class="exito">
+          Tu contraseña se actualizó. Ya podés iniciar sesión con la nueva.
+        </p>
+
+        <p th:if="${estado == 'invalido'}" class="invalido">
+          Este enlace ya no es válido — pedí uno nuevo.
+        </p>
+
+        <form th:if="${estado == 'formulario'}" th:action="@{/login/restablecer}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <input type="hidden" name="token" th:value="${token}" />
+          <label for="nuevaContrasena">Contraseña nueva</label>
+          <input type="password" id="nuevaContrasena" name="nuevaContrasena" minlength="5" required autofocus />
+          <button type="submit">Guardar contraseña</button>
+        </form>
+
+        <p class="volver">
+          <a th:if="${estado == 'invalido'}" th:href="@{/login/olvide-contrasena}">Pedir un enlace nuevo</a>
+          <a th:unless="${estado == 'invalido'}" th:href="@{/login}">Volver a iniciar sesión</a>
+        </p>
+      </div>
+    </section>
+  </body>
+</html>

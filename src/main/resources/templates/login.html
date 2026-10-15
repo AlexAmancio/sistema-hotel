@@ -220,6 +220,7 @@
     <section class="fondo" >
       <div class="container">
         <form th:action="@{/login}" method="post" id="loginForm">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
           <img class="login-logo" th:src="@{/LogoSistema.png}" alt="Hoteles Tunki" />
           <p class="brand">Estadía</p>
           <h5
@@ -264,9 +265,12 @@
               </button>
             </div>
 
-            <div class="campo campo-recuerdame">
-              <input type="checkbox" name="remember-me" id="remember-me" />
-              <label for="remember-me">Recuérdame</label>
+            <div class="campo campo-recuerdame" style="justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="remember-me" id="remember-me" />
+                <label for="remember-me">Recuérdame</label>
+              </div>
+              <a th:href="@{/login/olvide-contrasena}" style="font-size: 14px; color: #7A1618; font-weight: 600; text-decoration: none;">¿Olvidaste tu contraseña?</a>
             </div>
 
             <div class="campo">
