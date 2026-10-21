@@ -1,7 +1,6 @@
 package com.example.sistemahotel.controllers;
 
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,8 +86,6 @@ public class ClientesController {
         Model model,
         RedirectAttributes redirectAttributes
     ) {
-        cliente.setFechaNacimiento(new Date());
-
         // Nombres, apellidos, ciudad y país se guardan con la primera letra de
         // cada palabra en mayúscula, sin importar cómo los haya tipeado el
         // recepcionista (o cómo vengan de la API de DNI, que devuelve todo en
@@ -101,7 +98,7 @@ public class ClientesController {
         if(cliente.getId()<1){
             Optional<Cliente> clienteExistente = service.consultarPorIdentificacion(cliente.getIdentificacion());
             if (clienteExistente.isPresent()) {
-                redirectAttributes.addFlashAttribute("error", "No se pudo registrar el cliente. DNI repetido.");
+                redirectAttributes.addFlashAttribute("error", "No se pudo registrar el cliente. Ya existe un cliente con esa identificación.");
                 return "redirect:/clientes/nuevo/";
             }
             service.guardar(cliente);

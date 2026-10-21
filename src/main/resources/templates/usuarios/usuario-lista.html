@@ -26,7 +26,10 @@
       </tr>
       <tr th:each="usuario : ${listaUsuarios}" class="table-item">
         <td th:text="${usuario.username}"></td>
-        <td style="padding: 1.5em 0px;" th:text="${usuario.nombres + ' ' + usuario.apellidos}"></td>
+        <td class="usuario-nombre-celda">
+          <img class="user-avatar-img" th:src="${'https://api.dicebear.com/9.x/avataaars/svg?seed=' + usuario.username}" alt="" />
+          <span th:text="${usuario.nombres + ' ' + usuario.apellidos}"></span>
+        </td>
         <td th:text="${usuario.correo}"></td>
         <td th:if="${usuario.esAdmin}">Administrador</td>
         <td th:unless="${usuario.esAdmin}">Usuario Normal</td>

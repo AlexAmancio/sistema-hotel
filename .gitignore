@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Respaldos locales de base de datos (contienen datos personales reales, nunca al repo) ###
+db/

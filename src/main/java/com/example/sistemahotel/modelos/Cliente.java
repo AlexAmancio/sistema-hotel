@@ -2,7 +2,11 @@ package com.example.sistemahotel.modelos;
 
 import java.util.Date;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,7 +24,13 @@ public class Cliente {
     private String apellidos;
     private String pais;
     private String ciudad;
+
+    @Enumerated(EnumType.STRING)
+    private TipoDocumento tipoDocumento = TipoDocumento.DNI;
+
     private String identificacion;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date fechaNacimiento;
     private String telefono;
     private String correo;

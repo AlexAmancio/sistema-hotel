@@ -8,16 +8,57 @@
   <div class="content">
     <div th:replace="~{button-fragment(url=@{/habitaciones/nuevo/}, texto='Agregar habitación')}"></div>
 
-    <div class="table-wrapper">
-    <table>
-      <tr class="table-header">
-        <th>Descripción</th>
-        <th>Tipo</th>
-        <th>Aforo Max.</th>
-        <th>Estado</th>
-        <th></th>
-      </tr>
-      <tr th:each="habitacion : ${listaHabitaciones}" class="table-item">
+    <div class="resumen-estados">
+      <div class="resumen-chip resumen-chip-disponible">
+        <span class="resumen-numero" th:text="${totalDisponibles}"></span>
+        <span class="resumen-etiqueta">Disponibles</span>
+      </div>
+      <div class="resumen-chip resumen-chip-ocupada">
+        <span class="resumen-numero" th:text="${totalOcupadas}"></span>
+        <span class="resumen-etiqueta">Ocupadas</span>
+      </div>
+      <div class="resumen-chip resumen-chip-limpieza">
+        <span class="resumen-numero" th:text="${totalLimpieza}"></span>
+        <span class="resumen-etiqueta">En limpieza</span>
+      </div>
+      <div class="resumen-chip resumen-chip-mantenimiento">
+        <span class="resumen-numero" th:text="${totalMantenimiento}"></span>
+        <span class="resumen-etiqueta">Mantenimiento</span>
+      </div>
+    </div>
+
+    <div class="filtro-bar">
+      <label for="filtro-estado-habitacion">Estado:</label>
+      <select id="filtro-estado-habitacion">
+        <option value="">Todos</option>
+        <option value="DISPONIBLE">Disponible</option>
+        <option value="OCUPADA">Ocupada</option>
+        <option value="LIMPIEZA">En limpieza</option>
+        <option value="MANTENIMIENTO">Mantenimiento</option>
+      </select>
+      <label for="filtro-categoria-habitacion">Categoría:</label>
+      <select id="filtro-categoria-habitacion">
+        <option value="">Todas</option>
+        <option th:each="categoria : ${listaCategorias}" th:value="${categoria.id}" th:text="${categoria.nombre}"></option>
+      </select>
+      <span id="filtro-sin-resultados" class="filtro-sin-resultados hidden">No hay habitaciones que coincidan con el filtro.</span>
+    </div>
+
+    <div th:each="grupoPiso : ${habitacionesPorPiso}" class="piso-grupo"
+         th:data-piso="${grupoPiso.key}">
+      <h2 class="piso-titulo" th:text="${'Piso ' + grupoPiso.key}"></h2>
+      <div class="table-wrapper">
+      <table>
+        <tr class="table-header">
+          <th>Descripción</th>
+          <th>Tipo</th>
+          <th>Aforo Max.</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+        <tr th:each="habitacion : ${grupoPiso.value}" class="table-item"
+            th:data-estado="${habitacion.estado.name()}"
+            th:data-categoria="${habitacion.categoria.id}">
         <td class="table-item-header">
           <a th:href="${'/habitaciones/editar/' + habitacion.id + '/'}">
             <img th:src="${habitacion.urlImagen}" alt="alt" width="80" height="60" />
@@ -82,14 +123,50 @@
             </div>
           </div>
         </td>
-      </tr>
-    </table>
+        </tr>
+      </table>
+      </div>
     </div>
   </div>
   <div th:replace="~{confirm-modal-fragment :: confirmModal}"></div>
   <script th:src="@{/js/script.js}"></script>
   <script th:src="@{/js/script-listas.js}"></script>
   <script th:src="@{/js/script-confirm-delete.js}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const filtroEstado = document.getElementById("filtro-estado-habitacion");
+      const filtroCategoria = document.getElementById("filtro-categoria-habitacion");
+      const avisoSinResultados = document.getElementById("filtro-sin-resultados");
+      const grupos = document.querySelectorAll(".piso-grupo");
+
+      function aplicarFiltro() {
+        const estado = filtroEstado.value;
+        const categoria = filtroCategoria.value;
+        let totalVisible = 0;
+
+        grupos.forEach(function (grupo) {
+          const filas = grupo.querySelectorAll(".table-item");
+          let visiblesEnGrupo = 0;
+
+          filas.forEach(function (fila) {
+            const coincideEstado = !estado || fila.dataset.estado === estado;
+            const coincideCategoria = !categoria || fila.dataset.categoria === categoria;
+            const visible = coincideEstado && coincideCategoria;
+            fila.classList.toggle("hidden", !visible);
+            if (visible) visiblesEnGrupo++;
+          });
+
+          grupo.classList.toggle("hidden", visiblesEnGrupo === 0);
+          totalVisible += visiblesEnGrupo;
+        });
+
+        avisoSinResultados.classList.toggle("hidden", totalVisible > 0);
+      }
+
+      filtroEstado.addEventListener("change", aplicarFiltro);
+      filtroCategoria.addEventListener("change", aplicarFiltro);
+    });
+  </script>
 </body>
 
 </html>

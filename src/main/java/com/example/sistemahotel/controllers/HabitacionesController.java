@@ -40,7 +40,23 @@ public class HabitacionesController {
     
     @GetMapping("/")
     public String listar(Model model) {
-        model.addAttribute("listaHabitaciones", service.listar());
+        java.util.List<Habitacion> todas = service.listar();
+
+        java.util.Map<Integer, java.util.List<Habitacion>> habitacionesPorPiso = new java.util.TreeMap<>();
+        todas.stream()
+            .sorted(java.util.Comparator.comparing(Habitacion::getNumero))
+            .forEach(h -> habitacionesPorPiso
+                .computeIfAbsent(h.getPiso(), k -> new java.util.ArrayList<>())
+                .add(h));
+        model.addAttribute("habitacionesPorPiso", habitacionesPorPiso);
+        model.addAttribute("listaCategorias", categoriaService.listar());
+
+        // Resumen rápido de disponibilidad para que recepción vea el estado
+        // general del hotel sin tener que contar manualmente.
+        model.addAttribute("totalDisponibles", todas.stream().filter(h -> h.getEstado() == EstadoHabitacion.DISPONIBLE).count());
+        model.addAttribute("totalOcupadas", todas.stream().filter(h -> h.getEstado() == EstadoHabitacion.OCUPADA).count());
+        model.addAttribute("totalLimpieza", todas.stream().filter(h -> h.getEstado() == EstadoHabitacion.LIMPIEZA).count());
+        model.addAttribute("totalMantenimiento", todas.stream().filter(h -> h.getEstado() == EstadoHabitacion.MANTENIMIENTO).count());
 
         return carpeta + "habitacion-lista";
     }
