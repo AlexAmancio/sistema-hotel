@@ -185,6 +185,7 @@ public class RegistrosController {
         model.addAttribute("listaClientes", clienteService.listar());
         model.addAttribute("listaHabitaciones", habitacionService.listar());
         model.addAttribute("habitacionPreseleccionada", habitacion);
+        model.addAttribute("clientesConReservaActiva", clientesConReservaActiva(0));
 
         model.addAttribute("titulo", "Nuevo registro");
         model.addAttribute("txtboton", "Agregar");
@@ -192,11 +193,40 @@ public class RegistrosController {
         return carpeta + "registro-form";
     }
 
+    // clienteId -> número de habitación de su reserva ACTIVA, si tiene una.
+    // Se usa en el formulario para avisar antes de crearle una segunda
+    // reserva activa por error (p. ej. buscarlo de nuevo sin darse cuenta).
+    private Map<Integer, String> clientesConReservaActiva(int excluirRegistroId) {
+        return service.listar().stream()
+            .filter(r -> r.getId() != excluirRegistroId
+                && r.getEstado() == EstadoRegistro.ACTIVA
+                && r.getCliente() != null
+                && r.getHabitacion() != null)
+            .collect(Collectors.toMap(
+                r -> r.getCliente().getId(),
+                r -> r.getHabitacion().getNumero(),
+                (primera, segunda) -> primera
+            ));
+    }
+
     @PostMapping("/guardar/")
     public String guardar(Registro registro, Model model, RedirectAttributes redirectAttributes) {
         String redirectError = registro.getId() > 0
             ? "redirect:/editar/" + registro.getId() + "/"
             : "redirect:/nuevo/";
+
+        // El formulario ya valida esto en el navegador, pero esa validación
+        // puede fallar o saltarse (JS deshabilitado, bug del lado cliente):
+        // sin este chequeo acá, un POST sin cliente/habitación igual se
+        // guardaba.
+        if (registro.getCliente() == null) {
+            redirectAttributes.addFlashAttribute("error", "Elegí un cliente antes de guardar.");
+            return redirectError;
+        }
+        if (registro.getHabitacion() == null) {
+            redirectAttributes.addFlashAttribute("error", "Elegí una habitación antes de guardar.");
+            return redirectError;
+        }
 
         if (registro.getHabitacion() != null && registro.getNumHuespedes() > registro.getHabitacion().getAforo()) {
             redirectAttributes.addFlashAttribute("error",
@@ -288,6 +318,7 @@ public class RegistrosController {
             model.addAttribute("registro", registro);
             model.addAttribute("listaClientes", clienteService.listar());
             model.addAttribute("listaHabitaciones", habitacionService.listar());
+            model.addAttribute("clientesConReservaActiva", clientesConReservaActiva(id));
             model.addAttribute("titulo", "Editar registro");
             model.addAttribute("txtboton", "Actualizar");
             return carpeta + "registro-form";

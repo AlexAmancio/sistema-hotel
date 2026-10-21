@@ -5,7 +5,7 @@
 <body>
 <div th:replace="~{navegacion :: menu}"></div>
 <div class="content">
-    <form th:action="@{/reservas/guardar/}" method="post">
+    <form id="reserva-form" th:action="@{/reservas/guardar/}" method="post">
         <div class="header-form">
             <h1>Reserva múltiple</h1>
         </div>
@@ -125,7 +125,7 @@
         }
     });
 
-    document.querySelector('form').addEventListener('submit', function (e) {
+    document.getElementById('reserva-form').addEventListener('submit', function (e) {
         if (!clienteIdInput.value) {
             e.preventDefault();
             clienteWarning.classList.remove('hidden');

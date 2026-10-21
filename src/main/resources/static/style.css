@@ -592,7 +592,7 @@ table {
 
 .content-form {
     /* margin: 20px 45px; */
-    width: 700px;
+    width: min(1040px, 100%);
     margin: auto;
 }
 .group-field {
@@ -830,18 +830,9 @@ table {
         margin-top: 4px;
     }
     .noches-rapidas,
-    .habitacion-card,
     .form-seccion-titulo,
     .form-warning-texto {
         margin-left: 0;
-    }
-    .habitacion-card {
-        flex-direction: column;
-        max-width: 100%;
-    }
-    .habitacion-card img {
-        width: 100%;
-        height: 140px;
     }
     .resumen-vivo {
         margin-left: 0;
@@ -966,25 +957,6 @@ table {
 .saldo-pendiente::before { content: "⚠ "; }
 .saldo-cero::before { content: "✓ "; }
 
-#nuevo-cliente-overlay .modal-confirm {
-    width: 420px;
-}
-#nuevo-cliente-overlay .group-field {
-    flex-direction: column;
-    align-items: flex-start;
-    row-gap: 4px;
-    margin-bottom: 14px;
-}
-#nuevo-cliente-overlay .group-field label {
-    width: auto;
-    font-size: 14px;
-}
-#nuevo-cliente-overlay .group-field input,
-#nuevo-cliente-overlay .group-field select {
-    width: 100%;
-    font-size: 15px;
-}
-
 .form-warning-texto {
     color: var(--color-rojo);
     margin: -8px 0 12px 250px;
@@ -1029,45 +1001,410 @@ table {
     padding-top: 0;
     border-top: none;
 }
-.habitacion-card.hidden {
-    display: none;
+
+/* ======================= FORMULARIO DE REGISTRO: llegada rápida ===========================*/
+.btn-llegada-rapida {
+    display: inline-flex;
+    align-items: center;
+    column-gap: 6px;
+    margin-top: 16px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: none;
+    background: var(--accent-gold);
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .15s ease, transform .15s ease;
 }
-.habitacion-card {
+.btn-llegada-rapida:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* ======================= FORMULARIO DE REGISTRO: stepper ===========================*/
+.form-stepper {
     display: flex;
-    column-gap: 16px;
-    margin: -4px 0 16px 250px;
-    padding: 14px;
+    align-items: center;
+    margin-bottom: 28px;
+}
+.form-step {
+    display: flex;
+    align-items: center;
+    column-gap: 8px;
+    color: var(--color-plomo-oscuro);
+    font-size: 13px;
+    font-weight: 600;
+}
+.form-step:not(:last-child)::after {
+    content: "";
+    width: 40px;
+    height: 2px;
+    background: var(--border-color);
+    margin: 0 12px;
+}
+.form-step-circulo {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-input);
+    color: var(--color-plomo-oscuro);
+    font-size: 13px;
+    flex-shrink: 0;
+    transition: background-color .15s ease, color .15s ease;
+}
+.form-step.completado {
+    color: var(--primary-dark);
+}
+.form-step.completado .form-step-circulo {
+    background: var(--primary);
+    color: white;
+}
+
+/* ======================= FORMULARIO DE REGISTRO: layout de dos columnas ===========================*/
+.form-layout {
+    display: flex;
+    column-gap: 32px;
+    align-items: flex-start;
+}
+.form-main {
+    flex: 1;
+    min-width: 0;
+}
+.form-summary-sticky {
+    width: 300px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 14px;
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
-    max-width: 480px;
+    padding: 20px;
 }
-.habitacion-card img {
-    width: 100px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    flex-shrink: 0;
-    background-color: var(--bg-input);
+.form-summary-titulo {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--primary-dark);
 }
-.habitacion-card-info {
+.resumen-bloque {
     display: flex;
     flex-direction: column;
     row-gap: 4px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
 }
-.habitacion-card-info h4 {
-    font-size: 15px;
+.resumen-bloque:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.resumen-bloque-label {
+    font-size: 11px;
     font-weight: 700;
-}
-.habitacion-card-info p {
-    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     color: var(--color-plomo-oscuro);
 }
-.habitacion-card-precio {
+.resumen-placeholder {
+    color: var(--color-plomo-oscuro);
+    font-style: italic;
+}
+.resumen-doble-linea {
+    display: flex;
+    flex-direction: column;
+    row-gap: 2px;
+}
+#resumen-habitacion {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+}
+#resumen-habitacion img {
+    width: 48px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+    background-color: var(--bg-input);
+    flex-shrink: 0;
+}
+#form-summary-sticky .resumen-vivo {
+    margin: 0;
+}
+
+/* El layout de dos columnas necesita bastante más espacio que el resto de
+   la app para verse bien (sidebar fijo de 328px + panel de resumen de
+   300px). Se apila antes que el breakpoint general de 900px: si no, entre
+   900 y ~1260px quedaría aplastado. */
+@media (max-width: 1260px) {
+    .content-form {
+        max-width: 700px;
+    }
+    .form-layout {
+        flex-direction: column;
+    }
+    .form-summary-sticky {
+        position: static;
+        width: 100%;
+    }
+}
+
+/* ======================= FORMULARIO DE REGISTRO: selector visual de habitación ===========================*/
+.selector-label {
     font-size: 14px;
+    color: var(--color-plomo-oscuro);
+    margin: 4px 0 8px 0;
+}
+.selector-label.hidden {
+    display: none;
+}
+.categoria-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 18px 0;
+}
+.categoria-chips.hidden {
+    display: none;
+}
+.categoria-chip {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+    max-width: 100%;
+    padding: 8px 16px 8px 8px;
+    border-radius: 10px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-surface);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color .15s ease, background-color .15s ease;
+}
+.categoria-chip img {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background-color: var(--bg-input);
+}
+.categoria-chip-textos {
+    display: flex;
+    flex-direction: column;
+    row-gap: 2px;
+}
+.categoria-chip-nombre {
     font-weight: 700;
-    color: var(--primary-dark);
+    font-size: 14px;
+}
+.categoria-chip-precio {
+    font-size: 12px;
+    color: var(--color-plomo-oscuro);
+    overflow-wrap: break-word;
+}
+.categoria-chip-disponibilidad {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--estado-disponible);
+}
+.categoria-chip-disponibilidad.pocas {
+    color: var(--color-rojo);
+}
+.categoria-chip-badge {
+    display: inline-block;
+    width: fit-content;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: white;
+    background: var(--accent-gold);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.categoria-chip:hover {
+    border-color: var(--primary);
+}
+.categoria-chip.activo {
+    border-color: var(--primary);
+    background: var(--bg-hover);
+}
+.habitacion-filtro-wrap {
+    margin: 0 0 10px 0;
+}
+.habitacion-filtro-wrap.hidden {
+    display: none;
+}
+#habitacion-filtro {
+    width: 100%;
+    max-width: 320px;
+    font-size: 14px;
+    border-radius: 6px;
+    padding: 9px 12px;
+    background: var(--bg-input);
+    color: var(--text-color);
+    border-style: none;
+}
+.habitacion-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0 0 18px 0;
+}
+.habitacion-cards.hidden {
+    display: none;
+}
+.habitacion-card-mini {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+    width: 220px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-surface);
+    cursor: pointer;
+    transition: border-color .15s ease, background-color .15s ease;
+}
+.habitacion-card-mini.hidden-filtro {
+    display: none;
+}
+.habitacion-card-mini img {
+    width: 56px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background-color: var(--bg-input);
+}
+.habitacion-card-mini-info {
+    display: flex;
+    flex-direction: column;
+    row-gap: 2px;
+    font-size: 13px;
+}
+.habitacion-card-mini-info b {
+    font-size: 14px;
+}
+.habitacion-card-mini:hover {
+    border-color: var(--primary);
+}
+.habitacion-card-mini.seleccionada {
+    border-color: var(--primary);
+    background: var(--bg-hover);
+}
+
+/* ======================= FORMULARIO DE REGISTRO: método de pago y acciones rápidas ===========================*/
+.metodo-pago-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.btn-metodo-pago {
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .15s ease, background-color .15s ease, color .15s ease;
+}
+.btn-metodo-pago:hover {
+    border-color: var(--primary);
+}
+.btn-metodo-pago.activo {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+}
+.pago-rapido {
+    display: flex;
+    gap: 8px;
+    margin: -4px 0 12px 250px;
+}
+.btn-pago-rapido {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+.btn-pago-rapido:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--primary);
+}
+.huespedes-stepper {
+    display: flex;
+    align-items: center;
+    column-gap: 8px;
+}
+.btn-huespedes {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-color);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+.btn-huespedes:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--primary);
+}
+#numHuespedes {
+    width: 60px;
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .pago-rapido {
+        margin-left: 0;
+    }
+    .form-stepper {
+        flex-wrap: wrap;
+        row-gap: 10px;
+        column-gap: 10px;
+    }
+    .form-step:not(:last-child)::after {
+        width: 16px;
+        margin: 0 6px;
+    }
+}
+
+@media (max-width: 640px) {
+    .form-step:not(:last-child)::after {
+        display: none;
+    }
+    .form-step {
+        width: calc(50% - 5px);
+    }
+    .habitacion-card-mini {
+        width: 100%;
+    }
 }
 
 /* ======================= COMPROBANTE ===========================*/
