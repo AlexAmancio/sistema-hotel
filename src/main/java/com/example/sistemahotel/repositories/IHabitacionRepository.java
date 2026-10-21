@@ -13,4 +13,6 @@ public interface IHabitacionRepository extends CrudRepository<Habitacion, Intege
     Optional<Habitacion> findByNumero(String numero);
 
     List<Habitacion> findByNumeroContainingIgnoreCase(String numero);
+
+    List<Habitacion> findByNumeroContainingIgnoreCaseOrCategoria_NombreContainingIgnoreCase(String numero, String nombreCategoria);
 }

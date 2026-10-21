@@ -11,6 +11,14 @@
         <div class="content-form">
           <input th:field="*{id}" type="hidden" />
           <div class="group-field">
+            <label for="tipoDocumento">Tipo de documento</label>
+            <select th:field="*{tipoDocumento}" id="tipoDocumento">
+              <option value="DNI">DNI</option>
+              <option value="PASAPORTE">Pasaporte</option>
+              <option value="CARNE_EXTRANJERIA">Carné de extranjería</option>
+            </select>
+          </div>
+          <div class="group-field">
             <label for="identificacion">Identificación</label>
             <input th:field="*{identificacion}" type="text" id="identificacion" required>
             <button type="button" class="btn btnbusqueda" id="busqueda">Buscar
@@ -26,6 +34,10 @@
           <div class="group-field">
             <label for="apellidos">Apellidos</label>
             <input th:field="*{apellidos}" type="text" id="apellidos" readonly="">
+          </div>
+          <div class="group-field">
+            <label for="fechaNacimiento">Fecha de nacimiento</label>
+            <input th:field="*{fechaNacimiento}" type="date" id="fechaNacimiento">
           </div>
           <div class="group-field">
             <label for="pais">Pais</label>

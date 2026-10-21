@@ -24,13 +24,19 @@
         <td class="table-item-header">
           <a th:href="${'/clientes/editar/' + cliente.id + '/'}">
             <div class="cliente-item-header">
-              <h3 th:text="${cliente.nombres + ' ' + cliente.apellidos}"></h3>
-              <span th:text="${cliente.fechaNacimiento}"></span>
+              <img class="user-avatar-img" th:src="${'https://api.dicebear.com/9.x/avataaars/svg?seed=' + cliente.id}" alt="" />
+              <div>
+                <h3 th:text="${cliente.nombres + ' ' + cliente.apellidos}"></h3>
+                <span th:if="${cliente.fechaNacimiento != null}" th:text="${#dates.format(cliente.fechaNacimiento, 'dd/MM/yyyy')}"></span>
+              </div>
             </div>
           </a>
         </td>
         <td th:text="${cliente.ciudad + ' / ' + cliente.pais}"></td>
-        <td th:text="${cliente.identificacion}"></td>
+        <td>
+          <span class="col-tag" th:if="${cliente.tipoDocumento != null}" th:text="${cliente.tipoDocumento.name()}"></span>
+          <span th:text="${cliente.identificacion}"></span>
+        </td>
         <td th:text="${cliente.telefono}"></td>
         <td th:text="${cliente.correo}"></td>
         <td th:text="${cliente.ocupacion}"></td>

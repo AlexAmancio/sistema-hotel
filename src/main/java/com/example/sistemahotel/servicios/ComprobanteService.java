@@ -73,7 +73,8 @@ public class ComprobanteService implements IComprobanteService {
         data.put("moneda", "PEN");
 
         Map<String, Object> cliente = new LinkedHashMap<>();
-        cliente.put("tipo_de_documento", "DNI");
+        cliente.put("tipo_de_documento", registro.getCliente().getTipoDocumento() != null
+            ? registro.getCliente().getTipoDocumento().name() : "DNI");
         cliente.put("numero_de_documento", registro.getCliente().getIdentificacion());
         cliente.put("denominacion", registro.getCliente().getNombres() + " " + registro.getCliente().getApellidos());
         data.put("cliente", cliente);

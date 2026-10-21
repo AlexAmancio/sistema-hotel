@@ -41,7 +41,7 @@ public class HabitacionService implements IHabitacionService {
 
     @Override
     public List<Habitacion> buscar(String query) {
-        return repositorio.findByNumeroContainingIgnoreCase(query);
+        return repositorio.findByNumeroContainingIgnoreCaseOrCategoria_NombreContainingIgnoreCase(query, query);
     }
 
 }

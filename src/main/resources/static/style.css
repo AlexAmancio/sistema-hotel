@@ -399,6 +399,13 @@ table {
     border-collapse: collapse;
 }
 
+/* Sin esto, las celdas quedaban sin separación horizontal: si el contenido
+   de una columna era largo (ej. un correo), se pegaba directo contra la
+   columna siguiente sin ningún espacio visible entre ambas. */
+.table-item > td {
+    padding: 12px 14px 12px 0;
+}
+
 .table-header th {
     border-bottom: 1px solid var(--border-color);
     padding: 18px 4px;
@@ -612,6 +619,11 @@ table {
 /* Pading emjorable */
 .cliente-item-header {
     padding: 15px 0;
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+}
+.cliente-item-header > div {
     display: flex;
     flex-direction: column;
     row-gap: 6px;
@@ -1283,6 +1295,38 @@ table {
     color: var(--color-plomo-oscuro);
     font-weight: 500;
 }
+.pagination-numeros {
+    display: flex;
+    align-items: center;
+    column-gap: 4px;
+}
+.pagination-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+    text-decoration: none;
+}
+.pagination-num:hover {
+    background-color: var(--bg-hover);
+}
+.pagination-num-actual {
+    background-color: var(--primary);
+    color: var(--primary-contrast);
+}
+.pagination-num-actual:hover {
+    background-color: var(--primary);
+}
+.pagination-ellipsis {
+    color: var(--color-plomo-oscuro);
+    padding: 0 2px;
+}
 
 /* ======================= OCUPACION (calendario) ===========================*/
 .ocupacion-header {
@@ -1437,4 +1481,154 @@ table {
 }
 .reporte-variacion-negativa {
     color: var(--color-rojo);
+}
+
+/* ======================= CATEGORÍAS: TARJETAS ===========================*/
+.usuario-nombre-celda {
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+    padding: 1.5em 0px;
+}
+.user-avatar-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--bg-input);
+    flex-shrink: 0;
+}
+
+.resumen-estados {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 20px;
+}
+.resumen-chip {
+    display: flex;
+    align-items: baseline;
+    column-gap: 8px;
+    padding: 12px 18px;
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+.resumen-numero {
+    font-size: 22px;
+    font-weight: 700;
+}
+.resumen-etiqueta {
+    font-size: 13px;
+    color: var(--color-plomo-oscuro);
+}
+.resumen-chip-disponible .resumen-numero { color: var(--estado-disponible); }
+.resumen-chip-ocupada .resumen-numero { color: var(--estado-ocupada); }
+.resumen-chip-limpieza .resumen-numero { color: var(--estado-limpieza); }
+.resumen-chip-mantenimiento .resumen-numero { color: var(--estado-mantenimiento); }
+
+.filtro-sin-resultados {
+    font-size: 14px;
+    color: var(--color-plomo-oscuro);
+}
+
+.piso-grupo {
+    margin-bottom: 28px;
+}
+.piso-grupo:last-child {
+    margin-bottom: 0;
+}
+.piso-titulo {
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-plomo-oscuro);
+    margin: 0 0 10px 2px;
+}
+
+.categorias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.categoria-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .15s ease;
+}
+.categoria-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.categoria-card-media {
+    display: block;
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background-color: var(--bg-input);
+}
+.categoria-card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.categoria-badge-temporada {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background-color: var(--accent-gold);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 999px;
+    box-shadow: var(--shadow-sm);
+}
+
+.categoria-card-body {
+    padding: 18px 20px 20px;
+}
+
+.categoria-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    column-gap: 12px;
+}
+.categoria-card-top h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    line-height: 1.3;
+}
+
+.categoria-card-precio {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 2px;
+}
+.categoria-card-precio .precio-actual {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+.categoria-card-precio .precio-temporada {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-gold);
+}
+
+.categoria-card-desc {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--color-plomo-oscuro);
+    line-height: 1.5;
 }

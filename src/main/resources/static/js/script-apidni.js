@@ -1,4 +1,7 @@
 var boton = document.getElementById("busqueda");
+var selectTipoDocumento = document.getElementById("tipoDocumento");
+var campoNombres = document.getElementById("nombres");
+var campoApellidos = document.getElementById("apellidos");
 
 function traerdatos(){
     var dni = document.getElementById("identificacion").value;
@@ -13,3 +16,18 @@ function traerdatos(){
         });
 }
 boton.addEventListener("click", traerdatos);
+
+// La API de búsqueda solo conoce DNI (consulta RENIEC). Con pasaporte o
+// carné de extranjería no hay forma de autocompletar: se habilita la carga
+// manual de nombres y apellidos y se oculta el botón de búsqueda.
+function actualizarModoDocumento() {
+    var esDni = selectTipoDocumento.value === "DNI";
+    boton.classList.toggle("hidden", !esDni);
+    campoNombres.readOnly = esDni;
+    campoApellidos.readOnly = esDni;
+}
+
+if (selectTipoDocumento) {
+    selectTipoDocumento.addEventListener("change", actualizarModoDocumento);
+    actualizarModoDocumento();
+}
