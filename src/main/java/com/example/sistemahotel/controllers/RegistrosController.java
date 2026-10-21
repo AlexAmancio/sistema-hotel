@@ -58,6 +58,9 @@ public class RegistrosController {
     @Autowired
     private IComprobanteService comprobanteService;
 
+    @Autowired
+    private com.example.sistemahotel.interfaces.IConsumoService consumoService;
+
     @GetMapping("/")
     public String listar(
         @RequestParam(required = false) String estado,
@@ -166,6 +169,9 @@ public class RegistrosController {
         Model model
     ) {
         Registro registro = new Registro();
+        // Casi siempre hay al menos un huésped: arrancar en 0 obligaba a
+        // tocar este campo en cada registro nuevo, incluso cuando ya era 1.
+        registro.setNumHuespedes(1);
         // Precarga desde el calendario de ocupacion: clic en un dia libre de
         // una habitacion ya trae la fecha y esa habitacion seleccionadas.
         if (checkIn != null && !checkIn.isBlank()) {
@@ -211,9 +217,20 @@ public class RegistrosController {
 
         // Un check-in nuevo queda atribuido al usuario logueado, no al que
         // el form haya podido mandar (evita que se falsee quién lo registró).
-        if (registro.getId() == 0) {
+        boolean esNuevo = registro.getId() == 0;
+        if (esNuevo) {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
             usuarioService.consultarpornombreusuario(username).ifPresent(registro::setUsuario);
+        }
+
+        // Si se está editando y se cambió de habitación, hay que liberar la
+        // anterior: si no, se quedaba marcada OCUPADA para siempre aunque este
+        // registro ya no la use.
+        Integer habitacionAnteriorId = null;
+        if (!esNuevo) {
+            habitacionAnteriorId = service.consultarId(registro.getId())
+                .map(r -> r.getHabitacion() != null ? r.getHabitacion().getId() : null)
+                .orElse(null);
         }
 
         try {
@@ -224,11 +241,35 @@ public class RegistrosController {
             return redirectError;
         }
 
-        // Un check-in nuevo ocupa la habitación automáticamente.
-        if (registro.getHabitacion() != null) {
+        Integer habitacionNuevaId = registro.getHabitacion() != null ? registro.getHabitacion().getId() : null;
+        boolean cambioDeHabitacion = habitacionAnteriorId != null && !habitacionAnteriorId.equals(habitacionNuevaId);
+
+        // La habitación se marca OCUPADA en dos casos: un check-in nuevo, o una
+        // edición que cambió de habitación mientras el registro sigue ACTIVA.
+        // Editar cualquier otra cosa (observaciones, método de pago, etc.) de un
+        // registro ya FINALIZADA/CANCELADA no debe tocar el estado de ninguna
+        // habitación — antes esto corría en cada guardado sin condición.
+        boolean debeOcuparNueva = (esNuevo || cambioDeHabitacion) && registro.getEstado() == com.example.sistemahotel.modelos.EstadoRegistro.ACTIVA;
+        if (debeOcuparNueva && registro.getHabitacion() != null) {
             Habitacion habitacion = registro.getHabitacion();
             habitacion.setEstado(EstadoHabitacion.OCUPADA);
             habitacionService.guardar(habitacion);
+        }
+
+        if (cambioDeHabitacion) {
+            final int habitacionAnteriorIdFinal = habitacionAnteriorId;
+            final int registroIdFinal = registro.getId();
+            boolean otroRegistroLaUsaActiva = service.listar().stream()
+                .anyMatch(r -> r.getId() != registroIdFinal
+                    && r.getEstado() == com.example.sistemahotel.modelos.EstadoRegistro.ACTIVA
+                    && r.getHabitacion() != null
+                    && r.getHabitacion().getId() == habitacionAnteriorIdFinal);
+            if (!otroRegistroLaUsaActiva) {
+                habitacionService.consultarId(habitacionAnteriorIdFinal).ifPresent(habitacionVieja -> {
+                    habitacionVieja.setEstado(EstadoHabitacion.DISPONIBLE);
+                    habitacionService.guardar(habitacionVieja);
+                });
+            }
         }
 
         return "redirect:/";
@@ -257,27 +298,53 @@ public class RegistrosController {
     @PostMapping("/eliminar/{registroID}/")
     public String eliminar(
         @PathVariable(name="registroID", required = true) int id,
-        Model model
+        Model model,
+        RedirectAttributes redirectAttributes
     ) {
+        if (comprobanteService.consultarPorRegistro(id).isPresent()) {
+            redirectAttributes.addFlashAttribute("error",
+                "No se puede eliminar: este registro ya tiene un comprobante emitido.");
+            return "redirect:/";
+        }
+        if (!consumoService.listarPorRegistro(id).isEmpty()) {
+            redirectAttributes.addFlashAttribute("error",
+                "No se puede eliminar: este registro tiene consumos cargados.");
+            return "redirect:/";
+        }
         service.eliminar(id);
         return "redirect:/";
     }
 
     @PostMapping("/checkout/{registroID}/")
-    public String checkout(@PathVariable(name="registroID") int id) {
-        service.hacerCheckout(id);
+    public String checkout(@PathVariable(name="registroID") int id, RedirectAttributes redirectAttributes) {
+        try {
+            service.hacerCheckout(id);
+        } catch (ObjectOptimisticLockingFailureException e) {
+            redirectAttributes.addFlashAttribute("error",
+                "Este registro fue modificado por otra persona justo ahora. Recargá la página e intentá de nuevo.");
+        }
         return "redirect:/";
     }
 
     @PostMapping("/cancelar/{registroID}/")
-    public String cancelar(@PathVariable(name="registroID") int id) {
-        service.cancelar(id);
+    public String cancelar(@PathVariable(name="registroID") int id, RedirectAttributes redirectAttributes) {
+        try {
+            service.cancelar(id);
+        } catch (ObjectOptimisticLockingFailureException e) {
+            redirectAttributes.addFlashAttribute("error",
+                "Este registro fue modificado por otra persona justo ahora. Recargá la página e intentá de nuevo.");
+        }
         return "redirect:/";
     }
 
     @PostMapping("/no-show/{registroID}/")
-    public String noShow(@PathVariable(name="registroID") int id) {
-        service.marcarNoShow(id);
+    public String noShow(@PathVariable(name="registroID") int id, RedirectAttributes redirectAttributes) {
+        try {
+            service.marcarNoShow(id);
+        } catch (ObjectOptimisticLockingFailureException e) {
+            redirectAttributes.addFlashAttribute("error",
+                "Este registro fue modificado por otra persona justo ahora. Recargá la página e intentá de nuevo.");
+        }
         return "redirect:/";
     }
 

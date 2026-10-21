@@ -12,32 +12,63 @@
         <div class="content-form">
             <input th:field="*{id}" type="hidden" />
             <input th:field="*{version}" type="hidden" />
+
+            <h3 class="form-seccion-titulo">Huésped</h3>
             <div class="group-field">
-                <label for="cliente">Cliente</label>
-                <select th:field="*{cliente}">
-                    <option th:each="cliente : ${listaClientes}" th:value="${cliente.id}" th:text="${cliente.nombres + ' ' + cliente.apellidos}"></option>
-                </select>
+                <label for="clienteBuscar">Cliente</label>
+                <div class="cliente-autocomplete">
+                    <input type="text" id="clienteBuscar" placeholder="Buscar por nombre o DNI..." autocomplete="off"
+                           th:value="${registro.cliente != null ? registro.cliente.nombres + ' ' + registro.cliente.apellidos : ''}" />
+                    <input type="hidden" id="clienteId" name="cliente" th:value="${registro.cliente != null ? registro.cliente.id : ''}" />
+                    <div id="clienteResultados" class="cliente-resultados hidden"></div>
+                </div>
             </div>
+            <p id="cliente-warning" class="hidden form-warning-texto">
+                Elegí un cliente de la lista antes de guardar.
+            </p>
+            <h3 class="form-seccion-titulo">Estadía</h3>
             <div class="group-field">
                 <label for="checkIn">Fecha de ingreso:</label>
                 <input id="checkIn" th:field="*{checkIn}" type="datetime-local" required/>
+                <button type="button" id="btn-checkin-ahora" class="btn btnbusqueda">Ahora</button>
             </div>
             <div class="group-field">
                 <label for="salida">Fecha de salida:</label>
                 <input id="salida" type="datetime-local" required/>
             </div>
+            <div class="noches-rapidas">
+                <button type="button" class="btn-noche-rapida" data-noches="1">1 noche</button>
+                <button type="button" class="btn-noche-rapida" data-noches="2">2 noches</button>
+                <button type="button" class="btn-noche-rapida" data-noches="3">3 noches</button>
+                <button type="button" class="btn-noche-rapida" data-noches="7">1 semana</button>
+            </div>
             <div class="group-field">
                 <label for="noches">N° Noches (calculado):</label>
                 <input id="noches" th:field="*{noches}" type="number" readonly placeholder="—"/>
             </div>
-            <p id="fechas-warning" class="hidden" style="color: var(--color-rojo); margin: -8px 0 12px 250px;">
+            <p id="fechas-warning" class="hidden form-warning-texto">
                 La fecha de salida tiene que ser después del ingreso.
             </p>
+            <div class="group-field hidden" id="categoria-group">
+                <label for="categoria">Categoría</label>
+                <select id="categoria">
+                    <option value="">Elegí una categoría...</option>
+                </select>
+            </div>
             <div class="group-field hidden" id="habitacion-group">
                 <label for="habitacion">Habitación</label>
                 <select id="habitacion" th:field="*{habitacion}">
-                    <option th:each="habitacion : ${listaHabitaciones}" th:value="${habitacion.id}" th:attr="data-aforo=${habitacion.aforo}" th:text="${'Habitación ' + habitacion.numero + ' (aforo ' + habitacion.aforo + ')'}"></option>
+                    <option th:each="habitacion : ${listaHabitaciones}" th:value="${habitacion.id}" th:attr="data-aforo=${habitacion.aforo}"
+                            th:text="${'Hab. ' + habitacion.numero + ' — ' + habitacion.categoria.nombre + ' (aforo ' + habitacion.aforo + ', S/.' + habitacion.categoria.precio + '/noche)'}"></option>
                 </select>
+            </div>
+            <div id="habitacion-card" class="habitacion-card hidden">
+                <img id="habitacion-card-img" src="" alt="" />
+                <div class="habitacion-card-info">
+                    <h4 id="habitacion-card-nombre"></h4>
+                    <p id="habitacion-card-desc"></p>
+                    <span id="habitacion-card-precio" class="habitacion-card-precio"></span>
+                </div>
             </div>
             <div class="group-field">
                 <label for="tarifaMostrada">Tarifa (en soles):</label>
@@ -48,13 +79,14 @@
                 <label for="numHuespedes">N° Huéspedes:</label>
                 <input id="numHuespedes" th:field="*{numHuespedes}" type="number" min="1"/>
             </div>
-            <p id="aforo-warning" class="hidden" style="color: var(--color-rojo); margin: -8px 0 12px 250px;">
+            <p id="aforo-warning" class="hidden form-warning-texto">
                 Supera el aforo máximo de la habitación seleccionada.
             </p>
             <div class="group-field">
                 <label for="observaciones">Observaciones:</label>
                 <input th:field="*{observaciones}" type="text"/>
             </div>
+            <h3 class="form-seccion-titulo">Pago</h3>
             <div class="group-field">
                 <label for="metodoPago">Método de pago</label>
                 <select th:field="*{metodoPago}">
@@ -67,6 +99,10 @@
             <div class="group-field">
                 <label for="montoPagado">Monto pagado (S/.)</label>
                 <input id="montoPagado" th:field="*{montoPagado}" type="number" min="0" step="0.1"/>
+            </div>
+            <div class="group-field">
+                <label for="pagoCompleto">¿Pagó todo?</label>
+                <input id="pagoCompleto" type="checkbox"/>
             </div>
             <div id="resumen-vivo" class="resumen-vivo hidden">
                 <p id="resumen-calculo"></p>
@@ -91,12 +127,31 @@
         </div>
     </form>
 </div>
+
 <script th:src="@{/js/script.js}"></script>
 <script th:src="@{/js/script-forms.js}"></script>
 <script th:inline="javascript">
     // Llega distinto de null solo cuando el formulario se abrió desde un
     // clic en un día libre del calendario de ocupación.
     const habitacionPreseleccionada = /*[[${habitacionPreseleccionada}]]*/ null;
+
+    // 0 para un registro nuevo. Si estamos editando, se usa para excluir
+    // este mismo registro del chequeo de solapamiento al pedir habitaciones
+    // disponibles (si no, su propia habitación se vería "ocupada" por sí misma).
+    const registroIdActual = /*[[${registro.id}]]*/ 0;
+
+    // Lista completa de clientes para el buscador: con cientos de clientes,
+    // un <select> normal se volvía imposible de usar (no se podía escribir
+    // ni filtrar). Se filtra en el navegador, sin ida y vuelta al servidor.
+    const listaClientesAutocomplete = [
+        /*[# th:each="cliente : ${listaClientes}"]*/
+        {
+            id: /*[[${cliente.id}]]*/ 0,
+            nombre: /*[[${cliente.nombres + ' ' + cliente.apellidos}]]*/ '',
+            identificacion: /*[[${cliente.identificacion}]]*/ ''
+        },
+        /*[/]*/
+    ];
 </script>
 <script>
     // Las noches ya no se escriben a mano: se calculan solas a partir de
@@ -131,6 +186,11 @@
         return noches;
     }
 
+    // Habitaciones disponibles para las fechas elegidas, tal cual llegan del
+    // servidor. Se guardan acá para no tener que volver a pedirlas cuando el
+    // usuario elige una categoría: ese segundo paso solo filtra en el navegador.
+    let habitacionesDisponiblesData = [];
+
     function buscarHabitacionesDisponibles() {
         const checkIn = document.getElementById('checkIn').value;
         const noches = calcularNoches();
@@ -139,38 +199,178 @@
             return;
         }
 
-        fetch(`/habitaciones/disponibles?checkIn=${checkIn}&noches=${noches}`)
+        const excluir = registroIdActual > 0 ? `&excluirRegistroId=${registroIdActual}` : '';
+        fetch(`/habitaciones/disponibles?checkIn=${checkIn}&noches=${noches}${excluir}`)
             .then(response => response.json())
             .then(data => {
-                const habitacionSelect = document.querySelector('select[name="habitacion"]');
-                habitacionSelect.innerHTML = "";
-
-                data.forEach(habitacion => {
-                    const option = document.createElement("option");
-                    option.value = habitacion.id;
-                    option.dataset.aforo = habitacion.aforo;
-                    option.textContent = `Habitación ${habitacion.numero} (aforo ${habitacion.aforo})`;
-                    habitacionSelect.appendChild(option);
-                });
-
-                // Si venimos del calendario de ocupación con una habitación ya
-                // elegida, seleccionarla apenas aparece entre las disponibles.
-                // Se aplica una sola vez: si el usuario cambia las fechas
-                // después, su elección manual ya no debe ser pisada.
-                if (habitacionAPreseleccionar !== null) {
-                    const opcion = habitacionSelect.querySelector(`option[value="${habitacionAPreseleccionar}"]`);
-                    if (opcion) {
-                        habitacionSelect.value = habitacionAPreseleccionar;
-                    }
-                    habitacionAPreseleccionar = null;
-                }
-
-                document.getElementById('habitacion-group').classList.remove('hidden');
-                verificarAforo();
-                calcularTarifaAutomatica();
+                habitacionesDisponiblesData = data;
+                poblarCategorias();
             })
             .catch(error => console.error('Error al obtener las habitaciones disponibles:', error));
     }
+
+    // Primer paso: elegir categoría. Solo se muestran categorías que
+    // efectivamente tienen al menos una habitación libre en esas fechas,
+    // con la cantidad disponible para que se note de un vistazo.
+    function poblarCategorias() {
+        const categoriaSelect = document.getElementById('categoria');
+        const porCategoria = new Map();
+
+        habitacionesDisponiblesData.forEach(habitacion => {
+            if (!habitacion.categoria) return;
+            const id = habitacion.categoria.id;
+            if (!porCategoria.has(id)) {
+                porCategoria.set(id, { nombre: habitacion.categoria.nombre, precio: habitacion.categoria.precio, cantidad: 0 });
+            }
+            porCategoria.get(id).cantidad++;
+        });
+
+        categoriaSelect.innerHTML = '<option value="">Elegí una categoría...</option>';
+        porCategoria.forEach((info, id) => {
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = `${info.nombre} — S/.${info.precio}/noche (${info.cantidad} disponible${info.cantidad === 1 ? '' : 's'})`;
+            categoriaSelect.appendChild(option);
+        });
+
+        document.getElementById('categoria-group').classList.remove('hidden');
+        document.getElementById('habitacion-group').classList.add('hidden');
+
+        // Si venimos del calendario de ocupación con una habitación ya elegida,
+        // saltamos directo a su categoría para no obligar a elegirla de nuevo.
+        if (habitacionAPreseleccionar !== null) {
+            const habitacionDestino = habitacionesDisponiblesData.find(h => h.id == habitacionAPreseleccionar);
+            if (habitacionDestino && habitacionDestino.categoria) {
+                categoriaSelect.value = habitacionDestino.categoria.id;
+                poblarHabitacionesPorCategoria();
+            }
+        }
+    }
+
+    // Segundo paso: con la categoría ya elegida, mostrar solo las habitaciones
+    // de esa categoría entre las que están disponibles en esas fechas.
+    function poblarHabitacionesPorCategoria() {
+        const categoriaSelect = document.getElementById('categoria');
+        const habitacionSelect = document.getElementById('habitacion');
+        const categoriaId = categoriaSelect.value;
+
+        if (!categoriaId) {
+            document.getElementById('habitacion-group').classList.add('hidden');
+            return;
+        }
+
+        habitacionSelect.innerHTML = '';
+        habitacionesDisponiblesData
+            .filter(h => h.categoria && h.categoria.id == categoriaId)
+            .forEach(habitacion => {
+                const option = document.createElement('option');
+                option.value = habitacion.id;
+                option.dataset.aforo = habitacion.aforo;
+                option.textContent = `Hab. ${habitacion.numero} (aforo ${habitacion.aforo})`;
+                habitacionSelect.appendChild(option);
+            });
+
+        if (habitacionAPreseleccionar !== null) {
+            const opcion = habitacionSelect.querySelector(`option[value="${habitacionAPreseleccionar}"]`);
+            if (opcion) {
+                habitacionSelect.value = habitacionAPreseleccionar;
+            }
+            habitacionAPreseleccionar = null;
+        }
+
+        document.getElementById('habitacion-group').classList.remove('hidden');
+        verificarAforo();
+        calcularTarifaAutomatica();
+        mostrarTarjetaHabitacion();
+    }
+
+    document.getElementById('categoria').addEventListener('change', poblarHabitacionesPorCategoria);
+
+    // Buscador de clientes: filtra en el navegador sobre listaClientesAutocomplete
+    // (ya embebida en la página), sin pedir nada al servidor mientras se escribe.
+    const clienteBuscarInput = document.getElementById('clienteBuscar');
+    const clienteIdInput = document.getElementById('clienteId');
+    const clienteResultadosDiv = document.getElementById('clienteResultados');
+    const clienteWarning = document.getElementById('cliente-warning');
+
+    function renderResultadosCliente(query) {
+        const q = query.trim().toLowerCase();
+        if (q.length < 1) {
+            clienteResultadosDiv.classList.add('hidden');
+            clienteResultadosDiv.innerHTML = '';
+            return;
+        }
+
+        const coincidencias = listaClientesAutocomplete.filter(c =>
+            c.nombre.toLowerCase().includes(q) || c.identificacion.toLowerCase().includes(q)
+        ).slice(0, 8);
+
+        if (coincidencias.length === 0) {
+            clienteResultadosDiv.innerHTML = '<div class="cliente-resultado-vacio">Sin resultados.</div>';
+            clienteResultadosDiv.classList.remove('hidden');
+            return;
+        }
+
+        clienteResultadosDiv.innerHTML = coincidencias.map(c => {
+            const nombreEscapado = c.nombre.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            return `<div class="cliente-resultado-item" data-id="${c.id}" data-nombre="${nombreEscapado}">`
+                + `${nombreEscapado} <span class="cliente-resultado-dni">${c.identificacion}</span></div>`;
+        }).join('');
+        clienteResultadosDiv.classList.remove('hidden');
+    }
+
+    clienteBuscarInput.addEventListener('input', function () {
+        clienteIdInput.value = '';
+        clienteWarning.classList.add('hidden');
+
+        // DNI completo (8 dígitos) con una sola coincidencia exacta: se
+        // selecciona solo, sin obligar a hacer click en el resultado cuando
+        // el huésped ya dictó su DNI entero.
+        const valor = this.value.trim();
+        if (/^\d{8}$/.test(valor)) {
+            const coincidenciasExactas = listaClientesAutocomplete.filter(c => c.identificacion === valor);
+            if (coincidenciasExactas.length === 1) {
+                const cliente = coincidenciasExactas[0];
+                clienteIdInput.value = cliente.id;
+                this.value = cliente.nombre;
+                clienteResultadosDiv.classList.add('hidden');
+                clienteResultadosDiv.innerHTML = '';
+                return;
+            }
+        }
+
+        renderResultadosCliente(this.value);
+    });
+
+    clienteBuscarInput.addEventListener('focus', function () {
+        if (this.value.trim().length > 0 && !clienteIdInput.value) {
+            renderResultadosCliente(this.value);
+        }
+    });
+
+    clienteResultadosDiv.addEventListener('click', function (e) {
+        const item = e.target.closest('.cliente-resultado-item');
+        if (!item) return;
+        clienteIdInput.value = item.dataset.id;
+        clienteBuscarInput.value = item.dataset.nombre;
+        clienteResultadosDiv.classList.add('hidden');
+        clienteResultadosDiv.innerHTML = '';
+        clienteWarning.classList.add('hidden');
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.cliente-autocomplete')) {
+            clienteResultadosDiv.classList.add('hidden');
+        }
+    });
+
+    document.querySelector('form').addEventListener('submit', function (e) {
+        if (!clienteIdInput.value) {
+            e.preventDefault();
+            clienteWarning.classList.remove('hidden');
+            clienteBuscarInput.focus();
+        }
+    });
 
     function formatearSoles(numero) {
         return numero.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -180,6 +380,13 @@
         const tarifa = parseFloat(valor) || 0;
         document.getElementById('tarifaCalculada').value = tarifa;
         document.getElementById('tarifaMostrada').value = tarifa > 0 ? `S/. ${formatearSoles(tarifa)}` : '';
+
+        // Si "Pagó todo?" ya estaba marcado (ej. cambió de habitación), el
+        // monto pagado se recalcula solo con la tarifa nueva.
+        const pagoCompletoCheckbox = document.getElementById('pagoCompleto');
+        if (pagoCompletoCheckbox && pagoCompletoCheckbox.checked) {
+            document.getElementById('montoPagado').value = tarifa;
+        }
     }
 
     function calcularTarifaAutomatica() {
@@ -255,12 +462,94 @@
     document.getElementById('checkIn').addEventListener('input', programarBusquedaAutomatica);
     document.getElementById('salida').addEventListener('input', programarBusquedaAutomatica);
 
+    // Tarjeta de confirmación: al elegir la habitación, se ve su foto real
+    // (la misma de Categorías), nombre y precio, en vez de confiar solo en
+    // el texto del <select>.
+    function mostrarTarjetaHabitacion() {
+        const habitacionSelect = document.getElementById('habitacion');
+        const tarjeta = document.getElementById('habitacion-card');
+        const habitacionId = habitacionSelect.value;
+
+        const habitacion = habitacionesDisponiblesData.find(h => h.id == habitacionId);
+        if (!habitacion || !habitacion.categoria) {
+            tarjeta.classList.add('hidden');
+            return;
+        }
+
+        document.getElementById('habitacion-card-img').src = habitacion.categoria.urlImagen || habitacion.urlImagen || '';
+        document.getElementById('habitacion-card-nombre').textContent = `Hab. ${habitacion.numero} — ${habitacion.categoria.nombre}`;
+        document.getElementById('habitacion-card-desc').textContent = habitacion.categoria.descripcion || '';
+        document.getElementById('habitacion-card-precio').textContent = `S/. ${formatearSoles(habitacion.categoria.precio)} / noche`;
+        tarjeta.classList.remove('hidden');
+    }
+
     document.getElementById('numHuespedes').addEventListener('input', verificarAforo);
     document.getElementById('habitacion').addEventListener('change', function () {
         verificarAforo();
         calcularTarifaAutomatica();
+        mostrarTarjetaHabitacion();
     });
-    document.getElementById('montoPagado').addEventListener('input', actualizarResumen);
+    document.getElementById('montoPagado').addEventListener('input', function () {
+        // Si el monto que se tipea a mano ya no coincide con la tarifa total,
+        // el pago dejó de ser "completo": se destilda solo, para no mentir.
+        const tarifa = parseFloat(document.getElementById('tarifaCalculada').value) || 0;
+        const pagado = parseFloat(this.value) || 0;
+        document.getElementById('pagoCompleto').checked = tarifa > 0 && pagado === tarifa;
+        actualizarResumen();
+    });
+
+    // "¿Pagó todo?": autocompleta el monto con la tarifa total en vez de
+    // tener que escribirla a mano cuando el huésped paga todo de una.
+    document.getElementById('pagoCompleto').addEventListener('change', function () {
+        const montoPagadoInput = document.getElementById('montoPagado');
+        if (this.checked) {
+            const tarifa = parseFloat(document.getElementById('tarifaCalculada').value) || 0;
+            montoPagadoInput.value = tarifa;
+        } else {
+            montoPagadoInput.value = 0;
+        }
+        actualizarResumen();
+    });
+
+    function formatearFechaInput(d) {
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    // Botón "Ahora": completa fecha y hora de ingreso con el momento actual,
+    // el caso más común (el huésped está llegando en este momento). Si la
+    // salida todavía está vacía, también precarga 1 noche por defecto, para
+    // que con un solo click ya quede toda la estadía armada y lista.
+    document.getElementById('btn-checkin-ahora').addEventListener('click', function () {
+        const ahora = new Date();
+        document.getElementById('checkIn').value = formatearFechaInput(ahora);
+
+        const salidaInput = document.getElementById('salida');
+        if (!salidaInput.value) {
+            const manana = new Date(ahora);
+            manana.setDate(manana.getDate() + 1);
+            salidaInput.value = formatearFechaInput(manana);
+        }
+
+        programarBusquedaAutomatica();
+    });
+
+    // Botones rápidos de noches: calculan la fecha de salida a partir del
+    // check-in ya puesto, en vez de tener que abrir el selector de fecha y
+    // contar los días a mano.
+    document.querySelectorAll('.btn-noche-rapida').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const checkInVal = document.getElementById('checkIn').value;
+            if (!checkInVal) {
+                return;
+            }
+            const noches = parseInt(this.dataset.noches, 10);
+            const salida = new Date(checkInVal);
+            salida.setDate(salida.getDate() + noches);
+            document.getElementById('salida').value = formatearFechaInput(salida);
+            programarBusquedaAutomatica();
+        });
+    });
 
     // Si estamos editando un registro existente: precargar la fecha de
     // salida a partir de checkIn + noches, y mostrar la tarifa/resumen ya
@@ -274,12 +563,24 @@
         const nochesVal = nochesInput.value;
 
         if (checkInVal && nochesVal && nochesVal !== '0') {
+            // Antes de que buscarHabitacionesDisponibles() reconstruya el
+            // select de habitación, el que vino renderizado por el servidor
+            // (con *{habitacion}) todavía tiene la habitación guardada
+            // seleccionada: la guardamos para que categoría/habitación
+            // aparezcan visibles de entrada en vez de ocultas hasta que
+            // alguien toque las fechas.
+            const habitacionGuardada = document.getElementById('habitacion').value;
+            if (habitacionGuardada) {
+                habitacionAPreseleccionar = parseInt(habitacionGuardada, 10);
+            }
+
             const checkIn = new Date(checkInVal);
             checkIn.setDate(checkIn.getDate() + parseInt(nochesVal, 10));
             const pad = n => String(n).padStart(2, '0');
             const salidaStr = `${checkIn.getFullYear()}-${pad(checkIn.getMonth() + 1)}-${pad(checkIn.getDate())}T${pad(checkIn.getHours())}:${pad(checkIn.getMinutes())}`;
             document.getElementById('salida').value = salidaStr;
 
+            buscarHabitacionesDisponibles();
             mostrarTarifa(document.getElementById('tarifaCalculada').value);
             actualizarResumen();
         } else {

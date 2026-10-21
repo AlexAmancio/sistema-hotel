@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.sistemahotel.interfaces.ICategoriaService;
 import com.example.sistemahotel.interfaces.IHabitacionService;
 import com.example.sistemahotel.interfaces.IRegistroService;
 import com.example.sistemahotel.modelos.EstadoRegistro;
@@ -37,6 +38,9 @@ public class OcupacionController {
 
     @Autowired
     private IRegistroService registroService;
+
+    @Autowired
+    private ICategoriaService categoriaService;
 
     public static class BloqueOcupacion {
         public final Registro registro;
@@ -107,6 +111,7 @@ public class OcupacionController {
         model.addAttribute("desdeAnterior", FORMATO_URL.format(sumarDias(inicio, -DIAS_VISIBLES)));
         model.addAttribute("desdeSiguiente", FORMATO_URL.format(fin));
         model.addAttribute("desdeHoy", FORMATO_URL.format(truncarADia(new Date())));
+        model.addAttribute("listaCategorias", categoriaService.listar());
 
         return "ocupacion";
     }

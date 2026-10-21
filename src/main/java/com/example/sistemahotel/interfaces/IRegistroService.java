@@ -17,7 +17,7 @@ public interface IRegistroService {
     public Optional<Registro> consultarId(int id);
     public void guardar(Registro registro);
     public void eliminar(int id);
-    List<Habitacion> obtenerHabitacionesDisponibles(Date checkIn, int noches);
+    List<Habitacion> obtenerHabitacionesDisponibles(Date checkIn, int noches, Integer excluirRegistroId);
     boolean existeSolapamiento(Habitacion habitacion, Date checkIn, int noches, Integer excluirRegistroId);
     void hacerCheckout(int registroId);
     void cancelar(int registroId);

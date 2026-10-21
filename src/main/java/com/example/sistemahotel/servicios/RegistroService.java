@@ -51,13 +51,14 @@ public class RegistroService implements IRegistroService {
         repositorio.deleteById(id);
     }
 
-    public List<Habitacion> obtenerHabitacionesDisponibles(Date checkIn, int noches) {
+    public List<Habitacion> obtenerHabitacionesDisponibles(Date checkIn, int noches, Integer excluirRegistroId) {
         List<Habitacion> todasHabitaciones = (List<Habitacion>) habitacionrepositorio.findAll();
         List<Registro> registrosActivos = registrosActivos();
 
         Date checkOutEstimado = sumarDias(checkIn, noches);
 
         List<Habitacion> habitacionesOcupadas = registrosActivos.stream()
+            .filter(registro -> excluirRegistroId == null || registro.getId() != excluirRegistroId)
             .filter(registro -> seSuperponen(checkIn, checkOutEstimado, registro))
             .map(Registro::getHabitacion)
             .collect(Collectors.toList());
