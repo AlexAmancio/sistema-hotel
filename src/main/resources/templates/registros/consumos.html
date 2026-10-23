@@ -53,13 +53,15 @@
 
     <form th:if="${registro.estado.name() == 'ACTIVA'}" th:action="${'/consumos/agregar/' + registro.id + '/'}" method="post" style="max-width: 500px;">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+      <input type="hidden" id="productoId" name="productoId" value="" />
       <div class="consumo-atajos">
-        <button type="button" class="btn-consumo-atajo" data-descripcion="Minibar" data-monto="20">Minibar</button>
-        <button type="button" class="btn-consumo-atajo" data-descripcion="Room service - Desayuno a la habitación" data-monto="28">Desayuno</button>
-        <button type="button" class="btn-consumo-atajo" data-descripcion="Room service - Almuerzo o cena" data-monto="40">Almuerzo/Cena</button>
-        <button type="button" class="btn-consumo-atajo" data-descripcion="Lavandería" data-monto="28">Lavandería</button>
-        <button type="button" class="btn-consumo-atajo" data-descripcion="Late check-out" data-monto="35">Late check-out</button>
+        <button type="button" class="btn-consumo-atajo" th:each="producto : ${listaProductos}"
+                th:data-id="${producto.id}" th:data-descripcion="${producto.nombre}" th:data-monto="${producto.precioSugerido}"
+                th:text="${producto.nombre}"></button>
       </div>
+      <p th:if="${#lists.isEmpty(listaProductos)}" style="color: var(--color-plomo-oscuro); font-size: 13px; margin: -8px 0 16px;">
+        No hay productos en el catálogo todavía — <a th:href="@{/productos-consumo/nuevo/}">agregá uno</a> para tener atajos acá.
+      </p>
       <div class="group-field">
         <label for="descripcion">Descripción</label>
         <input type="text" id="descripcion" name="descripcion" placeholder="Ej. Minibar, Room service, Lavandería" required>
@@ -89,9 +91,18 @@
       btn.addEventListener('click', function () {
         document.getElementById('descripcion').value = this.dataset.descripcion;
         document.getElementById('monto').value = this.dataset.monto;
+        document.getElementById('productoId').value = this.dataset.id;
         document.getElementById('monto').focus();
       });
     });
+    // Si la persona cambia la descripción a mano después de usar un atajo,
+    // ya no corresponde enlazar el consumo a ese producto del catálogo.
+    var campoDescripcion = document.getElementById('descripcion');
+    if (campoDescripcion) {
+      campoDescripcion.addEventListener('input', function () {
+        document.getElementById('productoId').value = '';
+      });
+    }
   </script>
 </body>
 

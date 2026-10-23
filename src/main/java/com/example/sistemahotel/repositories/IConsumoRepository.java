@@ -10,4 +10,5 @@ import com.example.sistemahotel.modelos.Consumo;
 @Repository
 public interface IConsumoRepository extends CrudRepository<Consumo, Integer> {
     List<Consumo> findByRegistroId(int registroId);
+    boolean existsByProductoId(int productoId);
 }

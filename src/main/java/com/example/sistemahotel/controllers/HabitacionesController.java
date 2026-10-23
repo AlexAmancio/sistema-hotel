@@ -52,11 +52,22 @@ public class HabitacionesController {
         model.addAttribute("listaCategorias", categoriaService.listar());
 
         // Resumen rápido de disponibilidad para que recepción vea el estado
-        // general del hotel sin tener que contar manualmente.
-        model.addAttribute("totalDisponibles", todas.stream().filter(h -> h.getEstado() == EstadoHabitacion.DISPONIBLE).count());
-        model.addAttribute("totalOcupadas", todas.stream().filter(h -> h.getEstado() == EstadoHabitacion.OCUPADA).count());
-        model.addAttribute("totalLimpieza", todas.stream().filter(h -> h.getEstado() == EstadoHabitacion.LIMPIEZA).count());
-        model.addAttribute("totalMantenimiento", todas.stream().filter(h -> h.getEstado() == EstadoHabitacion.MANTENIMIENTO).count());
+        // general del hotel sin tener que contar manualmente. "Ocupadas" sale
+        // de los registros ACTIVA cuyo check-in ya pasó, no de
+        // habitacion.estado — ese campo es un espejo que puede quedar
+        // desincronizado (ver DashboardController.dashboard()).
+        java.util.Set<Integer> idsOcupadasAhora = registroService.idsHabitacionesOcupadasAhora(new java.util.Date());
+
+        long totalLimpieza = todas.stream()
+            .filter(h -> !idsOcupadasAhora.contains(h.getId()) && h.getEstado() == EstadoHabitacion.LIMPIEZA)
+            .count();
+        long totalMantenimiento = todas.stream()
+            .filter(h -> !idsOcupadasAhora.contains(h.getId()) && h.getEstado() == EstadoHabitacion.MANTENIMIENTO)
+            .count();
+        model.addAttribute("totalOcupadas", (long) idsOcupadasAhora.size());
+        model.addAttribute("totalLimpieza", totalLimpieza);
+        model.addAttribute("totalMantenimiento", totalMantenimiento);
+        model.addAttribute("totalDisponibles", todas.size() - idsOcupadasAhora.size() - totalLimpieza - totalMantenimiento);
 
         return carpeta + "habitacion-lista";
     }

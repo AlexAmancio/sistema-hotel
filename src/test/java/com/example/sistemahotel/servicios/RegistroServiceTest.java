@@ -170,4 +170,56 @@ class RegistroServiceTest {
 
         assertTrue(disponibles.isEmpty());
     }
+
+    // Bug real encontrado en sesion: Reportes y Habitaciones calculaban
+    // "ocupadas ahora" leyendo habitacion.estado, un campo espejo que puede
+    // quedar desincronizado de los registros reales (ej. datos cargados
+    // directo en la base, sin pasar por el check-in de la app). Mostraba
+    // "Ocupación actual: 0%" con habitaciones realmente ocupadas.
+    @Test
+    void idsHabitacionesOcupadasAhoraIncluyeRegistroActivaConCheckInYaPasado() {
+        when(repositorio.findAll()).thenReturn(List.of(registro));
+
+        // registro: check-in 27/ago/2026, ACTIVA. "Ahora" es un momento
+        // posterior, aunque el rango estimado de noches ya haya terminado:
+        // sigue ACTIVA (no se hizo check-out real) y por eso sigue ocupando.
+        Date ahora = fecha(2026, Calendar.SEPTEMBER, 20);
+
+        assertEquals(java.util.Set.of(101), service.idsHabitacionesOcupadasAhora(ahora));
+    }
+
+    @Test
+    void idsHabitacionesOcupadasAhoraIgnoraReservaFutura() {
+        when(repositorio.findAll()).thenReturn(List.of(registro));
+
+        // "Ahora" es ANTES del check-in del registro: es una reserva futura,
+        // todavía no hay nadie en la habitación.
+        Date ahora = fecha(2026, Calendar.AUGUST, 1);
+
+        assertTrue(service.idsHabitacionesOcupadasAhora(ahora).isEmpty());
+    }
+
+    // Segundo bug real encontrado al verificar el fix anterior: la primera
+    // versión incluía también registros FINALIZADA cuyo rango estimado
+    // "tocaba" el día de hoy, contando como ocupados a huéspedes que ya
+    // habían hecho check-out esa misma mañana.
+    @Test
+    void idsHabitacionesOcupadasAhoraIgnoraRegistroYaFinalizado() {
+        registro.setEstado(EstadoRegistro.FINALIZADA);
+        when(repositorio.findAll()).thenReturn(List.of(registro));
+
+        Date ahora = fecha(2026, Calendar.SEPTEMBER, 1);
+
+        assertTrue(service.idsHabitacionesOcupadasAhora(ahora).isEmpty());
+    }
+
+    @Test
+    void idsHabitacionesOcupadasAhoraIgnoraCanceladasYNoShow() {
+        registro.setEstado(EstadoRegistro.CANCELADA);
+        when(repositorio.findAll()).thenReturn(List.of(registro));
+
+        Date ahora = fecha(2026, Calendar.SEPTEMBER, 1);
+
+        assertTrue(service.idsHabitacionesOcupadasAhora(ahora).isEmpty());
+    }
 }

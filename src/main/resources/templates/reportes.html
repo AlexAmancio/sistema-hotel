@@ -87,6 +87,31 @@
     </div>
 
     <h4 style="margin: 28px 0 14px; font-size: 15px; color: var(--color-plomo-oscuro);">Últimos 6 meses</h4>
+    <div class="dashboard-grid" style="margin-bottom: 24px;">
+      <div class="stat-card">
+        <span class="stat-label">Ingresos por mes</span>
+        <div class="chart-mini">
+          <div class="chart-mini-barra-wrap" th:each="fila : ${filas}">
+            <span class="chart-mini-valor" th:text="${'S/. ' + #numbers.formatDecimal(fila.ingresos, 1, 0)}"></span>
+            <div class="chart-mini-barra"
+                 th:style="${'height:' + (maxIngresos > 0 ? (fila.ingresos / maxIngresos * 100) : 0) + '%'}"></div>
+            <span class="chart-mini-label" th:text="${#strings.arraySplit(fila.mes, ' ')[0]}"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Ocupación promedio por mes</span>
+        <div class="chart-mini">
+          <div class="chart-mini-barra-wrap" th:each="fila : ${filas}">
+            <span class="chart-mini-valor" th:text="${#numbers.formatDecimal(fila.ocupacionPromedio, 1, 1) + '%'}"></span>
+            <div class="chart-mini-barra chart-mini-barra-gold" th:style="${'height:' + fila.ocupacionPromedio + '%'}"></div>
+            <span class="chart-mini-label" th:text="${#strings.arraySplit(fila.mes, ' ')[0]}"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="table-wrapper">
       <table>
         <tr class="table-header">

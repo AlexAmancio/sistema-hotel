@@ -24,6 +24,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.sistemahotel.interfaces.IConsumoService;
+import com.example.sistemahotel.interfaces.IProductoConsumoService;
 import com.example.sistemahotel.interfaces.IRegistroService;
 import com.example.sistemahotel.modelos.EstadoRegistro;
 import com.example.sistemahotel.modelos.Registro;
@@ -45,6 +46,9 @@ class ConsumoControllerTest {
     @MockBean
     private IRegistroService registroService;
 
+    @MockBean
+    private IProductoConsumoService productoConsumoService;
+
     @Test
     void rechazaMontoVacioConMensajeClaroEnVezDeError500() throws Exception {
         mockMvc.perform(post("/consumos/agregar/6/")
@@ -55,7 +59,7 @@ class ConsumoControllerTest {
             .andExpect(redirectedUrl("/consumos/6/"))
             .andExpect(flash().attribute("error", "El monto debe ser mayor a cero."));
 
-        verify(consumoService, never()).agregar(any(), anyString(), anyDouble());
+        verify(consumoService, never()).agregar(any(), anyString(), anyDouble(), any());
     }
 
     @Test
@@ -67,7 +71,7 @@ class ConsumoControllerTest {
             .andExpect(status().is3xxRedirection())
             .andExpect(flash().attribute("error", "El monto debe ser mayor a cero."));
 
-        verify(consumoService, never()).agregar(any(), anyString(), anyDouble());
+        verify(consumoService, never()).agregar(any(), anyString(), anyDouble(), any());
     }
 
     @Test
@@ -84,7 +88,28 @@ class ConsumoControllerTest {
             .andExpect(redirectedUrl("/consumos/6/"))
             .andExpect(flash().attribute("exito", "Consumo agregado correctamente."));
 
-        verify(consumoService).agregar(registro, "Minibar", 35.0);
+        verify(consumoService).agregar(registro, "Minibar", 35.0, null);
+    }
+
+    @Test
+    void agregaElConsumoEnlazadoAlProductoCuandoVieneDeUnAtajo() throws Exception {
+        Registro registro = new Registro();
+        registro.setId(6);
+        when(registroService.consultarId(6)).thenReturn(Optional.of(registro));
+        com.example.sistemahotel.modelos.ProductoConsumo producto = new com.example.sistemahotel.modelos.ProductoConsumo();
+        producto.setId(2);
+        producto.setNombre("Minibar");
+        when(productoConsumoService.consultarId(2)).thenReturn(Optional.of(producto));
+
+        mockMvc.perform(post("/consumos/agregar/6/")
+                .with(csrf())
+                .param("descripcion", "Minibar")
+                .param("monto", "35")
+                .param("productoId", "2"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/consumos/6/"));
+
+        verify(consumoService).agregar(registro, "Minibar", 35.0, producto);
     }
 
     // Bug real encontrado en sesión: el formulario se ocultaba en el HTML si
@@ -106,7 +131,7 @@ class ConsumoControllerTest {
             .andExpect(flash().attribute("error",
                 "Esta estadía ya no está activa — no se pueden agregar más consumos."));
 
-        verify(consumoService, never()).agregar(any(), anyString(), anyDouble());
+        verify(consumoService, never()).agregar(any(), anyString(), anyDouble(), any());
     }
 
     @Test

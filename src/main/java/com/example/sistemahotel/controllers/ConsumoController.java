@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.sistemahotel.interfaces.IConsumoService;
+import com.example.sistemahotel.interfaces.IProductoConsumoService;
 import com.example.sistemahotel.interfaces.IRegistroService;
 import com.example.sistemahotel.modelos.EstadoRegistro;
+import com.example.sistemahotel.modelos.ProductoConsumo;
 import com.example.sistemahotel.modelos.Registro;
 
 @RequestMapping("/consumos/")
@@ -25,12 +27,16 @@ public class ConsumoController {
     @Autowired
     private IRegistroService registroService;
 
+    @Autowired
+    private IProductoConsumoService productoConsumoService;
+
     @GetMapping("/{registroID}/")
     public String ver(@PathVariable(name = "registroID") int registroId, Model model) {
         return registroService.consultarId(registroId)
             .map(registro -> {
                 model.addAttribute("registro", registro);
                 model.addAttribute("listaConsumos", consumoService.listarPorRegistro(registroId));
+                model.addAttribute("listaProductos", productoConsumoService.listarActivos());
                 return "registros/consumos";
             })
             .orElse("redirect:/");
@@ -41,6 +47,7 @@ public class ConsumoController {
         @PathVariable(name = "registroID") int registroId,
         @RequestParam(required = false) String descripcion,
         @RequestParam(required = false) Double monto,
+        @RequestParam(required = false) Integer productoId,
         RedirectAttributes redirectAttributes
     ) {
         if (descripcion == null || descripcion.isBlank()) {
@@ -51,6 +58,13 @@ public class ConsumoController {
             redirectAttributes.addFlashAttribute("error", "El monto debe ser mayor a cero.");
             return "redirect:/consumos/" + registroId + "/";
         }
+
+        // Si vino de un atajo del catálogo se guarda la referencia (para poder
+        // reportar qué tanto se vende cada producto); si la persona tipeó algo
+        // a mano no hay producto que enlazar, y eso es válido.
+        ProductoConsumo producto = productoId != null
+            ? productoConsumoService.consultarId(productoId).orElse(null)
+            : null;
 
         registroService.consultarId(registroId)
             .ifPresentOrElse(
@@ -63,7 +77,7 @@ public class ConsumoController {
                             "Esta estadía ya no está activa — no se pueden agregar más consumos.");
                         return;
                     }
-                    consumoService.agregar(registro, descripcion, monto);
+                    consumoService.agregar(registro, descripcion, monto, producto);
                     redirectAttributes.addFlashAttribute("exito", "Consumo agregado correctamente.");
                 },
                 () -> redirectAttributes.addFlashAttribute("error", "No se encontró el registro.")

@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -222,6 +223,15 @@ public class RegistroService implements IRegistroService {
     @Override
     public List<Registro> buscarPorNumeroHabitacion(String query) {
         return repositorio.findByHabitacion_NumeroContainingIgnoreCase(query);
+    }
+
+    @Override
+    public Set<Integer> idsHabitacionesOcupadasAhora(Date ahora) {
+        return registrosActivos().stream()
+            .filter(r -> r.getHabitacion() != null && r.getCheckIn() != null)
+            .filter(r -> !r.getCheckIn().after(ahora))
+            .map(r -> r.getHabitacion().getId())
+            .collect(Collectors.toSet());
     }
 
 }

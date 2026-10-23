@@ -27,4 +27,13 @@ public class Consumo {
     @ManyToOne
     @JoinColumn(name = "registro_id")
     private Registro registro;
+
+    // Nullable a propósito: un consumo puede venir de un atajo del catálogo
+    // (este campo queda seteado) o ser algo puntual tipeado a mano (daños,
+    // pedidos únicos) que no amerita vivir en el catálogo. "descripcion" y
+    // "monto" arriba son la copia real de lo que se cobró — si el producto
+    // cambia de nombre o precio después, el historial no se altera.
+    @ManyToOne
+    @JoinColumn(name = "producto_consumo_id")
+    private ProductoConsumo producto;
 }

@@ -56,11 +56,24 @@ public class DashboardController {
         List<Registro> registros = registroService.listar();
         Date hoy = new Date();
 
+        // "Ocupadas ahora" se calcula desde los registros ACTIVA cuyo check-in
+        // ya pasó, no desde habitacion.estado: ese campo es un espejo que
+        // solo se actualiza como efecto secundario de ciertas acciones
+        // (check-in, cambio de habitación, checkout) y puede quedar
+        // desincronizado — por ejemplo con datos cargados directo en la base.
+        // Un registro FINALIZADA no cuenta aunque su rango estimado siga
+        // "tocando" hoy: ya se hizo el check-out real.
+        java.util.Set<Integer> idsOcupadasAhora = registroService.idsHabitacionesOcupadasAhora(hoy);
+
         long totalHabitaciones = habitaciones.size();
-        long ocupadas = habitaciones.stream().filter(h -> h.getEstado() == EstadoHabitacion.OCUPADA).count();
-        long disponibles = habitaciones.stream().filter(h -> h.getEstado() == EstadoHabitacion.DISPONIBLE).count();
-        long enLimpieza = habitaciones.stream().filter(h -> h.getEstado() == EstadoHabitacion.LIMPIEZA).count();
-        long enMantenimiento = habitaciones.stream().filter(h -> h.getEstado() == EstadoHabitacion.MANTENIMIENTO).count();
+        long ocupadas = idsOcupadasAhora.size();
+        long enLimpieza = habitaciones.stream()
+            .filter(h -> !idsOcupadasAhora.contains(h.getId()) && h.getEstado() == EstadoHabitacion.LIMPIEZA)
+            .count();
+        long enMantenimiento = habitaciones.stream()
+            .filter(h -> !idsOcupadasAhora.contains(h.getId()) && h.getEstado() == EstadoHabitacion.MANTENIMIENTO)
+            .count();
+        long disponibles = totalHabitaciones - ocupadas - enLimpieza - enMantenimiento;
         int porcentajeOcupacion = totalHabitaciones == 0 ? 0 : (int) Math.round(ocupadas * 100.0 / totalHabitaciones);
 
         List<Registro> activos = registros.stream()
@@ -184,9 +197,12 @@ public class DashboardController {
             .average()
             .orElse(0);
 
+        double maxIngresos = filas.stream().mapToDouble(f -> f.ingresos).max().orElse(0);
+
         model.addAttribute("filas", filas);
         model.addAttribute("mesActual", mesActual);
         model.addAttribute("ocupacionTrimestre", ocupacionTrimestre);
+        model.addAttribute("maxIngresos", maxIngresos);
     }
 
     private void ponerAMedianoche(Calendar calendar) {
