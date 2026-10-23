@@ -505,6 +505,47 @@ table {
     background-color: var(--primary);
     color: var(--color-plomo);
 }
+.table-item-vencido {
+    box-shadow: inset 4px 0 0 var(--color-rojo);
+}
+.table-item-vencido:hover {
+    background-color: color-mix(in srgb, var(--color-rojo) 8%, var(--color-plomo-seleccion));
+}
+.col-estadia div:first-child {
+    font-size: 12px;
+    color: var(--color-plomo-oscuro);
+    margin-bottom: 3px;
+    white-space: nowrap;
+}
+.col-estadia-checkout {
+    display: flex;
+    align-items: center;
+    column-gap: 8px;
+    flex-wrap: wrap;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.acciones-fila {
+    display: flex;
+    align-items: center;
+    column-gap: 8px;
+    justify-content: flex-end;
+}
+.btn-checkout-rapido {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color .15s ease;
+}
+.btn-checkout-rapido:hover {
+    background-color: var(--primary-hover);
+}
 
 /* ======================= ESTILOS MODALES ===========================*/
 
@@ -547,6 +588,18 @@ table {
     text-align: center;
     margin-top: 80px;
     margin-bottom: 50px;
+}
+.aviso-comprobante-emitido {
+    max-width: 700px;
+    margin: -20px auto 40px;
+    padding: 14px 18px;
+    background: var(--estado-ocupada-bg);
+    color: var(--color-rojo);
+    border: 1px solid var(--color-rojo);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: center;
 }
 .actions-form {
     padding: 25px 0px;
@@ -686,6 +739,22 @@ table {
     width: 100%;
     cursor: pointer;
 }
+.submenu-options .submenu-separador {
+    padding: 10px 20px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-plomo-oscuro);
+    background-color: var(--bg-input);
+    border-bottom: solid 1px var(--border-color);
+    user-select: none;
+    cursor: default;
+}
+.submenu-options .submenu-eliminar span {
+    color: var(--color-rojo);
+    font-weight: 600;
+}
 
 .wrapper-dev {
     width: 100%;
@@ -748,6 +817,19 @@ table {
     font-size: 15px;
     color: var(--color-plomo-oscuro);
     line-height: 1.5;
+}
+.modal-confirm-link {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+}
+.modal-confirm-link:hover {
+    text-decoration: underline;
+}
+.modal-confirm-link.hidden {
+    display: none;
 }
 .modal-confirm-actions {
     display: flex;
@@ -956,6 +1038,16 @@ table {
 }
 .saldo-pendiente::before { content: "⚠ "; }
 .saldo-cero::before { content: "✓ "; }
+.resumen-link-consumos {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+}
+.resumen-link-consumos:hover {
+    text-decoration: underline;
+}
 
 .form-warning-texto {
     color: var(--color-rojo);
@@ -981,6 +1073,29 @@ table {
     transition: background-color .15s ease, border-color .15s ease;
 }
 .btn-noche-rapida:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--primary);
+}
+
+.consumo-atajos {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 8px;
+    row-gap: 6px;
+    margin: 0 0 16px 250px;
+}
+.btn-consumo-atajo {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+.btn-consumo-atajo:hover {
     background-color: var(--bg-hover);
     border-color: var(--primary);
 }
@@ -1683,6 +1798,17 @@ table {
     background: var(--bg-surface);
     color: var(--text-color);
     cursor: pointer;
+}
+.filtro-bar input[type="text"] {
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    padding: 8px 12px;
+    margin-left: 12px;
+    width: 260px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-color);
 }
 .btn-exportar {
     font-size: 15px;

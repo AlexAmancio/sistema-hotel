@@ -94,7 +94,7 @@
               <td>
                 <span class="col-tag estado-activa" th:if="${registro.estado.name() == 'ACTIVA'}">Activa</span>
                 <span class="col-tag estado-finalizada" th:if="${registro.estado.name() == 'FINALIZADA'}">Check-out hecho</span>
-                <span class="col-tag estado-cancelada" th:if="${registro.estado.name() == 'CANCELADA'}">Cancelada</span>
+                <span class="col-tag estado-cancelada" th:if="${registro.estado.name() == 'CANCELADA'}">Cancelado</span>
                 <span class="col-tag estado-no-show" th:if="${registro.estado.name() == 'NO_SHOW'}">No-show</span>
               </td>
               <td th:text="${'S/. ' + #numbers.formatDecimal(registro.totalEstadia, 1, 2)}"></td>

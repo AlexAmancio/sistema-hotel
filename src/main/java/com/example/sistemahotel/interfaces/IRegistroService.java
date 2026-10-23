@@ -4,16 +4,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import com.example.sistemahotel.modelos.EstadoRegistro;
 import com.example.sistemahotel.modelos.Habitacion;
 import com.example.sistemahotel.modelos.Registro;
 
 public interface IRegistroService {
     public List<Registro> listar();
-    public Page<Registro> listarPaginado(EstadoRegistro estado, Pageable pageable);
+    // Orden operativo para el panel de recepción: vencidas primero (la que
+    // lleva más tiempo vencida, primero), luego activas por checkout más
+    // próximo, y al final el historial (finalizada/cancelada/no-show) con lo
+    // más reciente arriba.
+    public List<Registro> listarOrdenadoPorPrioridad(EstadoRegistro estado);
     public Optional<Registro> consultarId(int id);
     public void guardar(Registro registro);
     public void eliminar(int id);

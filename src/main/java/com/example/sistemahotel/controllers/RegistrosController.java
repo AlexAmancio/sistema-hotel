@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -64,16 +62,36 @@ public class RegistrosController {
     @GetMapping("/")
     public String listar(
         @RequestParam(required = false) String estado,
+        @RequestParam(required = false) String q,
         @RequestParam(defaultValue = "0") int pagina,
         Model model
     ) {
         EstadoRegistro filtro = parseEstado(estado);
-        Page<Registro> paginaRegistros = service.listarPaginado(filtro, PageRequest.of(pagina, TAMANO_PAGINA));
-        List<Registro> registros = paginaRegistros.getContent();
+        List<Registro> todosOrdenados = service.listarOrdenadoPorPrioridad(filtro);
+
+        // Busca por cliente, DNI o número de habitación sobre el listado ya
+        // ordenado y filtrado por estado — antes la única forma de buscar
+        // era el buscador del sidebar, que te sacaba a una pantalla de
+        // resultados totalmente distinta y perdías el filtro de estado.
+        String busqueda = q != null ? q.trim() : "";
+        if (!busqueda.isBlank()) {
+            String busquedaLower = busqueda.toLowerCase();
+            todosOrdenados = todosOrdenados.stream()
+                .filter(r -> coincideConBusqueda(r, busquedaLower))
+                .collect(Collectors.toList());
+        }
+
+        int totalPaginas = Math.max(1, (int) Math.ceil(todosOrdenados.size() / (double) TAMANO_PAGINA));
+        int paginaActual = Math.max(0, Math.min(pagina, totalPaginas - 1));
+        int desde = paginaActual * TAMANO_PAGINA;
+        int hasta = Math.min(desde + TAMANO_PAGINA, todosOrdenados.size());
+        List<Registro> registros = desde < hasta ? todosOrdenados.subList(desde, hasta) : List.of();
+
         model.addAttribute("registros", registros);
         model.addAttribute("estadoSeleccionado", estado != null ? estado : "");
-        model.addAttribute("paginaActual", paginaRegistros.getNumber());
-        model.addAttribute("totalPaginas", paginaRegistros.getTotalPages());
+        model.addAttribute("busqueda", busqueda);
+        model.addAttribute("paginaActual", paginaActual);
+        model.addAttribute("totalPaginas", totalPaginas);
 
         Map<Integer, Comprobante> comprobantesPorRegistro = new HashMap<>();
         for (Registro registro : registros) {
@@ -96,18 +114,43 @@ public class RegistrosController {
         }
     }
 
-    // Usada por el export a CSV, que siempre necesita el listado completo sin paginar.
-    private List<Registro> filtrarPorEstado(List<Registro> registros, String estado) {
-        EstadoRegistro filtro = parseEstado(estado);
-        if (filtro == null) {
-            return registros;
+    private boolean coincideConBusqueda(Registro registro, String busquedaLower) {
+        if (registro.getCliente() != null) {
+            String nombreCompleto = (registro.getCliente().getNombres() + " " + registro.getCliente().getApellidos()).toLowerCase();
+            if (nombreCompleto.contains(busquedaLower)) {
+                return true;
+            }
+            String identificacion = registro.getCliente().getIdentificacion();
+            if (identificacion != null && identificacion.toLowerCase().contains(busquedaLower)) {
+                return true;
+            }
         }
-        return registros.stream().filter(r -> r.getEstado() == filtro).collect(Collectors.toList());
+        if (registro.getHabitacion() != null) {
+            String numero = registro.getHabitacion().getNumero();
+            if (numero != null && numero.toLowerCase().contains(busquedaLower)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @GetMapping("/exportar/")
-    public void exportar(@RequestParam(required = false) String estado, HttpServletResponse response) throws IOException {
-        List<Registro> registros = filtrarPorEstado(service.listar(), estado);
+    public void exportar(
+        @RequestParam(required = false) String estado,
+        @RequestParam(required = false) String q,
+        HttpServletResponse response
+    ) throws IOException {
+        // Mismo orden que la pantalla (vencidas primero, luego activas por
+        // checkout más próximo, historial al final) — antes el CSV salía en
+        // el orden crudo de la base, distinto a lo que se ve en pantalla.
+        List<Registro> registros = service.listarOrdenadoPorPrioridad(parseEstado(estado));
+        String busqueda = q != null ? q.trim() : "";
+        if (!busqueda.isBlank()) {
+            String busquedaLower = busqueda.toLowerCase();
+            registros = registros.stream()
+                .filter(r -> coincideConBusqueda(r, busquedaLower))
+                .collect(Collectors.toList());
+        }
 
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"registros.csv\"");
@@ -122,8 +165,8 @@ public class RegistrosController {
                 csv(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(r.getCheckIn())),
                 csv(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(r.calcularCheckoutEstimado())),
                 csv(r.getEstado().name()),
-                csv(String.valueOf(r.getTarifa())),
-                csv(String.valueOf(r.getSaldoPendiente())),
+                csv(String.format("%.2f", r.getTarifa())),
+                csv(String.format("%.2f", r.getSaldoPendiente())),
                 csv(r.getUsuario() != null ? r.getUsuario().getNombres() + " " + r.getUsuario().getApellidos() : "")
             ));
         }
@@ -228,7 +271,21 @@ public class RegistrosController {
             return redirectError;
         }
 
-        if (registro.getHabitacion() != null && registro.getNumHuespedes() > registro.getHabitacion().getAforo()) {
+        boolean esNuevo = registro.getId() == 0;
+        Registro existente = esNuevo ? null : service.consultarId(registro.getId()).orElse(null);
+
+        // El aforo solo se revalida cuando de verdad cambia la habitación o
+        // el número de huéspedes en este guardado. Si no, un registro viejo
+        // cuya habitación le bajaron el aforo después (desde Habitaciones)
+        // queda bloqueado para guardar cualquier cosa de ahí en más —
+        // incluso algo que no toca ni habitación ni huéspedes, como
+        // actualizar el pago.
+        boolean cambioRelevanteParaAforo = esNuevo
+            || existente == null
+            || existente.getNumHuespedes() != registro.getNumHuespedes()
+            || existente.getHabitacion() == null
+            || existente.getHabitacion().getId() != registro.getHabitacion().getId();
+        if (cambioRelevanteParaAforo && registro.getNumHuespedes() > registro.getHabitacion().getAforo()) {
             redirectAttributes.addFlashAttribute("error",
                 "El número de huéspedes (" + registro.getNumHuespedes() + ") supera el aforo máximo de la habitación " +
                 registro.getHabitacion().getNumero() + " (" + registro.getHabitacion().getAforo() + " personas).");
@@ -247,7 +304,6 @@ public class RegistrosController {
 
         // Un check-in nuevo queda atribuido al usuario logueado, no al que
         // el form haya podido mandar (evita que se falsee quién lo registró).
-        boolean esNuevo = registro.getId() == 0;
         if (esNuevo) {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
             usuarioService.consultarpornombreusuario(username).ifPresent(registro::setUsuario);
@@ -256,12 +312,9 @@ public class RegistrosController {
         // Si se está editando y se cambió de habitación, hay que liberar la
         // anterior: si no, se quedaba marcada OCUPADA para siempre aunque este
         // registro ya no la use.
-        Integer habitacionAnteriorId = null;
-        if (!esNuevo) {
-            habitacionAnteriorId = service.consultarId(registro.getId())
-                .map(r -> r.getHabitacion() != null ? r.getHabitacion().getId() : null)
-                .orElse(null);
-        }
+        Integer habitacionAnteriorId = (existente != null && existente.getHabitacion() != null)
+            ? existente.getHabitacion().getId()
+            : null;
 
         try {
             service.guardar(registro);
@@ -321,6 +374,12 @@ public class RegistrosController {
             model.addAttribute("clientesConReservaActiva", clientesConReservaActiva(id));
             model.addAttribute("titulo", "Editar registro");
             model.addAttribute("txtboton", "Actualizar");
+            // Si ya se emitió comprobante, cambiar tarifa/habitación/noches
+            // acá no lo actualiza — el comprobante congela esos datos para
+            // siempre. El aviso es solo informativo, no bloquea nada: seguir
+            // editando observaciones o terminar de cobrar el saldo después
+            // de emitido sigue siendo válido.
+            model.addAttribute("comprobanteEmitido", comprobanteService.consultarPorRegistro(id).orElse(null));
             return carpeta + "registro-form";
         }).orElse("redirect:/");
     }
@@ -353,12 +412,29 @@ public class RegistrosController {
         } catch (ObjectOptimisticLockingFailureException e) {
             redirectAttributes.addFlashAttribute("error",
                 "Este registro fue modificado por otra persona justo ahora. Recargá la página e intentá de nuevo.");
+            return "redirect:/";
         }
-        return "redirect:/";
+        // Sin esto, el check-out recién hecho quedaba enterrado detrás de
+        // todas las estadías activas (el orden por prioridad las pone
+        // primero) — había que filtrar a mano para encontrarlo y poder
+        // emitirle el comprobante. Al filtrar directo a "Check-out hecho"
+        // aparece de primero, por ser el más reciente del historial.
+        return "redirect:/?estado=FINALIZADA";
     }
+
 
     @PostMapping("/cancelar/{registroID}/")
     public String cancelar(@PathVariable(name="registroID") int id, RedirectAttributes redirectAttributes) {
+        // Mismo criterio que no-show: un consumo cargado prueba que el
+        // huésped sí llegó a usar el servicio. "Cancelada" queda afuera de
+        // ingresos/ocupación en los reportes, así que cancelar acá dejaría al
+        // sistema mintiendo sobre una estadía que sí pasó de verdad — la
+        // acción correcta en ese caso es Check-out, no Cancelar.
+        if (!consumoService.listarPorRegistro(id).isEmpty()) {
+            redirectAttributes.addFlashAttribute("error",
+                "No se puede cancelar: ya tiene consumos cargados, así que sí llegó a usar el servicio. Hacé check-out en vez de cancelar.");
+            return "redirect:/";
+        }
         try {
             service.cancelar(id);
         } catch (ObjectOptimisticLockingFailureException e) {
@@ -370,6 +446,14 @@ public class RegistrosController {
 
     @PostMapping("/no-show/{registroID}/")
     public String noShow(@PathVariable(name="registroID") int id, RedirectAttributes redirectAttributes) {
+        // Un consumo cargado es prueba de que el huésped sí llegó a usar la
+        // habitación: marcarlo no-show en ese caso sería una contradicción, y
+        // además liberaría la habitación a Disponible sin pasar por limpieza.
+        if (!consumoService.listarPorRegistro(id).isEmpty()) {
+            redirectAttributes.addFlashAttribute("error",
+                "No se puede marcar como no-show: ya tiene consumos cargados, así que sí llegó a usar la habitación.");
+            return "redirect:/";
+        }
         try {
             service.marcarNoShow(id);
         } catch (ObjectOptimisticLockingFailureException e) {

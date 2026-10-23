@@ -19,27 +19,28 @@
           <option value="" th:selected="${estadoSeleccionado == ''}">Todos</option>
           <option value="ACTIVA" th:selected="${estadoSeleccionado == 'ACTIVA'}">Activa</option>
           <option value="FINALIZADA" th:selected="${estadoSeleccionado == 'FINALIZADA'}">Check-out hecho</option>
-          <option value="CANCELADA" th:selected="${estadoSeleccionado == 'CANCELADA'}">Cancelada</option>
+          <option value="CANCELADA" th:selected="${estadoSeleccionado == 'CANCELADA'}">Cancelado</option>
           <option value="NO_SHOW" th:selected="${estadoSeleccionado == 'NO_SHOW'}">No-show</option>
         </select>
+        <input type="text" id="filtro-busqueda" name="q" placeholder="Buscar cliente, DNI o habitación..."
+               autocomplete="off" th:value="${busqueda}" />
       </form>
-      <a class="btn-exportar" th:href="@{/exportar/(estado=${estadoSeleccionado})}">Exportar CSV</a>
+      <a class="btn-exportar" th:href="@{/exportar/(estado=${estadoSeleccionado}, q=${busqueda})}">Exportar CSV</a>
     </div>
 
     <div class="table-wrapper">
     <table class="table-registros">
       <tr class="table-header">
         <th>Descripción</th>
-        <th>Ingreso</th>
-        <th>Reserva termina el.</th>
-        <th>Termina en:</th>
+        <th>Estadía</th>
         <th>Estado</th>
         <th>Tarifa</th>
         <th>Saldo</th>
         <th>Observaciones</th>
         <th></th>
       </tr>
-      <tr th:each="registro : ${registros}" class="table-item">
+      <tr th:each="registro : ${registros}" class="table-item"
+          th:classappend="${registro.estado.name() == 'ACTIVA' and registro.calcularCheckoutEstimadoAmigable().equals('Vencido')} ? 'table-item-vencido'">
         <td class="table-item-header">
           <a th:href="${'/editar/' + registro.id + '/'}">
             <div class="cliente-item-header">
@@ -55,34 +56,49 @@
             </div>
           </a>
         </td>
-        <td th:text="${#dates.format(registro.checkIn, 'dd/MM/yyyy HH:mm')}"></td>
-        <td th:text="${#dates.format(registro.calcularCheckoutEstimado(), 'dd/MM/yyyy HH:mm')}"></td>
-        <td>
-          <span
-                th:if="${registro.estado.name() == 'ACTIVA' and registro.calcularCheckoutEstimadoAmigable().equals('Vencido')}"
-                class="col-tag tag-vencido"
-                th:text="${registro.calcularCheckoutEstimadoAmigable()}">
-              </span>
-              <span
-                th:if="${registro.estado.name() == 'ACTIVA' and !registro.calcularCheckoutEstimadoAmigable().equals('Vencido')}"
-                class="col-tag tag-activo"
-                th:text="${registro.calcularCheckoutEstimadoAmigable()}">
-              </span>
-              <span th:unless="${registro.estado.name() == 'ACTIVA'}">—</span>
+        <td class="col-estadia">
+          <div th:text="${'Ingreso ' + #dates.format(registro.checkIn, 'dd/MM/yyyy HH:mm')}"></div>
+          <div class="col-estadia-checkout">
+            <span th:text="${'Hasta ' + #dates.format(registro.calcularCheckoutEstimado(), 'dd/MM/yyyy HH:mm')}"></span>
+            <span
+                  th:if="${registro.estado.name() == 'ACTIVA' and registro.calcularCheckoutEstimadoAmigable().equals('Vencido')}"
+                  class="col-tag tag-vencido"
+                  th:text="${registro.calcularCheckoutEstimadoAmigable()}">
+                </span>
+                <span
+                  th:if="${registro.estado.name() == 'ACTIVA' and !registro.calcularCheckoutEstimadoAmigable().equals('Vencido')}"
+                  class="col-tag tag-activo"
+                  th:text="${registro.calcularCheckoutEstimadoAmigable()}">
+                </span>
+          </div>
         </td>
         <td>
           <span class="col-tag estado-activa" th:if="${registro.estado.name() == 'ACTIVA'}">Activa</span>
           <span class="col-tag estado-finalizada" th:if="${registro.estado.name() == 'FINALIZADA'}">Check-out hecho</span>
-          <span class="col-tag estado-cancelada" th:if="${registro.estado.name() == 'CANCELADA'}">Cancelada</span>
+          <span class="col-tag estado-cancelada" th:if="${registro.estado.name() == 'CANCELADA'}">Cancelado</span>
           <span class="col-tag estado-no-show" th:if="${registro.estado.name() == 'NO_SHOW'}">No-show</span>
         </td>
-        <td th:text="${'S/.' + registro.tarifa}"></td>
+        <td th:text="${'S/. ' + #numbers.formatDecimal(registro.tarifa, 1, 2)}"></td>
         <td>
           <span th:if="${registro.saldoPendiente > 0}" class="saldo-pendiente" th:text="${'S/.' + #numbers.formatDecimal(registro.saldoPendiente, 1, 2)}"></span>
           <span th:unless="${registro.saldoPendiente > 0}" class="saldo-cero">Pagado</span>
         </td>
         <td class="col-observaciones" th:text="${registro.observaciones}"></td>
         <td>
+          <div class="acciones-fila">
+          <form th:if="${registro.estado.name() == 'ACTIVA'}" class="form-eliminar"
+                th:action="${'/checkout/' + registro.id + '/'}" method="post"
+                data-confirm-titulo="¿Hacer check-out?"
+                th:attr="data-confirm-texto=${registro.saldoPendiente > 0
+                            ? ('Ojo: queda un saldo pendiente de S/. ' + #numbers.formatDecimal(registro.saldoPendiente, 1, 2) + ' sin cobrar. Si hacés check-out ahora, va a quedar sin cobrar. ¿Confirmás igual?')
+                            : 'La habitación quedará marcada En limpieza y disponible para un próximo huésped.'},
+                        data-confirm-peligro=${registro.saldoPendiente > 0},
+                        data-confirm-link-href=${registro.saldoPendiente > 0 ? ('/editar/' + registro.id + '/') : null},
+                        data-confirm-link-texto=${registro.saldoPendiente > 0 ? 'Ir a cobrar el saldo primero →' : null}"
+                data-confirm-boton="Hacer check-out">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" class="btn-checkout-rapido">Check-out</button>
+          </form>
           <div class="wrapper-options">
             <div class="icon-three">
               <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -113,31 +129,15 @@
                   </li>
                 </a>
 
-                <a th:href="${'/consumos/' + registro.id + '/'}">
+                <a th:if="${registro.estado.name() == 'ACTIVA' or registro.estado.name() == 'FINALIZADA'}"
+                   th:href="${'/consumos/' + registro.id + '/'}">
                   <li>
                     <img th:src="@{/icons/edit-outline.svg}" alt="Icono de consumos">
                     <span th:text="${registro.totalConsumos > 0 ? ('Consumos (S/.' + #numbers.formatDecimal(registro.totalConsumos, 1, 2) + ')') : 'Consumos'}"></span>
                   </li>
                 </a>
 
-                <form th:if="${registro.estado.name() == 'ACTIVA'}" class="form-eliminar"
-                      th:action="${'/checkout/' + registro.id + '/'}" method="post"
-                      data-confirm-titulo="¿Hacer check-out?"
-                      th:attr="data-confirm-texto=${registro.saldoPendiente > 0
-                                  ? ('Ojo: queda un saldo pendiente de S/. ' + #numbers.formatDecimal(registro.saldoPendiente, 1, 2) + ' sin cobrar. Si hacés check-out ahora, va a quedar sin cobrar. ¿Confirmás igual?')
-                                  : 'La habitación quedará marcada En limpieza y disponible para un próximo huésped.'},
-                              data-confirm-peligro=${registro.saldoPendiente > 0}"
-                      data-confirm-boton="Hacer check-out">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                  <button type="submit">
-                    <li>
-                      <img th:src="@{/icons/edit-outline.svg}" alt="Icono de check-out">
-                      <span>Hacer check-out</span>
-                    </li>
-                  </button>
-                </form>
-
-                <div th:unless="${comprobantes.containsKey(registro.id)}">
+                <div th:if="${!comprobantes.containsKey(registro.id) and registro.estado.name() == 'FINALIZADA'}">
                   <form class="form-eliminar" th:action="${'/comprobantes/emitir/' + registro.id + '/'}" method="post"
                         data-confirm-titulo="¿Emitir comprobante?"
                         data-confirm-texto="Se genera un comprobante local de demostración (no válido ante SUNAT) con número correlativo fijo."
@@ -158,10 +158,12 @@
                   </li>
                 </a>
 
-                <form th:if="${registro.estado.name() == 'ACTIVA'}" class="form-eliminar"
+                <li class="submenu-separador">Terminar o cancelar</li>
+
+                <form th:if="${registro.estado.name() == 'ACTIVA' and registro.totalConsumos == 0}" class="form-eliminar"
                       th:action="${'/cancelar/' + registro.id + '/'}" method="post"
                       data-confirm-titulo="¿Cancelar esta reserva?"
-                      data-confirm-texto="Queda marcada como cancelada, sin borrar el historial. Si la habitación ya estaba ocupada, pasa por limpieza antes de liberarse; si no, queda disponible al instante."
+                      data-confirm-texto="Queda marcado como cancelado, sin borrar el historial. Si la habitación ya estaba ocupada, pasa por limpieza antes de liberarse; si no, queda disponible al instante."
                       data-confirm-boton="Cancelar reserva">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <button type="submit">
@@ -172,7 +174,7 @@
                   </button>
                 </form>
 
-                <form th:if="${registro.estado.name() == 'ACTIVA'}" class="form-eliminar"
+                <form th:if="${registro.estado.name() == 'ACTIVA' and registro.totalConsumos == 0}" class="form-eliminar"
                       th:action="${'/no-show/' + registro.id + '/'}" method="post"
                       data-confirm-titulo="¿Marcar como no-show?"
                       data-confirm-texto="El huésped nunca llegó. Queda registrado sin borrar el historial, y libera la habitación."
@@ -186,10 +188,14 @@
                   </button>
                 </form>
 
-                <form class="form-eliminar" th:action="${'/eliminar/' + registro.id + '/'}" method="post">
+                <form class="form-eliminar" th:action="${'/eliminar/' + registro.id + '/'}" method="post"
+                      data-confirm-titulo="¿Eliminar este registro?"
+                      data-confirm-texto="Se borra por completo de la base de datos — a diferencia de Cancelar o Check-out, acá no queda historial. Si la habitación estaba ocupada por este registro, se libera."
+                      data-confirm-peligro="true"
+                      data-confirm-boton="Eliminar registro">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <button type="submit">
-                    <li>
+                    <li class="submenu-eliminar">
                       <img th:src="@{/icons/delete-outline.svg}" alt="Icono de tacho">
                       <span>Eliminar</span>
                     </li>
@@ -198,18 +204,40 @@
               </ul>
             </div>
           </div>
+          </div>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(registros)}">
+        <td colspan="7" style="text-align:center; color: var(--color-plomo-oscuro); padding: 30px 0;">
+          No hay registros con este filtro.
         </td>
       </tr>
     </table>
     </div>
 
-    <div th:replace="~{pagination-fragment(paginaActual=${paginaActual}, totalPaginas=${totalPaginas}, urlBase='/?estado=' + ${estadoSeleccionado} + '&amp;pagina=')}"></div>
+    <div th:replace="~{pagination-fragment(paginaActual=${paginaActual}, totalPaginas=${totalPaginas}, urlBase='/?estado=' + ${estadoSeleccionado} + '&amp;q=' + ${busqueda} + '&amp;pagina=')}"></div>
 
   </div>
   <div th:replace="~{confirm-modal-fragment :: confirmModal}"></div>
   <script th:src="@{/js/script.js}"></script>
   <script th:src="@{/js/script-listas.js}"></script>
   <script th:src="@{/js/script-confirm-delete.js}"></script>
+  <script>
+    // Busca a medida que se escribe, con una pequeña espera para no mandar
+    // un request por cada tecla — igual que el patrón que ya usa el
+    // formulario de registro para buscar habitaciones disponibles.
+    (function () {
+      const input = document.getElementById('filtro-busqueda');
+      const form = document.getElementById('filtro-estado-form');
+      let busquedaTimeout = null;
+      input.addEventListener('input', function () {
+        clearTimeout(busquedaTimeout);
+        busquedaTimeout = setTimeout(function () {
+          form.submit();
+        }, 500);
+      });
+    })();
+  </script>
 </body>
 
 </html>

@@ -23,7 +23,8 @@
         <td th:text="${#temporals.format(consumo.fecha, 'dd/MM/yyyy HH:mm')}"></td>
         <td th:text="${'S/. ' + #numbers.formatDecimal(consumo.monto, 1, 2)}"></td>
         <td>
-          <form class="form-eliminar" th:action="${'/consumos/eliminar/' + consumo.id + '/'}" method="post"
+          <form th:if="${registro.estado.name() == 'ACTIVA'}" class="form-eliminar"
+                th:action="${'/consumos/eliminar/' + registro.id + '/' + consumo.id + '/'}" method="post"
                 data-confirm-titulo="¿Eliminar este consumo?"
                 data-confirm-texto="Se quita de la cuenta de la estadía."
                 data-confirm-boton="Eliminar">
@@ -44,10 +45,21 @@
       <b th:text="${'Total consumos: S/. ' + #numbers.formatDecimal(registro.totalConsumos, 1, 2)}"></b>
       &nbsp;·&nbsp;
       <span th:text="${'Total estadía: S/. ' + #numbers.formatDecimal(registro.totalEstadia, 1, 2)}"></span>
+      &nbsp;·&nbsp;
+      <span th:if="${registro.saldoPendiente > 0}" class="saldo-pendiente"
+            th:text="${'Saldo pendiente: S/. ' + #numbers.formatDecimal(registro.saldoPendiente, 1, 2)}"></span>
+      <span th:unless="${registro.saldoPendiente > 0}" class="saldo-cero">Sin saldo pendiente</span>
     </p>
 
     <form th:if="${registro.estado.name() == 'ACTIVA'}" th:action="${'/consumos/agregar/' + registro.id + '/'}" method="post" style="max-width: 500px;">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+      <div class="consumo-atajos">
+        <button type="button" class="btn-consumo-atajo" data-descripcion="Minibar" data-monto="20">Minibar</button>
+        <button type="button" class="btn-consumo-atajo" data-descripcion="Room service - Desayuno a la habitación" data-monto="28">Desayuno</button>
+        <button type="button" class="btn-consumo-atajo" data-descripcion="Room service - Almuerzo o cena" data-monto="40">Almuerzo/Cena</button>
+        <button type="button" class="btn-consumo-atajo" data-descripcion="Lavandería" data-monto="28">Lavandería</button>
+        <button type="button" class="btn-consumo-atajo" data-descripcion="Late check-out" data-monto="35">Late check-out</button>
+      </div>
       <div class="group-field">
         <label for="descripcion">Descripción</label>
         <input type="text" id="descripcion" name="descripcion" placeholder="Ej. Minibar, Room service, Lavandería" required>
@@ -72,6 +84,15 @@
   <script th:src="@{/js/script.js}"></script>
   <script th:src="@{/js/script-listas.js}"></script>
   <script th:src="@{/js/script-confirm-delete.js}"></script>
+  <script>
+    document.querySelectorAll('.btn-consumo-atajo').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.getElementById('descripcion').value = this.dataset.descripcion;
+        document.getElementById('monto').value = this.dataset.monto;
+        document.getElementById('monto').focus();
+      });
+    });
+  </script>
 </body>
 
 </html>

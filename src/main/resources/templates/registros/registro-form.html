@@ -8,13 +8,28 @@
     <form id="registro-form" th:action="@{/guardar/}" method="post" th:object="${registro}">
         <div class="header-form">
             <h1 th:text="${titulo}"></h1>
-            <button type="button" id="btn-llegada-rapida" class="btn-llegada-rapida">
+            <button th:if="${registro.id == 0}" type="button" id="btn-llegada-rapida" class="btn-llegada-rapida">
                 ⚡ Llegada rápida (hoy, 1 noche, la más económica)
             </button>
+        </div>
+        <div th:if="${comprobanteEmitido != null}" class="aviso-comprobante-emitido">
+            ⚠ Este registro ya tiene el comprobante <strong th:text="${comprobanteEmitido.numeroCompleto}"></strong> emitido.
+            Si cambiás la tarifa, la habitación o las noches acá, el comprobante ya generado <strong>no se actualiza solo</strong> —
+            va a quedar con el monto viejo.
         </div>
         <div class="content-form">
             <input th:field="*{id}" type="hidden" />
             <input th:field="*{version}" type="hidden" />
+            <!--
+              Sin este campo, cada guardado armaba un Registro nuevo del lado
+              del servidor con "estado" en su valor por defecto (ACTIVA,
+              ver Registro.java) porque el formulario nunca lo mandaba. Eso
+              reseteaba a ACTIVA silenciosamente cualquier registro que se
+              editara estando FINALIZADA/CANCELADA/NO_SHOW — por ejemplo,
+              corregir una observación de una estadía ya cerrada hace
+              semanas la revivía como si el huésped siguiera ahí.
+            -->
+            <input th:field="*{estado}" type="hidden" />
 
             <div class="form-stepper" id="form-stepper">
                 <div class="form-step" data-step="huesped">
@@ -60,6 +75,9 @@
                     </div>
                     <p id="checkin-pasado-warning" class="hidden form-warning-texto">
                         La fecha de ingreso ya pasó.
+                    </p>
+                    <p id="checkin-futuro-warning" class="hidden form-warning-texto">
+                        La fecha de ingreso está a más de un año. Revisá que el año esté bien.
                     </p>
                     <div class="group-field">
                         <label for="salida">Fecha de salida:</label>
@@ -130,6 +148,9 @@
                         <label for="montoPagado">Monto pagado (S/.)</label>
                         <input id="montoPagado" th:field="*{montoPagado}" type="number" min="0" step="0.1"/>
                     </div>
+                    <p id="monto-excesivo-warning" class="hidden form-warning-texto">
+                        El monto pagado es mucho mayor a la tarifa. Revisá que no sea un error de tipeo.
+                    </p>
                     <div class="pago-rapido">
                         <button type="button" class="btn-pago-rapido" data-pct="50">Pagó 50%</button>
                         <button type="button" class="btn-pago-rapido" data-pct="100">Pagó 100%</button>
@@ -158,6 +179,9 @@
                     <div id="resumen-vivo" class="resumen-vivo hidden">
                         <p id="resumen-calculo"></p>
                         <p id="resumen-saldo"></p>
+                        <a th:if="${registro.id > 0 and registro.totalConsumos > 0}"
+                           th:href="${'/consumos/' + registro.id + '/'}"
+                           class="resumen-link-consumos">Ver/cobrar consumos →</a>
                     </div>
                 </aside>
             </div>
@@ -189,6 +213,12 @@
     // disponibles (si no, su propia habitación se vería "ocupada" por sí misma).
     const registroIdActual = /*[[${registro.id}]]*/ 0;
 
+    // Al editar un registro que ya tiene consumos cargados (ver pantalla de
+    // Consumos), el total real a cobrar no es solo la tarifa: "Pagó 100%",
+    // el saldo pendiente y el aviso de monto excesivo tienen que contar esto
+    // también, si no quedan ciegos a una deuda que ya existe.
+    const totalConsumosExistentes = /*[[${registro.totalConsumos}]]*/ 0;
+
     // Lista completa de clientes para el buscador: con cientos de clientes,
     // un <select> normal se volvía imposible de usar (no se podía escribir
     // ni filtrar). Se filtra en el navegador, sin ida y vuelta al servidor.
@@ -219,6 +249,11 @@
     // "Llegada rápida": un solo click para armar el caso más común (hoy, 1
     // noche, la categoría más barata disponible). Se consume una sola vez.
     let autoElegirMasBarata = false;
+
+    // Si el staff marcó "Pagó 100%", el monto pagado se mantiene sincronizado
+    // con la tarifa aunque después cambie de habitación; se apaga si edita el
+    // monto a mano o si usa "Pagó 50%".
+    let pagoCompletoIntencion = false;
 
     function crearElemento(tag, className, texto) {
         const el = document.createElement(tag);
@@ -634,13 +669,39 @@
             const warning = document.getElementById('habitacion-warning');
             warning.classList.remove('hidden');
             warning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
         }
+        // La validación pasó y el formulario se va a enviar de verdad: se
+        // deshabilita el botón para que un doble clic por apuro no cree el
+        // mismo registro dos veces antes de que la página redirija.
+        const btnSubmit = this.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+        btnSubmit.querySelector('span').textContent = 'Guardando...';
     });
 
     function mostrarTarifa(valor) {
         const tarifa = parseFloat(valor) || 0;
         document.getElementById('tarifaCalculada').value = tarifa;
         document.getElementById('tarifaMostrada').value = tarifa > 0 ? `S/. ${formatearSoles(tarifa)}` : '';
+
+        // Si ya se había marcado "Pagó 100%", el monto se recalcula solo con
+        // la tarifa nueva en vez de quedar desactualizado en silencio al
+        // cambiar de habitación.
+        if (pagoCompletoIntencion) {
+            document.getElementById('montoPagado').value = tarifa + totalConsumosExistentes;
+            actualizarResumen();
+            verificarMontoExcesivo();
+        }
+    }
+
+    // Aviso no bloqueante: un monto muy por encima de la tarifa suele ser un
+    // error de tipeo (ej. 5000 en vez de 500), con plata real de por medio.
+    function verificarMontoExcesivo() {
+        const tarifa = parseFloat(document.getElementById('tarifaCalculada').value) || 0;
+        const totalConDeuda = tarifa + totalConsumosExistentes;
+        const pagado = parseFloat(document.getElementById('montoPagado').value) || 0;
+        const warning = document.getElementById('monto-excesivo-warning');
+        warning.classList.toggle('hidden', !(totalConDeuda > 0 && pagado > totalConDeuda * 2));
     }
 
     function calcularTarifaAutomatica() {
@@ -676,9 +737,12 @@
 
         const precioPorNoche = tarifa / noches;
         let texto = `${noches} noche${noches === 1 ? '' : 's'} × S/. ${formatearSoles(precioPorNoche)} = S/. ${formatearSoles(tarifa)}`;
+        if (totalConsumosExistentes > 0) {
+            texto += ` + S/. ${formatearSoles(totalConsumosExistentes)} de consumos ya cargados`;
+        }
         calculo.textContent = texto;
 
-        const saldo = tarifa - pagado;
+        const saldo = (tarifa + totalConsumosExistentes) - pagado;
         if (saldo > 0) {
             saldoEl.textContent = `Saldo pendiente: S/. ${formatearSoles(saldo)}`;
             saldoEl.className = 'saldo-pendiente';
@@ -794,9 +858,23 @@
         warning.classList.toggle('hidden', new Date(checkInVal).getTime() >= Date.now() - margen);
     }
 
+    // Mismo tipo de aviso que verificarCheckInPasado, pero para el otro
+    // sentido del typo: un año escrito de más (ej. 2027 en vez de 2026).
+    function verificarCheckInMuyLejano() {
+        const checkInVal = document.getElementById('checkIn').value;
+        const warning = document.getElementById('checkin-futuro-warning');
+        if (!checkInVal) {
+            warning.classList.add('hidden');
+            return;
+        }
+        const unAnioMs = 365 * 24 * 60 * 60 * 1000;
+        warning.classList.toggle('hidden', new Date(checkInVal).getTime() <= Date.now() + unAnioMs);
+    }
+
     document.getElementById('checkIn').addEventListener('input', function () {
         programarBusquedaAutomatica();
         verificarCheckInPasado();
+        verificarCheckInMuyLejano();
     });
     document.getElementById('salida').addEventListener('input', programarBusquedaAutomatica);
 
@@ -814,8 +892,12 @@
     });
 
     document.getElementById('montoPagado').addEventListener('input', function () {
+        // Editar el monto a mano apaga la resincronización automática: a
+        // partir de acá el staff tiene el control explícito del valor.
+        pagoCompletoIntencion = false;
         actualizarResumen();
         actualizarStepper();
+        verificarMontoExcesivo();
     });
 
     // Botones rápidos de pago: cubren el caso más común (adelanto del 50%,
@@ -824,11 +906,14 @@
         btn.addEventListener('click', function () {
             const tarifa = parseFloat(document.getElementById('tarifaCalculada').value) || 0;
             if (tarifa <= 0) return;
+            const totalConDeuda = tarifa + totalConsumosExistentes;
             const pct = parseInt(this.dataset.pct, 10);
-            const monto = Math.round(tarifa * pct) / 100;
+            const monto = Math.round(totalConDeuda * pct) / 100;
             document.getElementById('montoPagado').value = monto;
+            pagoCompletoIntencion = (pct === 100);
             actualizarResumen();
             actualizarStepper();
+            verificarMontoExcesivo();
         });
     });
 
@@ -872,18 +957,25 @@
     // "Llegada rápida": arma de un solo click el caso más común (huésped
     // llegando ahora, 1 noche, la categoría más barata disponible) y deja
     // el foco en el buscador de cliente para terminar con una búsqueda.
-    document.getElementById('btn-llegada-rapida').addEventListener('click', function () {
-        const ahora = new Date();
-        document.getElementById('checkIn').value = formatearFechaInput(ahora);
-        const manana = new Date(ahora);
-        manana.setDate(manana.getDate() + 1);
-        document.getElementById('salida').value = formatearFechaInput(manana);
+    // Solo existe en el formulario de registro nuevo (ver th:if del botón) —
+    // al editar un registro ya existente no tiene sentido "reiniciar" la
+    // llegada de una estadía que puede llevar días en curso.
+    const btnLlegadaRapida = document.getElementById('btn-llegada-rapida');
+    if (btnLlegadaRapida) {
+        btnLlegadaRapida.addEventListener('click', function () {
+            const ahora = new Date();
+            document.getElementById('checkIn').value = formatearFechaInput(ahora);
+            const manana = new Date(ahora);
+            manana.setDate(manana.getDate() + 1);
+            document.getElementById('salida').value = formatearFechaInput(manana);
 
-        autoElegirMasBarata = true;
-        verificarCheckInPasado();
-        programarBusquedaAutomatica();
-        clienteBuscarInput.focus();
-    });
+            autoElegirMasBarata = true;
+            verificarCheckInPasado();
+            verificarCheckInMuyLejano();
+            programarBusquedaAutomatica();
+            clienteBuscarInput.focus();
+        });
+    }
 
     // Botones rápidos de noches: calculan la fecha de salida a partir del
     // check-in ya puesto, en vez de tener que abrir el selector de fecha y
@@ -944,7 +1036,13 @@
             actualizarResumen();
             actualizarResumenFechas();
             actualizarStepper();
-            verificarCheckInPasado();
+            // Esta rama solo se llega editando un registro existente (ver
+            // comentario sobre "noches" más abajo). No se llama a
+            // verificarCheckInPasado()/verificarCheckInMuyLejano() acá: el
+            // check-in de una estadía ya en curso está en el pasado por
+            // definición, así que mostrarían un aviso en rojo siempre, sin
+            // que haya ningún error real que corregir. Siguen activos al
+            // tocar la fecha a mano, por si ahí sí hay un typo.
         } else {
             nochesInput.value = '';
             actualizarResumenFechas();
