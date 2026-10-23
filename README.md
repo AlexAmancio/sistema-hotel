@@ -157,35 +157,46 @@ nunca se expone en el HTML ni en JavaScript del cliente.
 
 **1. Base de datos**
 
-Creá una base de datos MySQL llamada `alquiler` (o cambiá el nombre en
-`application.properties`). Por defecto se conecta a `root` sin contraseña en
-`localhost:3306`.
+El repo incluye un script con toda la base de datos actual (clientes,
+habitaciones, registros, consumos, usuarios, catálogo de productos, etc.) en
+[`bd/respaldo_bd_actual.sql`](bd/respaldo_bd_actual.sql). Con MySQL corriendo
+(se conecta a `root` sin contraseña en `localhost:3306` por defecto —
+cambiá eso en `application.properties` si tu entorno es distinto):
+
+```bash
+mysql -uroot < bd/respaldo_bd_actual.sql
+```
+
+El script crea la base `alquiler` si no existe y carga todos los datos de una
+sola vez — no hace falta crear la base a mano ni insertar un usuario para
+poder loguearte, ya vienen incluidos.
 
 **2. Usuario de prueba**
 
-Para poder loguearte, insertá un usuario administrador:
+El script ya trae un usuario administrador de prueba:
 
-```sql
-insert into usuario (activo, apellidos, contrasena, correo, es_admin, nombres, username)
-values (true, 'Musk', '$2a$12$gx4jBU180qN4ohLJiyokkuRMZpnhtVmlsVJoCQFrKIeHaXTjI5m5G', 'musk@gmail.com', true, 'Elon', 'elon');
-```
+| Usuario | Contraseña |
+|---|---|
+| `elon` | `admin123` |
 
-Usuario: `elon` — Contraseña: `admin123`
-
-También hay un segundo usuario administrador de prueba:
-
-```sql
-insert into usuario (activo, apellidos, contrasena, correo, es_admin, nombres, username)
-values (true, '', '$2a$10$FFF.RpX0QIMsOS8m.t13wuyr.naioWiRvNydZ.tvWrUX1FWxj79NK', 'gerardo@hoteltunki.com', true, 'Gerardo', 'gerardo');
-```
-
-Usuario: `gerardo` — Contraseña: `12345`
+También trae otras 8 cuentas de staff (sin permisos de administrador) con
+distintas contraseñas no publicadas acá — para loguearte con alguna de ellas,
+o para crear una cuenta nueva, usá el script de abajo.
 
 Para crear otros usuarios sin pasar por la interfaz, hay un script que genera
 el `insert` con la contraseña ya encriptada en bcrypt:
 
 ```bash
 ./scripts/crear-usuario.sh <username> <contraseña> <nombres> <apellidos> <correo> [admin]
+```
+
+Si preferís arrancar con una base vacía en vez de cargar todos los datos de
+ejemplo, basta con crear una base `alquiler` vacía e insertar un solo
+usuario:
+
+```sql
+insert into usuario (activo, apellidos, contrasena, correo, es_admin, nombres, username)
+values (true, 'Musk', '$2a$12$gx4jBU180qN4ohLJiyokkuRMZpnhtVmlsVJoCQFrKIeHaXTjI5m5G', 'musk@gmail.com', true, 'Elon', 'elon');
 ```
 
 **3. Arrancar la app**
