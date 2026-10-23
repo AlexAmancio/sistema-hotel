@@ -972,41 +972,54 @@ table {
 .reserva-categoria-titulo:first-child {
     margin-top: 0;
 }
-.reserva-habitacion-row {
-    border: 1px solid var(--color-plomo);
-    border-radius: 8px;
-    padding: 12px 16px;
-}
 .reserva-habitacion-info {
     display: flex;
     align-items: center;
-    column-gap: 12px;
-    cursor: pointer;
+    column-gap: 10px;
 }
-.reserva-habitacion-info span:first-of-type {
+.reserva-habitacion-info .habitacion-card-mini-info {
     flex: 1;
 }
 .reserva-habitacion-precio {
     font-weight: 600;
+    font-size: 13px;
     color: var(--color-verde-secundario);
+    white-space: nowrap;
 }
 .reserva-habitacion-huespedes {
     display: flex;
     align-items: center;
-    column-gap: 10px;
-    margin: 10px 0 0 26px;
+    column-gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
 }
 .reserva-habitacion-huespedes input {
-    width: 70px;
-    font-size: 16px;
+    width: 44px;
+    text-align: center;
+    font-size: 14px;
     border-radius: 6px;
-    padding: 6px 10px;
-    background: #e7e7e7;
+    padding: 6px 4px;
+    background: var(--bg-input);
+    color: var(--text-color);
     border-style: none;
+}
+.reserva-habitacion-huespedes .btn-huespedes {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+}
+.reserva-habitacion-huespedes.hidden {
+    display: none;
 }
 .reserva-aforo-warning {
     color: var(--color-rojo);
-    font-size: 13px;
+    font-size: 12px;
+    width: 100%;
+}
+#habitaciones-lista .habitacion-card-mini {
+    flex-direction: column;
+    align-items: stretch;
+    width: 240px;
 }
 
 /* ======================= RESUMEN EN VIVO (form de registro) ===========================*/

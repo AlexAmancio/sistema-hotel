@@ -12,48 +12,111 @@
         <div class="content-form">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-            <div class="group-field">
-                <label for="clienteBuscar">Cliente</label>
-                <div class="cliente-autocomplete">
-                    <input type="text" id="clienteBuscar" placeholder="Buscar por nombre o DNI..." autocomplete="off" />
-                    <input type="hidden" id="clienteId" name="cliente" />
-                    <div id="clienteResultados" class="cliente-resultados hidden"></div>
+            <div class="form-stepper" id="form-stepper">
+                <div class="form-step" data-step="huesped">
+                    <span class="form-step-circulo">1</span>
+                    <span>Huésped</span>
+                </div>
+                <div class="form-step" data-step="estadia">
+                    <span class="form-step-circulo">2</span>
+                    <span>Estadía</span>
+                </div>
+                <div class="form-step" data-step="habitaciones">
+                    <span class="form-step-circulo">3</span>
+                    <span>Habitaciones</span>
                 </div>
             </div>
-            <p id="cliente-warning" class="hidden" style="color: var(--color-rojo); margin: -8px 0 12px 250px;">
-                Elegí un cliente de la lista antes de guardar.
-            </p>
-            <div class="group-field">
-                <label for="checkIn">Fecha de ingreso:</label>
-                <input id="checkIn" name="checkIn" type="datetime-local" required/>
-            </div>
-            <div class="group-field">
-                <label for="salida">Fecha de salida:</label>
-                <input id="salida" type="datetime-local" required/>
-            </div>
-            <div class="group-field">
-                <label for="noches">N° Noches (calculado):</label>
-                <input id="noches" name="noches" type="number" readonly placeholder="—"/>
-            </div>
-            <p id="fechas-warning" class="hidden" style="color: var(--color-rojo); margin: -8px 0 12px 250px;">
-                La fecha de salida tiene que ser después del ingreso.
-            </p>
 
-            <div id="habitaciones-group" class="hidden" style="margin: 20px 0;">
-                <label style="display:block; margin-bottom: 10px;">Elegí las habitaciones (podés marcar varias) e indicá cuántos huéspedes va en cada una</label>
-                <div id="habitaciones-lista" style="display:flex; flex-direction:column; row-gap: 10px;"></div>
-            </div>
+            <div class="form-layout">
+                <div class="form-main">
+                    <h3 class="form-seccion-titulo">Huésped</h3>
+                    <div class="group-field">
+                        <label for="clienteBuscar">Cliente</label>
+                        <div class="cliente-autocomplete">
+                            <input type="text" id="clienteBuscar" placeholder="Buscar por nombre o DNI..." autocomplete="off" />
+                            <input type="hidden" id="clienteId" name="cliente" />
+                            <div id="clienteResultados" class="cliente-resultados hidden"></div>
+                        </div>
+                    </div>
+                    <p id="cliente-warning" class="hidden form-warning-texto">
+                        Elegí un cliente de la lista antes de guardar.
+                    </p>
 
-            <div id="resumen-vivo" class="resumen-vivo hidden" style="margin: 0 0 20px 0;">
-                <p id="resumen-calculo"></p>
-            </div>
+                    <h3 class="form-seccion-titulo">Estadía</h3>
+                    <div class="group-field">
+                        <label for="checkIn">Fecha de ingreso:</label>
+                        <input id="checkIn" name="checkIn" type="datetime-local" required/>
+                        <button type="button" id="btn-checkin-ahora" class="btn btnbusqueda">Ahora</button>
+                    </div>
+                    <div class="group-field">
+                        <label for="salida">Fecha de salida:</label>
+                        <input id="salida" type="datetime-local" required/>
+                    </div>
+                    <div class="noches-rapidas">
+                        <button type="button" class="btn-noche-rapida" data-noches="1">1 noche</button>
+                        <button type="button" class="btn-noche-rapida" data-noches="2">2 noches</button>
+                        <button type="button" class="btn-noche-rapida" data-noches="3">3 noches</button>
+                        <button type="button" class="btn-noche-rapida" data-noches="7">1 semana</button>
+                    </div>
+                    <div class="group-field">
+                        <label for="noches">N° Noches (calculado):</label>
+                        <input id="noches" name="noches" type="number" readonly placeholder="—"/>
+                    </div>
+                    <p id="fechas-warning" class="hidden form-warning-texto">
+                        La fecha de salida tiene que ser después del ingreso.
+                    </p>
 
+                    <h3 class="form-seccion-titulo">Habitaciones</h3>
+                    <p class="selector-label" id="habitaciones-ayuda">
+                        Elegí todas las habitaciones que necesite el grupo — podés marcar varias, incluso de categorías distintas.
+                    </p>
+                    <div class="habitacion-filtro-wrap hidden" id="habitacion-filtro-wrap">
+                        <input type="text" id="habitacion-filtro" placeholder="Filtrar por número de habitación..." autocomplete="off" />
+                    </div>
+                    <div id="habitaciones-lista"></div>
+                    <p id="habitacion-sin-resultados" class="hidden form-warning-texto">
+                        No hay habitaciones disponibles para esas fechas.
+                    </p>
+                    <!--
+                      Lo único que de verdad viaja al servidor. Vive FUERA de
+                      #habitaciones-lista a propósito: ese contenedor se
+                      vacía y reconstruye entero cada vez que se filtra o se
+                      cambian las fechas, así que cualquier checkbox/input
+                      que dependiera de seguir en el DOM ahí perdía su
+                      habitación en el envío apenas quedaba fuera del
+                      filtro — sin ningún aviso. Acá, en cambio, se
+                      reconstruye desde el Map "seleccionadas" (la fuente de
+                      verdad) cada vez que cambia, así que sobrevive a
+                      cualquier filtro o refresco de disponibilidad.
+                    -->
+                    <div id="inputs-envio-habitaciones" style="display:none"></div>
+                </div>
+
+                <aside class="form-summary-sticky" id="form-summary-sticky">
+                    <h4 class="form-summary-titulo">Resumen de la reserva</h4>
+                    <div class="resumen-bloque">
+                        <span class="resumen-bloque-label">Cliente</span>
+                        <div id="resumen-cliente"><span class="resumen-placeholder">Sin cliente elegido</span></div>
+                    </div>
+                    <div class="resumen-bloque">
+                        <span class="resumen-bloque-label">Fechas</span>
+                        <div id="resumen-fechas"><span class="resumen-placeholder">Sin fechas elegidas</span></div>
+                    </div>
+                    <div class="resumen-bloque">
+                        <span class="resumen-bloque-label">Habitaciones elegidas</span>
+                        <div id="resumen-habitaciones"><span class="resumen-placeholder">Ninguna todavía</span></div>
+                    </div>
+                    <div id="resumen-vivo" class="resumen-vivo hidden">
+                        <p id="resumen-calculo"></p>
+                    </div>
+                </aside>
+            </div>
         </div>
         <div class="actions-form">
             <button type="submit">
                 <span>Crear reserva</span>
             </button>
-            <button id="btn-close"><span>Cancelar</span></button>
+            <a href="/" style="display:flex; align-items:center; justify-content:center;"><span>Cancelar</span></a>
         </div>
     </form>
 </div>
@@ -69,10 +132,41 @@
         },
         /*[/]*/
     ];
+
+    // Se llenan solo si el formulario vuelve con un error: así se recupera
+    // lo que ya se había elegido (cliente, fechas, habitaciones con sus
+    // huéspedes) en vez de que el usuario tenga que llenar todo de nuevo.
+    const clienteSeleccionadoId = /*[[${clienteSeleccionadoId}]]*/ null;
+    const clienteSeleccionadoNombre = /*[[${clienteSeleccionadoNombre}]]*/ '';
+    const checkInValor = /*[[${checkInValor}]]*/ '';
+    const nochesValor = /*[[${nochesValor}]]*/ 0;
+    const habitacionesPreseleccionadas = [
+        /*[# th:each="item : ${habitacionesPreseleccionadas}"]*/
+        { id: /*[[${item.id}]]*/ 0, huespedes: /*[[${item.huespedes}]]*/ 1 },
+        /*[/]*/
+    ];
 </script>
 <script>
     let busquedaTimeout = null;
+    let habitacionesDisponiblesData = [];
+    // id de habitación -> { numero, aforo, imagen, tarifaPorNoche (precio de la
+    // categoría), tarifaTotal (se llena cuando responde /calcular-tarifa),
+    // huespedes }. Mantiene la selección aunque se vuelva a pedir la
+    // disponibilidad (ej. al tocar las fechas) o se filtre por número.
+    const seleccionadas = new Map();
 
+    function formatearSoles(numero) {
+        return numero.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function crearElemento(tag, className, texto) {
+        const el = document.createElement(tag);
+        if (className) el.className = className;
+        if (texto !== undefined) el.textContent = texto;
+        return el;
+    }
+
+    // ===================== Cliente =====================
     const clienteBuscarInput = document.getElementById('clienteBuscar');
     const clienteIdInput = document.getElementById('clienteId');
     const clienteResultadosDiv = document.getElementById('clienteResultados');
@@ -107,6 +201,8 @@
         clienteIdInput.value = '';
         clienteWarning.classList.add('hidden');
         renderResultadosCliente(this.value);
+        actualizarResumenCliente(null);
+        actualizarStepper();
     });
 
     clienteResultadosDiv.addEventListener('click', function (e) {
@@ -117,6 +213,8 @@
         clienteResultadosDiv.classList.add('hidden');
         clienteResultadosDiv.innerHTML = '';
         clienteWarning.classList.add('hidden');
+        actualizarResumenCliente(item.dataset.nombre);
+        actualizarStepper();
     });
 
     document.addEventListener('click', function (e) {
@@ -130,12 +228,55 @@
             e.preventDefault();
             clienteWarning.classList.remove('hidden');
             clienteBuscarInput.focus();
+            return;
         }
+        if (seleccionadas.size === 0) {
+            e.preventDefault();
+            const sinResultados = document.getElementById('habitacion-sin-resultados');
+            sinResultados.textContent = 'Elegí al menos una habitación antes de guardar.';
+            sinResultados.classList.remove('hidden');
+            sinResultados.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        // Red de seguridad: re-arma los inputs de envío desde el Map justo
+        // antes de mandar el formulario, por si algo quedó desincronizado.
+        sincronizarInputsDeEnvio();
+        const btnSubmit = this.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+        btnSubmit.querySelector('span').textContent = 'Guardando...';
     });
 
-    function formatearSoles(numero) {
-        return numero.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    function actualizarResumenCliente(nombre) {
+        const resumen = document.getElementById('resumen-cliente');
+        if (nombre) {
+            resumen.innerHTML = '';
+            resumen.appendChild(crearElemento('b', null, nombre));
+        } else {
+            resumen.innerHTML = '<span class="resumen-placeholder">Sin cliente elegido</span>';
+        }
     }
+
+    // ===================== Fechas =====================
+    function formatearFechaInput(d) {
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    // Mismo botón que ya existe en el formulario de registro individual: el
+    // caso más común es que el grupo esté llegando en este momento.
+    document.getElementById('btn-checkin-ahora').addEventListener('click', function () {
+        const ahora = new Date();
+        document.getElementById('checkIn').value = formatearFechaInput(ahora);
+
+        const salidaInput = document.getElementById('salida');
+        if (!salidaInput.value) {
+            const manana = new Date(ahora);
+            manana.setDate(manana.getDate() + 1);
+            salidaInput.value = formatearFechaInput(manana);
+        }
+
+        programarBusquedaAutomatica();
+    });
 
     function calcularNoches() {
         const checkInVal = document.getElementById('checkIn').value;
@@ -163,135 +304,105 @@
         return noches;
     }
 
-    function actualizarResumen() {
-        const seleccionadas = document.querySelectorAll('input[name="habitaciones"]:checked');
-        const resumen = document.getElementById('resumen-vivo');
-        const calculo = document.getElementById('resumen-calculo');
+    function actualizarResumenFechas() {
+        const resumen = document.getElementById('resumen-fechas');
+        const checkInVal = document.getElementById('checkIn').value;
+        const salidaVal = document.getElementById('salida').value;
         const noches = parseInt(document.getElementById('noches').value, 10) || 0;
 
-        if (seleccionadas.length === 0) {
-            resumen.classList.add('hidden');
+        if (!checkInVal || !salidaVal || noches < 1) {
+            resumen.innerHTML = '<span class="resumen-placeholder">Sin fechas elegidas</span>';
             return;
         }
-        resumen.classList.remove('hidden');
-
-        let total = 0;
-        seleccionadas.forEach(cb => {
-            total += parseFloat(cb.dataset.tarifa) || 0;
-        });
-
-        const nHab = seleccionadas.length;
-        calculo.textContent =
-            `${nHab} habitación${nHab === 1 ? '' : 'es'} seleccionada${nHab === 1 ? '' : 's'} · ` +
-            `${noches} noche${noches === 1 ? '' : 's'} · Total: S/. ${formatearSoles(total)}`;
+        const pad = n => String(n).padStart(2, '0');
+        const fmt = v => { const d = new Date(v); return `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+        resumen.innerHTML = '';
+        const linea = crearElemento('div', 'resumen-doble-linea');
+        linea.appendChild(crearElemento('span', null, `${fmt(checkInVal)} → ${fmt(salidaVal)}`));
+        linea.appendChild(crearElemento('b', null, `${noches} noche${noches === 1 ? '' : 's'}`));
+        resumen.appendChild(linea);
     }
 
+    document.querySelectorAll('.btn-noche-rapida').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const checkInVal = document.getElementById('checkIn').value;
+            if (!checkInVal) return;
+            const noches = parseInt(this.dataset.noches, 10);
+            const salida = new Date(checkInVal);
+            salida.setDate(salida.getDate() + noches);
+            const pad = n => String(n).padStart(2, '0');
+            document.getElementById('salida').value =
+                `${salida.getFullYear()}-${pad(salida.getMonth() + 1)}-${pad(salida.getDate())}T${pad(salida.getHours())}:${pad(salida.getMinutes())}`;
+            programarBusquedaAutomatica();
+        });
+    });
+
+    // ===================== Habitaciones =====================
     function buscarHabitacionesDisponibles() {
         const checkIn = document.getElementById('checkIn').value;
         const noches = calcularNoches();
+        actualizarResumenFechas();
+        actualizarStepper();
 
         if (!checkIn || noches < 1) {
-            document.getElementById('habitaciones-group').classList.add('hidden');
-            document.getElementById('resumen-vivo').classList.add('hidden');
+            document.getElementById('habitaciones-lista').innerHTML = '';
+            document.getElementById('habitacion-filtro-wrap').classList.add('hidden');
+            document.getElementById('habitacion-sin-resultados').classList.add('hidden');
             return;
         }
 
         fetch(`/habitaciones/disponibles?checkIn=${checkIn}&noches=${noches}`)
             .then(response => response.json())
             .then(data => {
-                const contenedor = document.getElementById('habitaciones-lista');
-                contenedor.innerHTML = "";
-
-                // Agrupadas por categoría: con 45 habitaciones, una lista plana de
-                // checkboxes sin ningún orden era imposible de recorrer. Así, cada
-                // categoría tiene su propio encabezado y sus habitaciones debajo.
-                const porCategoria = new Map();
-                data.forEach(habitacion => {
-                    const catId = habitacion.categoria ? habitacion.categoria.id : 0;
-                    if (!porCategoria.has(catId)) {
-                        porCategoria.set(catId, { nombre: habitacion.categoria ? habitacion.categoria.nombre : 'Sin categoría', habitaciones: [] });
+                habitacionesDisponiblesData = data;
+                // Si alguna habitación ya elegida dejó de estar disponible en
+                // las fechas nuevas (ej. se achicó el rango), se la quita de
+                // la selección en vez de dejarla "fantasma" en el resumen.
+                // Y si venía precargada tras un error del servidor (sin más
+                // datos que el huéspedes elegido), se completa acá con el
+                // número/aforo/imagen reales — si no, el resumen mostraría
+                // "Hab.  (2p.)" sin número hasta que alguien la reseleccione.
+                const porId = new Map(data.map(h => [String(h.id), h]));
+                Array.from(seleccionadas.keys()).forEach(id => {
+                    const h = porId.get(String(id));
+                    if (!h) {
+                        seleccionadas.delete(id);
+                        return;
                     }
-                    porCategoria.get(catId).habitaciones.push(habitacion);
+                    const info = seleccionadas.get(id);
+                    info.numero = h.numero;
+                    info.aforo = h.aforo;
+                    info.imagen = (h.categoria && h.categoria.urlImagen) || h.urlImagen || '';
                 });
-
-                porCategoria.forEach(grupo => {
-                    const titulo = document.createElement('h4');
-                    titulo.className = 'reserva-categoria-titulo';
-                    titulo.textContent = grupo.nombre;
-                    contenedor.appendChild(titulo);
-
-                    grupo.habitaciones.forEach(habitacion => {
-                    const row = document.createElement('div');
-                    row.className = 'reserva-habitacion-row';
-
-                    const infoLabel = document.createElement('label');
-                    infoLabel.className = 'reserva-habitacion-info';
-
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.name = 'habitaciones';
-                    checkbox.value = habitacion.id;
-                    checkbox.dataset.aforo = habitacion.aforo;
-
-                    const texto = document.createElement('span');
-                    texto.textContent = `Hab. ${habitacion.numero} (aforo ${habitacion.aforo})`;
-
-                    const precio = document.createElement('span');
-                    precio.className = 'reserva-habitacion-precio';
-                    precio.textContent = 'S/. --';
-
-                    infoLabel.append(checkbox, texto, precio);
-
-                    const huespedesWrap = document.createElement('div');
-                    huespedesWrap.className = 'reserva-habitacion-huespedes hidden';
-
-                    const huespedesLabel = document.createElement('label');
-                    huespedesLabel.textContent = 'Huéspedes en esta habitación:';
-                    huespedesLabel.setAttribute('for', `huespedes-${habitacion.id}`);
-
-                    const huespedesInput = document.createElement('input');
-                    huespedesInput.type = 'number';
-                    huespedesInput.name = `huespedes_${habitacion.id}`;
-                    huespedesInput.id = `huespedes-${habitacion.id}`;
-                    huespedesInput.min = '1';
-                    huespedesInput.max = String(habitacion.aforo);
-                    huespedesInput.value = '1';
-
-                    const aforoWarning = document.createElement('span');
-                    aforoWarning.className = 'reserva-aforo-warning hidden';
-                    aforoWarning.textContent = 'Supera el aforo de esta habitación.';
-
-                    huespedesWrap.append(huespedesLabel, huespedesInput, aforoWarning);
-
-                    row.append(infoLabel, huespedesWrap);
-                    contenedor.appendChild(row);
-
-                    checkbox.addEventListener('change', () => {
-                        huespedesWrap.classList.toggle('hidden', !checkbox.checked);
-                        actualizarResumen();
-                    });
-                    huespedesInput.addEventListener('input', () => {
-                        const aforo = parseInt(checkbox.dataset.aforo, 10);
-                        const val = parseInt(huespedesInput.value, 10);
-                        aforoWarning.classList.toggle('hidden', !(val > aforo));
-                        actualizarResumen();
-                    });
-
-                    fetch(`/habitaciones/calcular-tarifa/${habitacion.id}?noches=${noches}&checkIn=${encodeURIComponent(checkIn)}`)
-                        .then(r => r.json())
-                        .then(tarifaTotal => {
-                            checkbox.dataset.tarifa = tarifaTotal;
-                            precio.textContent = `S/. ${formatearSoles(tarifaTotal)}`;
-                            actualizarResumen();
-                        })
-                        .catch(error => console.error('Error al calcular tarifa:', error));
-                    });
-                });
-
-                document.getElementById('habitaciones-group').classList.remove('hidden');
-                actualizarResumen();
+                poblarHabitacionesLista();
+                recalcularTarifasSeleccionadas();
+                actualizarResumenHabitaciones();
+                sincronizarInputsDeEnvio();
             })
             .catch(error => console.error('Error al obtener las habitaciones disponibles:', error));
+    }
+
+    // Reconstruye, a partir del Map "seleccionadas" (la única fuente de
+    // verdad), los inputs reales que el formulario manda al servidor. Se
+    // llama cada vez que la selección cambia, así que no depende de qué
+    // tarjetas estén actualmente visibles/filtradas en #habitaciones-lista.
+    function sincronizarInputsDeEnvio() {
+        const contenedor = document.getElementById('inputs-envio-habitaciones');
+        contenedor.innerHTML = '';
+        seleccionadas.forEach((info, id) => {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'habitaciones';
+            checkbox.value = id;
+            checkbox.checked = true;
+            contenedor.appendChild(checkbox);
+
+            const huespedes = document.createElement('input');
+            huespedes.type = 'hidden';
+            huespedes.name = `huespedes_${id}`;
+            huespedes.value = info.huespedes;
+            contenedor.appendChild(huespedes);
+        });
     }
 
     function programarBusquedaAutomatica() {
@@ -301,6 +412,310 @@
 
     document.getElementById('checkIn').addEventListener('input', programarBusquedaAutomatica);
     document.getElementById('salida').addEventListener('input', programarBusquedaAutomatica);
+
+    function poblarHabitacionesLista(filtroTexto) {
+        const contenedor = document.getElementById('habitaciones-lista');
+        const sinResultados = document.getElementById('habitacion-sin-resultados');
+        const filtroWrap = document.getElementById('habitacion-filtro-wrap');
+        contenedor.innerHTML = '';
+
+        const filtro = (filtroTexto || '').trim().toLowerCase();
+        const porCategoria = new Map();
+        habitacionesDisponiblesData.forEach(h => {
+            if (filtro && !String(h.numero).toLowerCase().includes(filtro)) return;
+            const catId = h.categoria ? h.categoria.id : 0;
+            if (!porCategoria.has(catId)) {
+                porCategoria.set(catId, { nombre: h.categoria ? h.categoria.nombre : 'Sin categoría', habitaciones: [] });
+            }
+            porCategoria.get(catId).habitaciones.push(h);
+        });
+
+        filtroWrap.classList.toggle('hidden', habitacionesDisponiblesData.length <= 6);
+
+        if (habitacionesDisponiblesData.length === 0) {
+            sinResultados.textContent = 'No hay habitaciones disponibles para esas fechas.';
+            sinResultados.classList.remove('hidden');
+            return;
+        }
+        if (porCategoria.size === 0) {
+            sinResultados.textContent = 'Ninguna habitación coincide con ese número.';
+            sinResultados.classList.remove('hidden');
+            return;
+        }
+        sinResultados.classList.add('hidden');
+
+        porCategoria.forEach(grupo => {
+            contenedor.appendChild(crearElemento('h4', 'reserva-categoria-titulo', grupo.nombre));
+            const grid = crearElemento('div', 'habitacion-cards');
+            grid.classList.remove('hidden');
+            grupo.habitaciones.forEach(h => grid.appendChild(crearTarjetaHabitacion(h)));
+            contenedor.appendChild(grid);
+        });
+    }
+
+    // Permite destildar una habitación directamente desde el resumen, sin
+    // tener que borrar el filtro para volver a encontrar su tarjeta (que
+    // puede estar fuera de la vista actual). Rehace la lista visible para
+    // que la tarjeta, si está a la vista, se vea destildada de inmediato.
+    function quitarSeleccion(id) {
+        seleccionadas.delete(String(id));
+        poblarHabitacionesLista(document.getElementById('habitacion-filtro').value);
+        actualizarResumenHabitaciones();
+        actualizarStepper();
+        sincronizarInputsDeEnvio();
+    }
+
+    function crearTarjetaHabitacion(h) {
+        const yaElegida = seleccionadas.get(String(h.id));
+        const card = crearElemento('div', 'habitacion-card-mini');
+        card.dataset.id = h.id;
+        if (yaElegida) card.classList.add('seleccionada');
+
+        const fila = crearElemento('div', 'reserva-habitacion-info');
+        const img = document.createElement('img');
+        img.src = (h.categoria && h.categoria.urlImagen) || h.urlImagen || '';
+        img.alt = '';
+        img.style.width = '56px';
+        img.style.height = '48px';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '6px';
+        img.style.flexShrink = '0';
+        fila.appendChild(img);
+
+        const info = crearElemento('div', 'habitacion-card-mini-info');
+        info.appendChild(crearElemento('b', null, `Hab. ${h.numero}`));
+        info.appendChild(crearElemento('span', null, `Aforo ${h.aforo}`));
+        fila.appendChild(info);
+
+        // El precio se muestra siempre, elegida o no — antes solo aparecía
+        // al seleccionar la tarjeta, y si después se destildaba, el número
+        // se quedaba pegado ahí (parecía que seguía costando algo que ya no
+        // estaba eligiendo). Mostrarlo siempre evita ambas cosas: no hay
+        // nada que "limpiar" al destildar porque nunca dependió de eso.
+        const precio = crearElemento('span', 'reserva-habitacion-precio',
+            yaElegida && yaElegida.tarifaTotal ? `S/. ${formatearSoles(yaElegida.tarifaTotal)}` : 'S/. —');
+        precio.dataset.role = 'precio';
+        fila.appendChild(precio);
+        card.appendChild(fila);
+        if (!yaElegida || !yaElegida.tarifaTotal) {
+            calcularTarifaHabitacion(h.id, precio);
+        }
+
+        const huespedesWrap = crearElemento('div', 'reserva-habitacion-huespedes');
+        huespedesWrap.classList.toggle('hidden', !yaElegida);
+        const btnMenos = crearElemento('button', 'btn-huespedes', '−');
+        btnMenos.type = 'button';
+        const inputHuespedes = document.createElement('input');
+        inputHuespedes.type = 'number';
+        // Sin "name": lo que de verdad viaja al servidor son los inputs
+        // ocultos que arma sincronizarInputsDeEnvio() a partir del Map de
+        // selección, no este input — si tuviera "name" y la tarjeta se
+        // destruyera al filtrar (ver poblarHabitacionesLista), su valor se
+        // perdía en el envío sin ningún aviso aunque siguiera "seleccionada".
+        inputHuespedes.min = '1';
+        inputHuespedes.max = String(h.aforo);
+        inputHuespedes.value = String(yaElegida ? yaElegida.huespedes : 1);
+        const btnMas = crearElemento('button', 'btn-huespedes', '+');
+        btnMas.type = 'button';
+        const aforoWarning = crearElemento('span', 'reserva-aforo-warning hidden', `Supera el aforo (${h.aforo}).`);
+
+        huespedesWrap.append(btnMenos, inputHuespedes, btnMas, aforoWarning);
+        card.appendChild(huespedesWrap);
+
+        function sincronizarHuespedes() {
+            let val = parseInt(inputHuespedes.value, 10) || 1;
+            val = Math.max(1, val);
+            inputHuespedes.value = String(val);
+            aforoWarning.classList.toggle('hidden', val <= h.aforo);
+            const actual = seleccionadas.get(String(h.id));
+            if (actual) {
+                actual.huespedes = val;
+                actualizarResumenHabitaciones();
+                sincronizarInputsDeEnvio();
+            }
+        }
+        btnMenos.addEventListener('click', function (e) {
+            e.stopPropagation();
+            inputHuespedes.value = String(Math.max(1, (parseInt(inputHuespedes.value, 10) || 1) - 1));
+            sincronizarHuespedes();
+        });
+        btnMas.addEventListener('click', function (e) {
+            e.stopPropagation();
+            inputHuespedes.value = String((parseInt(inputHuespedes.value, 10) || 0) + 1);
+            sincronizarHuespedes();
+        });
+        inputHuespedes.addEventListener('click', e => e.stopPropagation());
+        inputHuespedes.addEventListener('input', sincronizarHuespedes);
+
+        card.addEventListener('click', function () {
+            const id = String(h.id);
+            if (seleccionadas.has(id)) {
+                seleccionadas.delete(id);
+                card.classList.remove('seleccionada');
+                huespedesWrap.classList.add('hidden');
+            } else {
+                seleccionadas.set(id, {
+                    numero: h.numero,
+                    aforo: h.aforo,
+                    imagen: (h.categoria && h.categoria.urlImagen) || h.urlImagen || '',
+                    huespedes: parseInt(inputHuespedes.value, 10) || 1,
+                    tarifaTotal: 0
+                });
+                card.classList.add('seleccionada');
+                huespedesWrap.classList.remove('hidden');
+                calcularTarifaHabitacion(h.id, precio);
+            }
+            actualizarResumenHabitaciones();
+            actualizarStepper();
+            sincronizarInputsDeEnvio();
+        });
+
+        return card;
+    }
+
+    // Sirve tanto para una habitación elegida (actualiza su precio en el
+    // resumen también) como para una que todavía no — el precio se muestra
+    // siempre, elegida o no, así que esta función ya no asume que "sin
+    // selección no hay nada que calcular".
+    function calcularTarifaHabitacion(id, precioEl) {
+        const checkIn = document.getElementById('checkIn').value;
+        const noches = parseInt(document.getElementById('noches').value, 10) || 0;
+        if (!checkIn || noches < 1) return;
+        fetch(`/habitaciones/calcular-tarifa/${id}?noches=${noches}&checkIn=${encodeURIComponent(checkIn)}`)
+            .then(r => r.json())
+            .then(tarifaTotal => {
+                if (precioEl) precioEl.textContent = `S/. ${formatearSoles(tarifaTotal)}`;
+                const actual = seleccionadas.get(String(id));
+                if (actual) {
+                    actual.tarifaTotal = tarifaTotal;
+                    actualizarResumenHabitaciones();
+                }
+            })
+            .catch(error => console.error('Error al calcular tarifa:', error));
+    }
+
+    function recalcularTarifasSeleccionadas() {
+        seleccionadas.forEach((info, id) => {
+            const card = document.querySelector(`.habitacion-card-mini[data-id="${id}"]`);
+            const precioEl = card ? card.querySelector('[data-role="precio"]') : null;
+            calcularTarifaHabitacion(id, precioEl);
+        });
+    }
+
+    document.getElementById('habitacion-filtro').addEventListener('input', function () {
+        poblarHabitacionesLista(this.value);
+    });
+
+    function actualizarResumenHabitaciones() {
+        const resumen = document.getElementById('resumen-habitaciones');
+        const resumenVivo = document.getElementById('resumen-vivo');
+        const calculo = document.getElementById('resumen-calculo');
+        const noches = parseInt(document.getElementById('noches').value, 10) || 0;
+
+        if (seleccionadas.size === 0) {
+            resumen.innerHTML = '<span class="resumen-placeholder">Ninguna todavía</span>';
+            resumenVivo.classList.add('hidden');
+            return;
+        }
+
+        resumen.innerHTML = '';
+        let total = 0;
+        seleccionadas.forEach((info, id) => {
+            total += info.tarifaTotal || 0;
+            const fila = crearElemento('div', 'resumen-habitacion-item');
+            fila.style.display = 'flex';
+            fila.style.alignItems = 'center';
+            fila.style.justifyContent = 'space-between';
+            fila.style.fontSize = '13px';
+            const etiqueta = info.aforo > 0 && info.huespedes > info.aforo
+                ? `Hab. ${info.numero} (${info.huespedes}p. ⚠)`
+                : `Hab. ${info.numero} (${info.huespedes}p.)`;
+            const spanEtiqueta = crearElemento('span', null, etiqueta);
+            if (info.aforo > 0 && info.huespedes > info.aforo) spanEtiqueta.style.color = 'var(--color-rojo)';
+            fila.appendChild(spanEtiqueta);
+
+            const derecha = crearElemento('span', null);
+            derecha.style.display = 'flex';
+            derecha.style.alignItems = 'center';
+            derecha.style.columnGap = '8px';
+            derecha.appendChild(crearElemento('b', null, info.tarifaTotal ? `S/. ${formatearSoles(info.tarifaTotal)}` : '—'));
+
+            // Para poder sacar una habitación sin tener que ir a buscarla de
+            // nuevo en la lista si quedó fuera del filtro actual — antes la
+            // única forma de deseleccionarla era volver a verla ahí.
+            const btnQuitar = crearElemento('button', null, '×');
+            btnQuitar.type = 'button';
+            btnQuitar.title = 'Quitar esta habitación';
+            btnQuitar.style.border = 'none';
+            btnQuitar.style.background = 'none';
+            btnQuitar.style.cursor = 'pointer';
+            btnQuitar.style.color = 'var(--color-rojo)';
+            btnQuitar.style.fontSize = '16px';
+            btnQuitar.style.lineHeight = '1';
+            btnQuitar.addEventListener('click', () => quitarSeleccion(id));
+            derecha.appendChild(btnQuitar);
+
+            fila.appendChild(derecha);
+            resumen.appendChild(fila);
+        });
+
+        resumenVivo.classList.remove('hidden');
+        const nHab = seleccionadas.size;
+        calculo.textContent =
+            `${nHab} habitación${nHab === 1 ? '' : 'es'} · ${noches} noche${noches === 1 ? '' : 's'} · Total: S/. ${formatearSoles(total)}`;
+    }
+
+    // ===================== Stepper =====================
+    function actualizarStepper() {
+        const pasos = {
+            huesped: !!clienteIdInput.value,
+            estadia: (parseInt(document.getElementById('noches').value, 10) || 0) > 0,
+            habitaciones: seleccionadas.size > 0
+        };
+        document.querySelectorAll('.form-step').forEach(step => {
+            step.classList.toggle('completado', !!pasos[step.dataset.step]);
+        });
+    }
+
+    actualizarResumenFechas();
+    actualizarStepper();
+
+    // ===================== Recuperar estado tras un error =====================
+    // Si el formulario vuelve con un error del servidor (ver aviso), esto
+    // repone todo lo que ya se había elegido en vez de arrancar de cero.
+    (function precargarEstadoTrasError() {
+        if (clienteSeleccionadoId) {
+            clienteIdInput.value = clienteSeleccionadoId;
+            clienteBuscarInput.value = clienteSeleccionadoNombre;
+            actualizarResumenCliente(clienteSeleccionadoNombre);
+        }
+
+        if (!checkInValor) {
+            return;
+        }
+
+        // Las habitaciones elegidas se siembran en el Map ANTES de pedir la
+        // disponibilidad: crearTarjetaHabitacion() ya sabe leer de acá para
+        // que cada tarjeta nazca marcada, con su stepper de huéspedes
+        // visible y el valor correcto — el mismo camino que usa una
+        // selección hecha a mano, sin lógica aparte.
+        habitacionesPreseleccionadas.forEach(item => {
+            seleccionadas.set(String(item.id), {
+                numero: '', aforo: 0, imagen: '', huespedes: item.huespedes, tarifaTotal: 0
+            });
+        });
+
+        document.getElementById('checkIn').value = checkInValor;
+        if (nochesValor > 0) {
+            const checkIn = new Date(checkInValor);
+            const salida = new Date(checkIn);
+            salida.setDate(salida.getDate() + nochesValor);
+            const pad = n => String(n).padStart(2, '0');
+            document.getElementById('salida').value =
+                `${salida.getFullYear()}-${pad(salida.getMonth() + 1)}-${pad(salida.getDate())}T${pad(salida.getHours())}:${pad(salida.getMinutes())}`;
+        }
+        buscarHabitacionesDisponibles();
+    })();
 </script>
 </body>
 </html>
