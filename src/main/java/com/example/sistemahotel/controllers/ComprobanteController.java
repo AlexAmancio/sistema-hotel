@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.sistemahotel.interfaces.IComprobanteService;
 import com.example.sistemahotel.interfaces.IRegistroService;
 import com.example.sistemahotel.modelos.Comprobante;
+import com.example.sistemahotel.modelos.EstadoRegistro;
 
 @RequestMapping("/comprobantes/")
 @Controller
@@ -27,6 +28,15 @@ public class ComprobanteController {
     public String emitir(@PathVariable(name = "registroID") int registroId, RedirectAttributes redirectAttributes) {
         return registroService.consultarId(registroId)
             .map(registro -> {
+                // El comprobante congela el total (tarifa + consumos) del
+                // momento en que se emite y no se vuelve a recalcular. Emitirlo
+                // antes del check-out deja afuera cualquier consumo que se
+                // cargue después — el total quedaría mal para siempre.
+                if (registro.getEstado() != EstadoRegistro.FINALIZADA) {
+                    redirectAttributes.addFlashAttribute("error",
+                        "No se puede emitir comprobante: la estadía todavía no tiene check-out hecho.");
+                    return "redirect:/";
+                }
                 comprobanteService.emitir(registro);
                 return "redirect:/comprobantes/ver/" + registroId + "/";
             })

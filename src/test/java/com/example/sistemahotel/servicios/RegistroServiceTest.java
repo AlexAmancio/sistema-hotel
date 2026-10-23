@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.sistemahotel.modelos.Categoria;
+import com.example.sistemahotel.modelos.EstadoHabitacion;
 import com.example.sistemahotel.modelos.EstadoRegistro;
 import com.example.sistemahotel.modelos.Habitacion;
 import com.example.sistemahotel.modelos.Registro;
@@ -106,5 +107,67 @@ class RegistroServiceTest {
 
         assertTrue(!ok);
         verify(repositorio, org.mockito.Mockito.never()).save(any());
+    }
+
+    // Bug real encontrado en sesion: eliminar() borraba el registro con un
+    // deleteById() crudo, sin tocar la habitacion. Si el registro borrado era
+    // el que tenia la habitacion Ocupada, esta quedaba huerfana en ese estado
+    // para siempre, sin ningun registro detras que la explique.
+    @Test
+    void eliminarLiberaLaHabitacionSiEstabaOcupadaPorEsteRegistro() {
+        registro.getHabitacion().setEstado(EstadoHabitacion.OCUPADA);
+        when(repositorio.findById(6)).thenReturn(Optional.of(registro));
+
+        service.eliminar(6);
+
+        assertEquals(EstadoHabitacion.DISPONIBLE, registro.getHabitacion().getEstado());
+        verify(habitacionrepositorio).save(registro.getHabitacion());
+        verify(repositorio).deleteById(6);
+    }
+
+    @Test
+    void eliminarNoTocaLaHabitacionSiElRegistroYaNoEstaActivo() {
+        registro.setEstado(EstadoRegistro.FINALIZADA);
+        registro.getHabitacion().setEstado(EstadoHabitacion.LIMPIEZA);
+        when(repositorio.findById(6)).thenReturn(Optional.of(registro));
+
+        service.eliminar(6);
+
+        assertEquals(EstadoHabitacion.LIMPIEZA, registro.getHabitacion().getEstado());
+        verify(habitacionrepositorio, org.mockito.Mockito.never()).save(any());
+        verify(repositorio).deleteById(6);
+    }
+
+    // Bug real encontrado en sesion: el check-out deja la habitacion en
+    // LIMPIEZA, y el filtro de "disponibles" excluia cualquier habitacion en
+    // LIMPIEZA sin excepcion. Al editar ese mismo registro ya finalizado, el
+    // selector "perdia" su propia habitacion — el resumen mostraba "Sin
+    // habitacion elegida" y el campo oculto quedaba expuesto a guardarse
+    // vacio si algo disparaba una nueva busqueda (ej. tocar las fechas).
+    @Test
+    void obtenerHabitacionesDisponiblesIncluyeLaHabitacionActualAunqueEsteEnLimpieza() {
+        registro.getHabitacion().setEstado(EstadoHabitacion.LIMPIEZA);
+        when(repositorio.findById(6)).thenReturn(Optional.of(registro));
+        when(repositorio.findAll()).thenReturn(List.of());
+        when(habitacionrepositorio.findAll()).thenReturn(List.of(registro.getHabitacion()));
+
+        List<Habitacion> disponibles = service.obtenerHabitacionesDisponibles(registro.getCheckIn(), registro.getNoches(), 6);
+
+        assertEquals(1, disponibles.size());
+        assertEquals(101, disponibles.get(0).getId());
+    }
+
+    @Test
+    void obtenerHabitacionesDisponiblesSigueExcluyendoOtrasHabitacionesEnLimpieza() {
+        Habitacion otra = new Habitacion();
+        otra.setId(202);
+        otra.setEstado(EstadoHabitacion.LIMPIEZA);
+        when(repositorio.findById(6)).thenReturn(Optional.of(registro));
+        when(repositorio.findAll()).thenReturn(List.of());
+        when(habitacionrepositorio.findAll()).thenReturn(List.of(otra));
+
+        List<Habitacion> disponibles = service.obtenerHabitacionesDisponibles(registro.getCheckIn(), registro.getNoches(), 6);
+
+        assertTrue(disponibles.isEmpty());
     }
 }

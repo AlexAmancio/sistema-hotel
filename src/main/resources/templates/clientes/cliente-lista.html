@@ -34,7 +34,7 @@
         </td>
         <td th:text="${cliente.ciudad + ' / ' + cliente.pais}"></td>
         <td>
-          <span class="col-tag" th:if="${cliente.tipoDocumento != null}" th:text="${cliente.tipoDocumento.name()}"></span>
+          <span class="col-tag" th:if="${cliente.tipoDocumento != null}" th:text="${cliente.tipoDocumento.etiqueta}"></span>
           <span th:text="${cliente.identificacion}"></span>
         </td>
         <td th:text="${cliente.telefono}"></td>

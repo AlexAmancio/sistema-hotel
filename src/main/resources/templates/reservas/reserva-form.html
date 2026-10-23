@@ -5,7 +5,7 @@
 <body>
 <div th:replace="~{navegacion :: menu}"></div>
 <div class="content">
-    <form th:action="@{/reservas/guardar/}" method="post">
+    <form id="reserva-form" th:action="@{/reservas/guardar/}" method="post">
         <div class="header-form">
             <h1>Reserva múltiple</h1>
         </div>
@@ -13,11 +13,16 @@
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
             <div class="group-field">
-                <label for="cliente">Cliente</label>
-                <select id="cliente" name="cliente">
-                    <option th:each="cliente : ${listaClientes}" th:value="${cliente.id}" th:text="${cliente.nombres + ' ' + cliente.apellidos}"></option>
-                </select>
+                <label for="clienteBuscar">Cliente</label>
+                <div class="cliente-autocomplete">
+                    <input type="text" id="clienteBuscar" placeholder="Buscar por nombre o DNI..." autocomplete="off" />
+                    <input type="hidden" id="clienteId" name="cliente" />
+                    <div id="clienteResultados" class="cliente-resultados hidden"></div>
+                </div>
             </div>
+            <p id="cliente-warning" class="hidden" style="color: var(--color-rojo); margin: -8px 0 12px 250px;">
+                Elegí un cliente de la lista antes de guardar.
+            </p>
             <div class="group-field">
                 <label for="checkIn">Fecha de ingreso:</label>
                 <input id="checkIn" name="checkIn" type="datetime-local" required/>
@@ -54,8 +59,79 @@
 </div>
 <script th:src="@{/js/script.js}"></script>
 <script th:src="@{/js/script-forms.js}"></script>
+<script th:inline="javascript">
+    const listaClientesAutocomplete = [
+        /*[# th:each="cliente : ${listaClientes}"]*/
+        {
+            id: /*[[${cliente.id}]]*/ 0,
+            nombre: /*[[${cliente.nombres + ' ' + cliente.apellidos}]]*/ '',
+            identificacion: /*[[${cliente.identificacion}]]*/ ''
+        },
+        /*[/]*/
+    ];
+</script>
 <script>
     let busquedaTimeout = null;
+
+    const clienteBuscarInput = document.getElementById('clienteBuscar');
+    const clienteIdInput = document.getElementById('clienteId');
+    const clienteResultadosDiv = document.getElementById('clienteResultados');
+    const clienteWarning = document.getElementById('cliente-warning');
+
+    function renderResultadosCliente(query) {
+        const q = query.trim().toLowerCase();
+        if (q.length < 1) {
+            clienteResultadosDiv.classList.add('hidden');
+            clienteResultadosDiv.innerHTML = '';
+            return;
+        }
+        const coincidencias = listaClientesAutocomplete.filter(c =>
+            c.nombre.toLowerCase().includes(q) || c.identificacion.toLowerCase().includes(q)
+        ).slice(0, 8);
+
+        if (coincidencias.length === 0) {
+            clienteResultadosDiv.innerHTML = '<div class="cliente-resultado-vacio">Sin resultados.</div>';
+            clienteResultadosDiv.classList.remove('hidden');
+            return;
+        }
+
+        clienteResultadosDiv.innerHTML = coincidencias.map(c => {
+            const nombreEscapado = c.nombre.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            return `<div class="cliente-resultado-item" data-id="${c.id}" data-nombre="${nombreEscapado}">`
+                + `${nombreEscapado} <span class="cliente-resultado-dni">${c.identificacion}</span></div>`;
+        }).join('');
+        clienteResultadosDiv.classList.remove('hidden');
+    }
+
+    clienteBuscarInput.addEventListener('input', function () {
+        clienteIdInput.value = '';
+        clienteWarning.classList.add('hidden');
+        renderResultadosCliente(this.value);
+    });
+
+    clienteResultadosDiv.addEventListener('click', function (e) {
+        const item = e.target.closest('.cliente-resultado-item');
+        if (!item) return;
+        clienteIdInput.value = item.dataset.id;
+        clienteBuscarInput.value = item.dataset.nombre;
+        clienteResultadosDiv.classList.add('hidden');
+        clienteResultadosDiv.innerHTML = '';
+        clienteWarning.classList.add('hidden');
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.cliente-autocomplete')) {
+            clienteResultadosDiv.classList.add('hidden');
+        }
+    });
+
+    document.getElementById('reserva-form').addEventListener('submit', function (e) {
+        if (!clienteIdInput.value) {
+            e.preventDefault();
+            clienteWarning.classList.remove('hidden');
+            clienteBuscarInput.focus();
+        }
+    });
 
     function formatearSoles(numero) {
         return numero.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -126,7 +202,25 @@
                 const contenedor = document.getElementById('habitaciones-lista');
                 contenedor.innerHTML = "";
 
+                // Agrupadas por categoría: con 45 habitaciones, una lista plana de
+                // checkboxes sin ningún orden era imposible de recorrer. Así, cada
+                // categoría tiene su propio encabezado y sus habitaciones debajo.
+                const porCategoria = new Map();
                 data.forEach(habitacion => {
+                    const catId = habitacion.categoria ? habitacion.categoria.id : 0;
+                    if (!porCategoria.has(catId)) {
+                        porCategoria.set(catId, { nombre: habitacion.categoria ? habitacion.categoria.nombre : 'Sin categoría', habitaciones: [] });
+                    }
+                    porCategoria.get(catId).habitaciones.push(habitacion);
+                });
+
+                porCategoria.forEach(grupo => {
+                    const titulo = document.createElement('h4');
+                    titulo.className = 'reserva-categoria-titulo';
+                    titulo.textContent = grupo.nombre;
+                    contenedor.appendChild(titulo);
+
+                    grupo.habitaciones.forEach(habitacion => {
                     const row = document.createElement('div');
                     row.className = 'reserva-habitacion-row';
 
@@ -140,7 +234,7 @@
                     checkbox.dataset.aforo = habitacion.aforo;
 
                     const texto = document.createElement('span');
-                    texto.textContent = `Habitación ${habitacion.numero} (aforo ${habitacion.aforo})`;
+                    texto.textContent = `Hab. ${habitacion.numero} (aforo ${habitacion.aforo})`;
 
                     const precio = document.createElement('span');
                     precio.className = 'reserva-habitacion-precio';
@@ -191,6 +285,7 @@
                             actualizarResumen();
                         })
                         .catch(error => console.error('Error al calcular tarifa:', error));
+                    });
                 });
 
                 document.getElementById('habitaciones-group').classList.remove('hidden');

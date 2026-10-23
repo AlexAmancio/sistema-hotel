@@ -144,12 +144,13 @@ public class HabitacionesController {
     @GetMapping("/disponibles")
     public ResponseEntity<List<Habitacion>> getHabitacionesDisponibles(
             @RequestParam String checkIn,
-            @RequestParam int noches) {
+            @RequestParam int noches,
+            @RequestParam(required = false) Integer excluirRegistroId) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
             Date checkInDate = sdf.parse(checkIn);
 
-            List<Habitacion> habitacionesDisponibles = registroService.obtenerHabitacionesDisponibles(checkInDate, noches);
+            List<Habitacion> habitacionesDisponibles = registroService.obtenerHabitacionesDisponibles(checkInDate, noches, excluirRegistroId);
             return ResponseEntity.ok(habitacionesDisponibles);
         } catch (ParseException e) {
             return ResponseEntity.badRequest().build();

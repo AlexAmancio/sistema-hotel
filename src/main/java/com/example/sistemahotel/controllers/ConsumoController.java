@@ -12,6 +12,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.sistemahotel.interfaces.IConsumoService;
 import com.example.sistemahotel.interfaces.IRegistroService;
+import com.example.sistemahotel.modelos.EstadoRegistro;
+import com.example.sistemahotel.modelos.Registro;
 
 @RequestMapping("/consumos/")
 @Controller
@@ -53,6 +55,14 @@ public class ConsumoController {
         registroService.consultarId(registroId)
             .ifPresentOrElse(
                 registro -> {
+                    // Defensa en profundidad: el formulario ya se oculta en el HTML
+                    // cuando la estadía no está activa, pero eso no evita un POST
+                    // directo a esta ruta.
+                    if (registro.getEstado() != EstadoRegistro.ACTIVA) {
+                        redirectAttributes.addFlashAttribute("error",
+                            "Esta estadía ya no está activa — no se pueden agregar más consumos.");
+                        return;
+                    }
                     consumoService.agregar(registro, descripcion, monto);
                     redirectAttributes.addFlashAttribute("exito", "Consumo agregado correctamente.");
                 },
@@ -61,9 +71,24 @@ public class ConsumoController {
         return "redirect:/consumos/" + registroId + "/";
     }
 
-    @PostMapping("/eliminar/{consumoID}/")
-    public String eliminar(@PathVariable(name = "consumoID") int consumoId) {
-        int registroId = consumoService.eliminar(consumoId);
+    @PostMapping("/eliminar/{registroID}/{consumoID}/")
+    public String eliminar(
+        @PathVariable(name = "registroID") int registroId,
+        @PathVariable(name = "consumoID") int consumoId,
+        RedirectAttributes redirectAttributes
+    ) {
+        Registro registro = registroService.consultarId(registroId).orElse(null);
+        if (registro == null) {
+            return "redirect:/";
+        }
+        // Misma razón que en agregar(): el botón ya se oculta en el HTML si la
+        // estadía no está activa, pero eso no evita un POST directo a esta ruta.
+        if (registro.getEstado() != EstadoRegistro.ACTIVA) {
+            redirectAttributes.addFlashAttribute("error",
+                "Esta estadía ya no está activa — no se pueden quitar consumos de su historial.");
+            return "redirect:/consumos/" + registroId + "/";
+        }
+        consumoService.eliminar(consumoId);
         return "redirect:/consumos/" + registroId + "/";
     }
 }

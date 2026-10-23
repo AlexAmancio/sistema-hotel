@@ -15,6 +15,15 @@
       </div>
     </div>
 
+    <div class="filtro-bar">
+      <label for="filtro-categoria-ocupacion">Categoría:</label>
+      <select id="filtro-categoria-ocupacion">
+        <option value="">Todas</option>
+        <option th:each="categoria : ${listaCategorias}" th:value="${categoria.id}" th:text="${categoria.nombre}"></option>
+      </select>
+      <span id="ocupacion-sin-resultados" class="filtro-sin-resultados hidden">No hay habitaciones de esa categoría.</span>
+    </div>
+
     <div class="ocupacion-wrapper">
       <div class="ocupacion-grid" th:style="'grid-template-columns: 180px repeat(' + ${#lists.size(dias)} + ', minmax(64px, 1fr));'">
 
@@ -25,11 +34,13 @@
              th:text="${#dates.format(dia, 'dd/MM')}"></div>
 
         <th:block th:each="fila : ${filas}">
-          <div class="ocupacion-celda ocupacion-habitacion">
+          <div class="ocupacion-celda ocupacion-habitacion"
+               th:attr="data-categoria-id=${fila.habitacion.categoria != null ? fila.habitacion.categoria.id : ''}">
             <b th:text="${'Hab. ' + fila.habitacion.numero}"></b>
             <span th:text="${fila.habitacion.categoria != null ? fila.habitacion.categoria.nombre : ''}"></span>
           </div>
           <div class="ocupacion-fila-dias"
+               th:attr="data-categoria-id=${fila.habitacion.categoria != null ? fila.habitacion.categoria.id : ''}"
                th:style="'grid-column: 2 / span ' + ${#lists.size(dias)} + '; grid-template-columns: repeat(' + ${#lists.size(dias)} + ', minmax(64px, 1fr));'">
             <a th:each="dia, iter : ${dias}"
                class="ocupacion-dia-vacio"
@@ -58,6 +69,31 @@
     </div>
   </div>
   <script th:src="@{/js/script.js}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const filtro = document.getElementById("filtro-categoria-ocupacion");
+      const aviso = document.getElementById("ocupacion-sin-resultados");
+      const habitacionCeldas = document.querySelectorAll(".ocupacion-habitacion");
+      const diasCeldas = document.querySelectorAll(".ocupacion-fila-dias");
+
+      filtro.addEventListener("change", function () {
+        const categoriaId = filtro.value;
+        let visibles = 0;
+
+        habitacionCeldas.forEach(function (celda) {
+          const coincide = !categoriaId || celda.dataset.categoriaId === categoriaId;
+          celda.classList.toggle("hidden", !coincide);
+          if (coincide) visibles++;
+        });
+        diasCeldas.forEach(function (celda) {
+          const coincide = !categoriaId || celda.dataset.categoriaId === categoriaId;
+          celda.classList.toggle("hidden", !coincide);
+        });
+
+        aviso.classList.toggle("hidden", visibles > 0);
+      });
+    });
+  </script>
 </body>
 
 </html>

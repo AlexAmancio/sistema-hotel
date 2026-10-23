@@ -2,6 +2,7 @@ package com.example.sistemahotel.controllers;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -25,6 +27,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.sistemahotel.interfaces.IClienteService;
 import com.example.sistemahotel.interfaces.IRegistroService;
 import com.example.sistemahotel.modelos.Cliente;
+import com.example.sistemahotel.modelos.TipoDocumento;
 import com.example.sistemahotel.util.TextoUtils;
 
 @RequestMapping("/clientes/")
@@ -140,6 +143,47 @@ public class ClientesController {
         } catch (RestClientException e) {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("{\"error\":\"No se pudo consultar el DNI\"}");
         }
+    }
+
+    // Alta rápida desde el formulario de registro: cuando el huésped no
+    // existe todavía, evita mandar al recepcionista a otra pantalla y volver.
+    // Devuelve JSON (id + nombre) en vez de redirigir, para que el JS lo
+    // seleccione al toque en el buscador de cliente.
+    @PostMapping("/crear-rapido/")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> crearRapido(
+        @RequestParam String nombres,
+        @RequestParam String apellidos,
+        @RequestParam String identificacion,
+        @RequestParam(required = false) String tipoDocumento,
+        @RequestParam(required = false) String telefono
+    ) {
+        if (nombres == null || nombres.isBlank() || apellidos == null || apellidos.isBlank()
+            || identificacion == null || identificacion.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Nombres, apellidos e identificación son obligatorios."));
+        }
+
+        Optional<Cliente> existente = service.consultarPorIdentificacion(identificacion);
+        if (existente.isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Ya existe un cliente con esa identificación."));
+        }
+
+        Cliente cliente = new Cliente();
+        cliente.setNombres(TextoUtils.capitalizarNombre(nombres));
+        cliente.setApellidos(TextoUtils.capitalizarNombre(apellidos));
+        cliente.setIdentificacion(identificacion.trim());
+        cliente.setTelefono(telefono);
+        try {
+            cliente.setTipoDocumento(TipoDocumento.valueOf(tipoDocumento));
+        } catch (Exception e) {
+            cliente.setTipoDocumento(TipoDocumento.DNI);
+        }
+
+        service.guardar(cliente);
+        return ResponseEntity.ok(Map.of(
+            "id", cliente.getId(),
+            "nombre", cliente.getNombres() + " " + cliente.getApellidos()
+        ));
     }
 
 }

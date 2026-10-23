@@ -29,7 +29,7 @@
       <div class="comprobante-cliente">
         <h3>Cliente</h3>
         <p th:text="${registro.cliente.nombres + ' ' + registro.cliente.apellidos}"></p>
-        <p th:text="${'DNI: ' + registro.cliente.identificacion}"></p>
+        <p th:text="${registro.cliente.tipoDocumento.etiqueta + ': ' + registro.cliente.identificacion}"></p>
       </div>
 
       <table class="comprobante-detalle">
