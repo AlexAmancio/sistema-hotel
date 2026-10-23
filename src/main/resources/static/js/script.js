@@ -25,6 +25,9 @@ document.addEventListener("DOMContentLoaded", function() {
         case "categorias":
             elemento = document.getElementById("item-categorias");
             break;
+        case "productos-consumo":
+            elemento = document.getElementById("item-productos-consumo");
+            break;
         case "clientes":
             elemento = document.getElementById("item-clientes");
             break;

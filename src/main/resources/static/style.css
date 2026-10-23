@@ -1791,6 +1791,65 @@ table {
     }
 }
 
+/* Mini gráfico de barras embebido en una stat-card (ingresos/ocupación por
+   mes en Reportes). Una sola serie por gráfico -> un solo color, sin
+   leyenda (el stat-label ya dice qué es). El valor exacto aparece al pasar
+   el mouse en vez de imprimirse siempre, para no saturar 6 barras chicas. */
+.chart-mini {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    column-gap: 10px;
+    height: 120px;
+    margin-top: 10px;
+    padding-top: 22px;
+}
+.chart-mini-barra-wrap {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+}
+.chart-mini-barra {
+    width: 100%;
+    max-width: 30px;
+    min-height: 3px;
+    border-radius: 4px 4px 0 0;
+    background: var(--primary);
+    transition: opacity .15s ease;
+}
+.chart-mini-barra-gold {
+    background: var(--accent-gold);
+}
+.chart-mini-barra-wrap:hover .chart-mini-barra {
+    opacity: 0.75;
+}
+.chart-mini-valor {
+    position: absolute;
+    top: 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-color);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity .15s ease, transform .15s ease;
+    white-space: nowrap;
+    pointer-events: none;
+}
+.chart-mini-barra-wrap:hover .chart-mini-valor {
+    opacity: 1;
+    transform: translateY(0);
+}
+.chart-mini-label {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--color-plomo-oscuro);
+}
+
 /* ======================= FILTRO Y EXPORTAR ===========================*/
 .filtro-bar {
     display: flex;

@@ -51,6 +51,12 @@ public class SecurityConfig {
                 // (evita que el staff se autopromueva a admin).
                 auth.requestMatchers(HttpMethod.GET, "/usuarios/").authenticated();
                 auth.requestMatchers("/usuarios/**").hasRole("ADMIN");
+                // Mismo criterio que usuarios: cualquiera puede ver el catálogo
+                // de productos de consumo (lo necesita para cargar consumos),
+                // pero solo un admin puede crear, editar, desactivar o eliminar
+                // productos y tocar sus precios sugeridos.
+                auth.requestMatchers(HttpMethod.GET, "/productos-consumo/").authenticated();
+                auth.requestMatchers("/productos-consumo/**").hasRole("ADMIN");
                 auth.anyRequest().authenticated();
             })
             .formLogin(formLogin -> {

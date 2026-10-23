@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.sistemahotel.modelos.Consumo;
+import com.example.sistemahotel.modelos.ProductoConsumo;
 import com.example.sistemahotel.modelos.Registro;
 import com.example.sistemahotel.repositories.IConsumoRepository;
 
@@ -45,13 +46,35 @@ class ConsumoServiceTest {
         registro.setId(6);
 
         ArgumentCaptor<Consumo> captor = ArgumentCaptor.forClass(Consumo.class);
-        service.agregar(registro, "Minibar", 25.5);
+        service.agregar(registro, "Minibar", 25.5, null);
 
         verify(repositorio).save(captor.capture());
         Consumo guardado = captor.getValue();
         assertEquals("Minibar", guardado.getDescripcion());
         assertEquals(25.5, guardado.getMonto(), 0.001);
         assertEquals(registro, guardado.getRegistro());
+        assertEquals(null, guardado.getProducto());
+    }
+
+    @Test
+    void agregarEnlazaElProductoDelCatalogoCuandoSeIndica() {
+        Registro registro = new Registro();
+        registro.setId(6);
+        ProductoConsumo producto = new ProductoConsumo();
+        producto.setId(2);
+        producto.setNombre("Minibar");
+
+        ArgumentCaptor<Consumo> captor = ArgumentCaptor.forClass(Consumo.class);
+        service.agregar(registro, "Minibar", 25.5, producto);
+
+        verify(repositorio).save(captor.capture());
+        assertEquals(producto, captor.getValue().getProducto());
+    }
+
+    @Test
+    void existeConsumoConProductoDelegaEnElRepositorio() {
+        when(repositorio.existsByProductoId(2)).thenReturn(true);
+        assertEquals(true, service.existeConsumoConProducto(2));
     }
 
     @Test

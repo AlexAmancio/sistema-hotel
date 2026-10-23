@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.sistemahotel.interfaces.IConsumoService;
 import com.example.sistemahotel.modelos.Consumo;
+import com.example.sistemahotel.modelos.ProductoConsumo;
 import com.example.sistemahotel.modelos.Registro;
 import com.example.sistemahotel.repositories.IConsumoRepository;
 
@@ -22,11 +23,12 @@ public class ConsumoService implements IConsumoService {
     }
 
     @Override
-    public void agregar(Registro registro, String descripcion, double monto) {
+    public void agregar(Registro registro, String descripcion, double monto, ProductoConsumo producto) {
         Consumo consumo = new Consumo();
         consumo.setRegistro(registro);
         consumo.setDescripcion(descripcion);
         consumo.setMonto(monto);
+        consumo.setProducto(producto);
         repositorio.save(consumo);
     }
 
@@ -36,5 +38,10 @@ public class ConsumoService implements IConsumoService {
         int registroId = (consumo != null && consumo.getRegistro() != null) ? consumo.getRegistro().getId() : 0;
         repositorio.deleteById(consumoId);
         return registroId;
+    }
+
+    @Override
+    public boolean existeConsumoConProducto(int productoId) {
+        return repositorio.existsByProductoId(productoId);
     }
 }

@@ -28,6 +28,7 @@ public class GlobalModelAttributes {
         boolean esAdmin = auth.getAuthorities().stream()
             .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         model.addAttribute("usuarioActualRol", esAdmin ? "Administrador" : "Usuario Normal");
+        model.addAttribute("usuarioActualEsAdmin", esAdmin);
 
         usuarioService.consultarpornombreusuario(auth.getName()).ifPresentOrElse(
             usuario -> model.addAttribute("usuarioActualNombre", usuario.getNombres() + " " + usuario.getApellidos()),
