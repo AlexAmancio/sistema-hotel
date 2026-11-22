@@ -69,7 +69,7 @@ class HabitacionServiceTest {
 
     @Test
     void buscarConsultaPorNumeroConteniendoElTexto() {
-        when(repositorio.findByNumeroContainingIgnoreCase("10")).thenReturn(List.of(new Habitacion()));
+        when(repositorio.findByNumeroContainingIgnoreCaseOrCategoria_NombreContainingIgnoreCase("10", "10")).thenReturn(List.of(new Habitacion()));
         assertEquals(1, service.buscar("10").size());
     }
 }
