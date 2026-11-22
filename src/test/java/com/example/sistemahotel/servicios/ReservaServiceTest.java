@@ -1,5 +1,6 @@
 package com.example.sistemahotel.servicios;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -38,6 +39,7 @@ import com.example.sistemahotel.repositories.IReservaRepository;
 // que el solapamiento de fechas se valide por cada habitación de una reserva
 // múltiple, no solo por la primera de la lista.
 @ExtendWith(MockitoExtension.class)
+@Tag("mockito")
 class ReservaServiceTest {
 
     @Mock
