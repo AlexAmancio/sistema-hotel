@@ -146,9 +146,16 @@ public class HabitacionesController {
         @PathVariable(name = "habitacionID") int id,
         Model model
     ) {
+        // Defecto D12: solo una habitación en limpieza pasa a disponible. Antes
+        // un POST directo podía "liberar" una habitación ocupada o en
+        // mantenimiento.
         service.consultarId(id).ifPresent(habitacion -> {
-            habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
-            service.guardar(habitacion);
+            if (habitacion.getEstado() == EstadoHabitacion.LIMPIEZA) {
+                habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
+                service.guardar(habitacion);
+            } else {
+                model.addAttribute("error", "La habitación " + habitacion.getNumero() + " no está en limpieza; no se cambió su estado.");
+            }
         });
         return listar(model);
     }

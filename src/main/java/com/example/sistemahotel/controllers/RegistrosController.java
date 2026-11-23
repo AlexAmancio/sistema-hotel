@@ -270,9 +270,44 @@ public class RegistrosController {
             redirectAttributes.addFlashAttribute("error", "Elegí una habitación antes de guardar.");
             return redirectError;
         }
+        // Defecto D12: estas reglas solo existían en el formulario (min="1",
+        // min="0"); un POST directo podía guardar 0 noches (tarifa S/ 0), 0
+        // huéspedes o un pago negativo.
+        if (registro.getCheckIn() == null) {
+            redirectAttributes.addFlashAttribute("error", "Elegí la fecha y hora de ingreso.");
+            return redirectError;
+        }
+        if (registro.getNoches() < 1) {
+            redirectAttributes.addFlashAttribute("error", "La estadía debe tener al menos 1 noche.");
+            return redirectError;
+        }
+        if (registro.getNumHuespedes() < 1) {
+            redirectAttributes.addFlashAttribute("error", "Debe haber al menos 1 huésped.");
+            return redirectError;
+        }
+        if (registro.getMontoPagado() != null && registro.getMontoPagado() < 0) {
+            redirectAttributes.addFlashAttribute("error", "El monto pagado no puede ser negativo.");
+            return redirectError;
+        }
 
         boolean esNuevo = registro.getId() == 0;
         Registro existente = esNuevo ? null : service.consultarId(registro.getId()).orElse(null);
+
+        // Defecto D2: la tarifa ya no se toma del navegador. En un check-in
+        // nuevo, o si cambian la habitación, la fecha o las noches, se calcula
+        // aquí con el precio de la categoría (respeta la temporada alta). Si
+        // no cambia nada de eso, se conserva la tarifa ya guardada.
+        boolean cambiaLaTarifa = existente == null
+            || existente.getHabitacion() == null
+            || existente.getHabitacion().getId() != registro.getHabitacion().getId()
+            || existente.getNoches() != registro.getNoches()
+            || !registro.getCheckIn().equals(existente.getCheckIn());
+        if (cambiaLaTarifa) {
+            double precioPorNoche = registro.getHabitacion().getCategoria().precioParaFecha(registro.getCheckIn());
+            registro.setTarifa(precioPorNoche * registro.getNoches());
+        } else {
+            registro.setTarifa(existente.getTarifa());
+        }
 
         // El aforo solo se revalida cuando de verdad cambia la habitación o
         // el número de huéspedes en este guardado. Si no, un registro viejo
@@ -477,6 +512,17 @@ public class RegistrosController {
         @RequestParam int noches,
         RedirectAttributes redirectAttributes
     ) {
+        // Defecto D12: extender solo puede sumar noches. Antes el servidor
+        // aceptaba reducirlas o dejarlas en 0 con un POST directo.
+        Registro actual = service.consultarId(id).orElse(null);
+        if (actual == null) {
+            return "redirect:/";
+        }
+        if (noches <= actual.getNoches()) {
+            redirectAttributes.addFlashAttribute("error",
+                "Para extender, la nueva cantidad de noches debe ser mayor que la actual (" + actual.getNoches() + ").");
+            return "redirect:/extender/" + id + "/";
+        }
         boolean ok = service.extenderEstadia(id, noches);
         if (!ok) {
             redirectAttributes.addFlashAttribute("error",

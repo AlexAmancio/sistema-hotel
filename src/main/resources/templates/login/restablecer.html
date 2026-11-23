@@ -96,6 +96,7 @@
           Este enlace ya no es válido — pedí uno nuevo.
         </p>
 
+        <p th:if="${error}" class="invalido" th:text="${error}"></p>
         <form th:if="${estado == 'formulario'}" th:action="@{/login/restablecer}" method="post">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
           <input type="hidden" name="token" th:value="${token}" />

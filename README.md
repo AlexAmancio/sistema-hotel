@@ -148,8 +148,8 @@ una demostración interna, no documentos tributarios válidos.
 
 `ClientesController` expone `GET /clientes/dni/{dni}`, valida que el DNI
 tenga 8 dígitos (`dni.matches("\\d{8}")`) y, si pasa, el propio backend
-consulta `apiperu.dev` con un token leído de `application.properties`
-(`apiperu.token`, configurable por variable de entorno `APIPERU_TOKEN`) y
+consulta `apiperu.dev` con el token de la variable `APIPERU_TOKEN` (o del
+archivo `.env`; el token no está escrito en el repositorio) y
 le devuelve al navegador solo el nombre/apellido ya resuelto. El token
 nunca se expone en el HTML ni en JavaScript del cliente.
 
@@ -160,8 +160,7 @@ nunca se expone en el HTML ni en JavaScript del cliente.
 El repo incluye un script con toda la base de datos actual (clientes,
 habitaciones, registros, consumos, usuarios, catálogo de productos, etc.) en
 [`bd/respaldo_bd_actual.sql`](bd/respaldo_bd_actual.sql). Con MySQL corriendo
-(se conecta a `root` sin contraseña en `localhost:3306` por defecto —
-cambiá eso en `application.properties` si tu entorno es distinto):
+en `localhost:3306`, cargalo como administrador de MySQL:
 
 ```bash
 mysql -uroot < bd/respaldo_bd_actual.sql
@@ -170,6 +169,20 @@ mysql -uroot < bd/respaldo_bd_actual.sql
 El script crea la base `alquiler` si no existe y carga todos los datos de una
 sola vez — no hace falta crear la base a mano ni insertar un usuario para
 poder loguearte, ya vienen incluidos.
+
+La aplicación **no se conecta con root**: usa el usuario `estadia_app`, que
+solo tiene permisos sobre la base `alquiler`. Los secretos (clave de la base,
+token de apiperu.dev, clave de "Recuérdame", correo) se leen de variables de
+entorno o de un archivo `.env` que no se sube al repositorio:
+
+```bash
+cp .env.example .env              # completá DB_PASSWORD y los demás valores
+./scripts/crear-usuario-bd.sh     # crea estadia_app con la clave del .env
+```
+
+Si tu base es anterior al 23/11/2026, aplicá además
+`mysql -uroot alquiler < bd/migracion_d13_unicidad.sql` (documento de cliente y
+nombre de usuario únicos).
 
 **2. Usuario de prueba**
 
@@ -211,8 +224,12 @@ La app queda en `http://localhost:8090`.
 
 ```bash
 docker build -t sistema-hotel .
-docker run -p 8090:8090 sistema-hotel
+docker run -p 8090:8090 --env-file .env \
+  -e DB_URL=jdbc:mysql://host.docker.internal:3306/alquiler sistema-hotel
 ```
+
+Dentro del contenedor, el usuario de MySQL debe aceptar conexiones de fuera
+de localhost: `./scripts/crear-usuario-bd.sh '%'`.
 
 Requiere una base MySQL accesible desde el contenedor (ajustá
 `spring.datasource.url` según corresponda).

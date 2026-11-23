@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +29,9 @@ import com.example.sistemahotel.servicios.UsuarioService;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @org.springframework.beans.factory.annotation.Value("${security.remember-me.key:}")
+    private String claveRecuerdame;
 
     private final UsuarioService usuarioService;
     private final LoginAttemptService loginAttemptService;
@@ -68,7 +72,7 @@ public class SecurityConfig {
                 formLogin.permitAll();
             })
             .rememberMe(rememberMe -> {
-                rememberMe.key("estadia-remember-me-key");
+                rememberMe.key(claveRecuerdame());
                 rememberMe.tokenValiditySeconds(14 * 24 * 60 * 60);
                 rememberMe.userDetailsService(userDetailsService());
             })
@@ -94,9 +98,13 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
                 session.invalidSessionUrl("/login");
                  // Habilitar solo 1 session y el rastreo de usuario autenticado  
+                // Defecto D9: la sesión única ahora funciona porque
+                // UsuarioServiceDetails define equals y hashCode por username.
+                // Al iniciar sesión en otro equipo, la sesión anterior expira.
                 session
                     .maximumSessions(1)
-                    .sessionRegistry(sessionRegistry());
+                    .sessionRegistry(sessionRegistry())
+                    .expiredUrl("/login?expirada");
                 // Que hacer si se apropian del id de sesión (Fijan la sesion)
                 session.sessionFixation((sessionFixation) -> {
                     sessionFixation.migrateSession();
@@ -118,6 +126,23 @@ public class SecurityConfig {
     @Bean
     public SessionRegistry sessionRegistry() {
         return new SessionRegistryImpl();
+    }
+
+    // Avisa al registro de sesiones cuando una sesión se cierra o vence, para
+    // que no queden sesiones fantasma contando para el límite de 1.
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    // Defecto D4: la clave de "Recuérdame" ya no está escrita en el código. Se
+    // toma de REMEMBER_ME_KEY; si no está definida, se genera una al azar en
+    // cada arranque (las sesiones recordadas se pierden al reiniciar, pero
+    // nadie puede falsificar la cookie con una clave conocida).
+    String claveRecuerdame() {
+        return claveRecuerdame != null && !claveRecuerdame.isBlank()
+            ? claveRecuerdame
+            : java.util.UUID.randomUUID().toString();
     }
 
     public AuthenticationSuccessHandler successHandler() {

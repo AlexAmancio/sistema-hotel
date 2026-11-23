@@ -24,7 +24,7 @@ import com.example.sistemahotel.repositories.ILoginAttemptRepository;
 
 // Regla RN11: el bloqueo por intentos fallidos se lleva por IP. Estas pruebas
 // fijan de dónde se toma la IP y qué se registra en cada intento. La primera
-// documenta el comportamiento actual con la cabecera X-Forwarded-For (defecto D10).
+// verifica la corrección del defecto D10: la cabecera X-Forwarded-For se ignora.
 @Tag("mockito")
 @ExtendWith(MockitoExtension.class)
 class LoginAttemptServiceIpTest {
@@ -55,10 +55,12 @@ class LoginAttemptServiceIpTest {
     }
 
     @Test
-    void conCabeceraXForwardedForTomaLaPrimeraIpDeLaLista() {
+    void laCabeceraXForwardedForNoReemplazaLaIpDeLaConexion() {
+        // Defecto D10 corregido: el cliente puede escribir esta cabecera, así
+        // que no se usa para el bloqueo.
         peticion("10.0.0.1", "203.0.113.5, 10.0.0.1");
 
-        assertEquals("203.0.113.5", service.resolveClientIp());
+        assertEquals("10.0.0.1", service.resolveClientIp());
     }
 
     @Test

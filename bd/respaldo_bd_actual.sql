@@ -552,4 +552,8 @@ CREATE TABLE `usuarios_roles` (
   CONSTRAINT `FKebiaxjbamgu326glxo1fbysuh` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- Defecto D13: el documento del cliente y el nombre de usuario no se repiten.
+ALTER TABLE `cliente` ADD UNIQUE KEY `uk_cliente_identificacion` (`identificacion`);
+ALTER TABLE `usuario` ADD UNIQUE KEY `uk_usuario_username` (`username`);
+
 SET FOREIGN_KEY_CHECKS=1;

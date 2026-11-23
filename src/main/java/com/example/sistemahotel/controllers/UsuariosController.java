@@ -104,6 +104,13 @@ public class UsuariosController {
             model.addAttribute("exito", "Usuario creado correctamente.");
             return listar(model);
         }
+        // Defecto D13: al editar también se valida que el nombre de usuario no
+        // sea de otra cuenta (antes solo se validaba al crear).
+        Optional<Usuario> otroConElUsername = service.consultarpornombreusuario(usuario.getUsername());
+        if (otroConElUsername.isPresent() && otroConElUsername.get().getId() != usuario.getId()) {
+            redirectAttributes.addFlashAttribute("error", "No se pudo actualizar al usuario, username repetido");
+            return "redirect:/usuarios/editar/" + usuario.getId() + "/";
+        }
         // Edición: el campo de contraseña llega vacío salvo que el admin quiera cambiarla.
         // Si llega vacío, se conserva el hash ya guardado en vez de volver a encriptarlo
         // (encriptar un hash ya encriptado dejaba al usuario sin poder loguearse).

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.sistemahotel.interfaces.IPasswordResetService;
+import com.example.sistemahotel.servicios.PasswordResetService;
 
 @Controller
 public class LoginController {
@@ -41,8 +42,15 @@ public class LoginController {
 
     @PostMapping("/login/restablecer")
     public String guardarNuevaContrasena(@RequestParam String token, @RequestParam String nuevaContrasena, Model model) {
-        boolean actualizado = passwordResetService.restablecerContrasena(token, nuevaContrasena);
         model.addAttribute("token", token);
+        // Defecto D12 (regla RN36): la contraseña nueva debe tener al menos 5
+        // caracteres. Antes solo lo exigía el formulario (minlength="5").
+        if (nuevaContrasena == null || nuevaContrasena.trim().length() < PasswordResetService.LONGITUD_MINIMA) {
+            model.addAttribute("estado", passwordResetService.tokenValido(token) ? "formulario" : "invalido");
+            model.addAttribute("error", "La contraseña debe tener al menos " + PasswordResetService.LONGITUD_MINIMA + " caracteres.");
+            return "login/restablecer";
+        }
+        boolean actualizado = passwordResetService.restablecerContrasena(token, nuevaContrasena);
         model.addAttribute("estado", actualizado ? "exito" : "invalido");
         return "login/restablecer";
     }

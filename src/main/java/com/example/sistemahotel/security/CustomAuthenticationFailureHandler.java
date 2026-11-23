@@ -33,15 +33,13 @@ public class CustomAuthenticationFailureHandler implements org.springframework.s
         String ipAddress = loginAttemptService.resolveClientIp(); // IP real del request, no la que envía el formulario
         String username = request.getParameter("username"); // Obtener username del formulario (si existe)
 
-        System.out.println("FALLIDO: El username es: " + username);
-
         // Registrar el intento fallido
         loginAttemptService.registerAttempt(ipAddress, username, false);
 
         String messageError;
 
         if (loginAttemptService.isBlocked(ipAddress)) {
-            messageError = "Vuelva a intentar en " + lockTimeMinutes + "minutos";
+            messageError = "Vuelva a intentar en " + lockTimeMinutes + " minutos.";
         } else {
             messageError = "Inicio de sesión fallido. Verifique sus credenciales.";
         }

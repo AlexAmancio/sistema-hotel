@@ -94,7 +94,7 @@ public class RegistroService implements IRegistroService {
         List<Habitacion> todasHabitaciones = (List<Habitacion>) habitacionrepositorio.findAll();
         List<Registro> registrosActivos = registrosActivos();
 
-        Date checkOutEstimado = sumarDias(checkIn, noches);
+        Date checkOutEstimado = salidaEstimada(checkIn, noches);
 
         List<Habitacion> habitacionesOcupadas = registrosActivos.stream()
             .filter(registro -> excluirRegistroId == null || registro.getId() != excluirRegistroId)
@@ -125,7 +125,7 @@ public class RegistroService implements IRegistroService {
 
     @Override
     public boolean existeSolapamiento(Habitacion habitacion, Date checkIn, int noches, Integer excluirRegistroId) {
-        Date checkOutEstimado = sumarDias(checkIn, noches);
+        Date checkOutEstimado = salidaEstimada(checkIn, noches);
 
         return registrosActivos().stream()
             .filter(registro -> excluirRegistroId == null || registro.getId() != excluirRegistroId)
@@ -169,7 +169,7 @@ public class RegistroService implements IRegistroService {
             return false;
         }
         Registro registro = registroOpt.get();
-        if (registro.getHabitacion() == null) {
+        if (registro.getHabitacion() == null || nuevasNoches < 1) {
             return false;
         }
         boolean solapa = existeSolapamiento(registro.getHabitacion(), registro.getCheckIn(), nuevasNoches, registroId);
@@ -207,16 +207,26 @@ public class RegistroService implements IRegistroService {
             .collect(Collectors.toList());
     }
 
+    // Defecto D14: la salida de una estadía es a las 12:00 del día en que
+    // vencen sus noches, igual que la muestra la pantalla
+    // (Registro.calcularCheckoutEstimado). Antes el cruce usaba la hora real
+    // de ingreso más las noches: si alguien entraba a las 10:28, otra estadía
+    // podía empezar a las 11:00 del día de salida aunque en pantalla el
+    // huésped anterior seguía hasta las 12:00.
     private boolean seSuperponen(Date rangoInicio, Date rangoFin, Registro registro) {
         Date registroCheckIn = registro.getCheckIn();
-        Date registroCheckOut = sumarDias(registroCheckIn, registro.getNoches());
+        Date registroCheckOut = salidaEstimada(registroCheckIn, registro.getNoches());
         return rangoInicio.before(registroCheckOut) && rangoFin.after(registroCheckIn);
     }
 
-    private Date sumarDias(Date fecha, int dias) {
+    private Date salidaEstimada(Date checkIn, int noches) {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(fecha);
-        calendar.add(Calendar.DAY_OF_MONTH, dias);
+        calendar.setTime(checkIn);
+        calendar.set(Calendar.HOUR_OF_DAY, 12);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.add(Calendar.DAY_OF_MONTH, noches);
         return calendar.getTime();
     }
 

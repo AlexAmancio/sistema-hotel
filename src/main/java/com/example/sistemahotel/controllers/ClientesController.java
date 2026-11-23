@@ -108,6 +108,13 @@ public class ClientesController {
             model.addAttribute("exito", "Cliente registrado correctamente.");
             return listar(0, model);
         }
+        // Defecto D13: al editar también se valida que el documento no sea de
+        // otro cliente (antes solo se validaba al crear).
+        Optional<Cliente> otroConElDocumento = service.consultarPorIdentificacion(cliente.getIdentificacion());
+        if (otroConElDocumento.isPresent() && otroConElDocumento.get().getId() != cliente.getId()) {
+            redirectAttributes.addFlashAttribute("error", "No se pudo actualizar el cliente. Ya existe otro cliente con esa identificación.");
+            return "redirect:/clientes/editar/" + cliente.getId() + "/";
+        }
         service.guardar(cliente);
         model.addAttribute("exito", "Cliente actualizado correctamente.");
         return listar(0, model);

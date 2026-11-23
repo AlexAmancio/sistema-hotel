@@ -147,8 +147,16 @@ class RegistrosFlujoControllerTest extends ControladorIntegracionBase {
         verify(registroService).eliminar(6);
     }
 
+    private void estadiaDeDosNoches() {
+        Registro registro = new Registro();
+        registro.setId(6);
+        registro.setNoches(2);
+        when(registroService.consultarId(6)).thenReturn(Optional.of(registro));
+    }
+
     @Test
     void extenderConCruceDeFechasSeRechaza() throws Exception {
+        estadiaDeDosNoches();
         when(registroService.extenderEstadia(6, 5)).thenReturn(false);
 
         mockMvc.perform(post("/extender/6/").with(csrf()).param("noches", "5"))
@@ -158,6 +166,7 @@ class RegistrosFlujoControllerTest extends ControladorIntegracionBase {
 
     @Test
     void extenderSinCruceVuelveALaLista() throws Exception {
+        estadiaDeDosNoches();
         when(registroService.extenderEstadia(6, 3)).thenReturn(true);
 
         mockMvc.perform(post("/extender/6/").with(csrf()).param("noches", "3")).andExpect(redirectedUrl("/"));

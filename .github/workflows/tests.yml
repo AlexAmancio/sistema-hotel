@@ -174,6 +174,18 @@ jobs:
       - name: Cargar la base de demostración en MySQL
         run: mysql -h 127.0.0.1 -P 3306 -u root < bd/respaldo_bd_actual.sql
 
+      # La aplicación ya no se conecta con root (defecto D5): se crea su usuario
+      # con permisos solo sobre la base alquiler y una clave aleatoria por
+      # ejecución, que no queda en el repositorio.
+      - name: Crear el usuario de la aplicación en MySQL
+        shell: bash
+        run: |
+          DB_PASSWORD=$(openssl rand -hex 16)
+          echo "::add-mask::$DB_PASSWORD"
+          echo "DB_PASSWORD=$DB_PASSWORD" >> "$GITHUB_ENV"
+          chmod +x scripts/crear-usuario-bd.sh
+          DB_PASSWORD="$DB_PASSWORD" ./scripts/crear-usuario-bd.sh '%'
+
       - name: Ejecutar pruebas
         shell: bash
         run: |
@@ -244,6 +256,18 @@ jobs:
       # demostración aporta el esquema completo.
       - name: Cargar la base de demostración en MySQL
         run: mysql -h 127.0.0.1 -P 3306 -u root < bd/respaldo_bd_actual.sql
+
+      # La aplicación ya no se conecta con root (defecto D5): se crea su usuario
+      # con permisos solo sobre la base alquiler y una clave aleatoria por
+      # ejecución, que no queda en el repositorio.
+      - name: Crear el usuario de la aplicación en MySQL
+        shell: bash
+        run: |
+          DB_PASSWORD=$(openssl rand -hex 16)
+          echo "::add-mask::$DB_PASSWORD"
+          echo "DB_PASSWORD=$DB_PASSWORD" >> "$GITHUB_ENV"
+          chmod +x scripts/crear-usuario-bd.sh
+          DB_PASSWORD="$DB_PASSWORD" ./scripts/crear-usuario-bd.sh '%'
 
       - name: Ejecutar pruebas
         shell: bash

@@ -44,6 +44,15 @@ public class ReservaService implements IReservaService {
         if (habitacionIds == null || habitacionIds.isEmpty()) {
             throw new IllegalArgumentException("Elegí al menos una habitación para la reserva.");
         }
+        // Defecto D12: el formulario exige al menos 1 noche y 1 huésped; el
+        // servidor ahora también, para que un POST directo no cree una
+        // reserva con tarifa S/ 0.
+        if (noches < 1) {
+            throw new IllegalArgumentException("La reserva debe tener al menos 1 noche.");
+        }
+        if (huespedesPorHabitacion.values().stream().anyMatch(h -> h < 1)) {
+            throw new IllegalArgumentException("Cada habitación debe tener al menos 1 huésped.");
+        }
 
         // Se valida TODO primero (aforo y solapamiento de cada habitación) antes
         // de crear nada: o entra la reserva completa, o no se crea ninguna parte.

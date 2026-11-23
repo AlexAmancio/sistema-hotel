@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -28,6 +29,8 @@ public class Cliente {
     @Enumerated(EnumType.STRING)
     private TipoDocumento tipoDocumento = TipoDocumento.DNI;
 
+    // Defecto D13: la base de datos también impide documentos repetidos.
+    @Column(unique = true)
     private String identificacion;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
