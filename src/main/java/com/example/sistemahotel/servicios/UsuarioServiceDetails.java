@@ -55,4 +55,22 @@ public class UsuarioServiceDetails implements UserDetails {
     public boolean isEnabled() {
         return activo;
     }
+
+    // Defecto D9: el registro de sesiones identifica al usuario con equals y
+    // hashCode. Sin ellos, cada inicio de sesión contaba como un usuario
+    // distinto y el límite de una sesión por usuario nunca se aplicaba.
+    @Override
+    public boolean equals(Object otro) {
+        return otro instanceof UsuarioServiceDetails o && java.util.Objects.equals(username, o.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hashCode(username);
+    }
+
+    @Override
+    public String toString() {
+        return "UsuarioServiceDetails[" + username + "]";
+    }
 }

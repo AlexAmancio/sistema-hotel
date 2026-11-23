@@ -1,6 +1,7 @@
 package com.example.sistemahotel.modelos;
 
 import java.time.LocalDateTime;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,6 +20,8 @@ public class Usuario {
     private String nombres;
     private String apellidos;
 
+    // Defecto D13: la base de datos también impide nombres de usuario repetidos.
+    @Column(unique = true)
     private String username;
     private String correo;
     private String contrasena;

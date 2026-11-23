@@ -15,9 +15,9 @@
     <div class="comprobante">
       <div class="comprobante-header">
         <div>
-          <h2>HOTELES TUNKI</h2>
-          <p>RUC 20000000001 (demo)</p>
-          <p>Av. Ejemplo 123, Lima - Perú</p>
+          <h2 th:text="${hotelNombre}">Tunki Lodge</h2>
+          <p th:if="${hotelRuc != null and !hotelRuc.isBlank()}" th:text="${'RUC ' + hotelRuc}"></p>
+          <p th:text="${hotelDireccion}"></p>
         </div>
         <div class="comprobante-numero">
           <p>COMPROBANTE DE PAGO</p>

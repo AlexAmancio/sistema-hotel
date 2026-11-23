@@ -18,6 +18,17 @@ import com.example.sistemahotel.modelos.EstadoRegistro;
 @Controller
 public class ComprobanteController {
 
+    // Defecto D11: la cabecera del comprobante muestra los datos del hotel
+    // configurados (hotel.* en application.properties), no datos de ejemplo.
+    @org.springframework.beans.factory.annotation.Value("${hotel.nombre:Tunki Lodge}")
+    private String hotelNombre;
+
+    @org.springframework.beans.factory.annotation.Value("${hotel.direccion:}")
+    private String hotelDireccion;
+
+    @org.springframework.beans.factory.annotation.Value("${hotel.ruc:}")
+    private String hotelRuc;
+
     @Autowired
     private IComprobanteService comprobanteService;
 
@@ -54,6 +65,9 @@ public class ComprobanteController {
         }
         model.addAttribute("comprobante", comprobante);
         model.addAttribute("registro", comprobante.getRegistro());
+        model.addAttribute("hotelNombre", hotelNombre);
+        model.addAttribute("hotelDireccion", hotelDireccion);
+        model.addAttribute("hotelRuc", hotelRuc);
         return "comprobantes/comprobante-ver";
     }
 }

@@ -20,6 +20,9 @@ import com.example.sistemahotel.repositories.IUsuarioRepository;
 @Service
 public class PasswordResetService implements IPasswordResetService {
 
+    // Regla RN36: largo mínimo de la contraseña nueva al recuperarla.
+    public static final int LONGITUD_MINIMA = 5;
+
     @Autowired
     private IUsuarioRepository usuarioRepositorio;
 
@@ -75,7 +78,7 @@ public class PasswordResetService implements IPasswordResetService {
     @Override
     public boolean restablecerContrasena(String token, String nuevaContrasena) {
         Optional<PasswordResetToken> tokenOpt = buscarTokenVigente(token);
-        if (tokenOpt.isEmpty()) {
+        if (tokenOpt.isEmpty() || nuevaContrasena == null || nuevaContrasena.trim().length() < LONGITUD_MINIMA) {
             return false;
         }
 

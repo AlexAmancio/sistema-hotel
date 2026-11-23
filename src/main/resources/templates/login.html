@@ -365,6 +365,9 @@
               <p th:text="${param.error}"></p>
               <span id="error-details"></span>
             </div>
+            <div th:if="${param.expirada}" style="color: #B9770E; font-size: 14px; text-align: center; margin-top: 14px;">
+              <p>Tu sesión se cerró porque se inició sesión con tu usuario en otro equipo.</p>
+            </div>
 
             <div class="campos" style="margin-top: 26px;">
               <div class="campo">

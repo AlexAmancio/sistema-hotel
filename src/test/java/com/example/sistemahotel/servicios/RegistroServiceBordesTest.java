@@ -157,6 +157,21 @@ class RegistroServiceBordesTest {
     }
 
     @Test
+    void d14LaSalidaEsALas12AunqueElIngresoHayaSidoMasTemprano() {
+        Habitacion h = habitacion(1, EstadoHabitacion.OCUPADA);
+        Calendar ingreso = Calendar.getInstance();
+        ingreso.clear();
+        ingreso.set(2028, Calendar.MARCH, 1, 10, 28);
+        when(repositorio.findAll()).thenReturn(List.of(registro(1, h, ingreso.getTime(), 1, EstadoRegistro.ACTIVA)));
+
+        Calendar once = Calendar.getInstance();
+        once.clear();
+        once.set(2028, Calendar.MARCH, 2, 11, 0);
+        assertTrue(service.existeSolapamiento(h, once.getTime(), 1, null), "A las 11:00 el huésped anterior sigue en la habitación");
+        assertFalse(service.existeSolapamiento(h, fecha(2028, 3, 2), 1, null), "Desde las 12:00 la habitación queda libre");
+    }
+
+    @Test
     void lasEstadiasActivasSinHabitacionNoGeneranCruce() {
         Habitacion h = habitacion(1, EstadoHabitacion.DISPONIBLE);
         when(repositorio.findAll()).thenReturn(List.of(registro(1, null, fecha(2028, 3, 1), 5, EstadoRegistro.ACTIVA)));

@@ -11,7 +11,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.example.sistemahotel.modelos.LoginAttempt;
 import com.example.sistemahotel.repositories.ILoginAttemptRepository;
 
-import jakarta.servlet.http.HttpServletRequest;
 
 
 @Service
@@ -33,12 +32,12 @@ public class LoginAttemptService {
         if (attrs == null) {
             return "unknown";
         }
-        HttpServletRequest request = attrs.getRequest();
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
+        // Defecto D10: antes se tomaba la primera IP de la cabecera
+        // X-Forwarded-For, que el propio cliente puede escribir para evadir
+        // el bloqueo. Ahora se usa la IP de la conexión. Si algún día la app
+        // queda detrás de un proxy de confianza, se configura
+        // server.forward-headers-strategy para que Spring la resuelva.
+        return attrs.getRequest().getRemoteAddr();
     }
 
     public void registerAttempt(String ipAddress, String username, boolean successful) {
