@@ -1,5 +1,6 @@
 package com.example.sistemahotel.servicios;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,6 +31,7 @@ import com.example.sistemahotel.repositories.IComprobanteRepository;
 // el mismo cálculo que el registro de riesgos del proyecto marca como
 // condición de carrera) y el desglose de IGV sobre el total cobrado.
 @ExtendWith(MockitoExtension.class)
+@Tag("mockito")
 class ComprobanteServiceTest {
 
     @Mock

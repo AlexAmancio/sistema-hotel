@@ -1,10 +1,12 @@
 package com.example.sistemahotel.util;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
+@Tag("unitaria")
 class TextoUtilsTest {
 
     @Test

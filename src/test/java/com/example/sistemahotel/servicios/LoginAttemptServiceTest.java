@@ -1,5 +1,6 @@
 package com.example.sistemahotel.servicios;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -16,6 +17,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.example.sistemahotel.repositories.ILoginAttemptRepository;
 
 @ExtendWith(MockitoExtension.class)
+@Tag("mockito")
 class LoginAttemptServiceTest {
 
     @Mock

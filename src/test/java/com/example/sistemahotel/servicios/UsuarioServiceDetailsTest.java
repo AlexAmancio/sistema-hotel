@@ -1,5 +1,6 @@
 package com.example.sistemahotel.servicios;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.example.sistemahotel.modelos.Usuario;
 
+@Tag("unitaria")
 class UsuarioServiceDetailsTest {
 
     @Test

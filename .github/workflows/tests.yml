@@ -1,5 +1,16 @@
 name: pipeline-tests
 
+# Cada job ejecuta un tipo de prueba según su etiqueta JUnit (@Tag):
+#   unitaria    -> modelos y utilidades, sin Spring ni simulaciones
+#   mockito     -> servicios con sus repositorios simulados
+#   integracion -> controladores con MockMvc, seguridad real y MySQL
+#   feature     -> pruebas feature al estilo de Laravel: cada ruta HTTP de la
+#                  aplicación completa (sin simular capas propias) sobre MySQL,
+#                  verificando respuesta, mensajes y filas en la base
+# Filtrar por etiqueta (y no por una lista de clases) garantiza que toda prueba
+# nueva entre al pipeline. El primer job además falla si alguna clase de prueba
+# no tiene etiqueta.
+
 on:
   push:
     branches: ["**"]
@@ -26,11 +37,26 @@ jobs:
       - name: Dar permisos al wrapper de Maven
         run: chmod +x mvnw
 
+      - name: Verificar que toda clase de prueba tenga etiqueta
+        shell: bash
+        run: |
+          SIN_ETIQUETA=""
+          for f in $(find src/test/java -name '*Test*.java' ! -name 'ControladorIntegracionBase.java' ! -name 'FeatureTestCase.java'); do
+            if ! grep -qE '@Tag\("(unitaria|mockito|integracion|feature)"\)|extends ControladorIntegracionBase|extends FeatureTestCase' "$f"; then
+              SIN_ETIQUETA="$SIN_ETIQUETA $f"
+            fi
+          done
+          if [ -n "$SIN_ETIQUETA" ]; then
+            echo "Estas clases de prueba no tienen @Tag y no correrían en ningún job:$SIN_ETIQUETA"
+            exit 1
+          fi
+          echo "Todas las clases de prueba tienen etiqueta."
+
       - name: Ejecutar pruebas
         shell: bash
         run: |
           set +e
-          ./mvnw test -Dtest=TextoUtilsTest,RegistroTest,UsuarioServiceDetailsTest | tee test-output.txt
+          ./mvnw -B test -Dgroups=unitaria | tee test-output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           exit $EXIT_CODE
@@ -39,7 +65,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          SUMMARY_LINE=$(grep -E "^\[INFO\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" test-output.txt | tail -1)
+          SUMMARY_LINE=$(grep -E "^\[INFO\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|^\[ERROR\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" test-output.txt | tail -1)
           RUN=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Tests run: )\d+' || true)
           FAILURES=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Failures: )\d+' || true)
           ERRORS=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Errors: )\d+' || true)
@@ -81,7 +107,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          ./mvnw test -Dtest=RegistroServiceTest,LoginAttemptServiceTest,CategoriaServiceTest,ClienteServiceTest,ComprobanteServiceTest,ConsumoServiceTest,HabitacionServiceTest,ReservaServiceTest,UsuarioServiceTest | tee test-output.txt
+          ./mvnw -B test -Dgroups=mockito | tee test-output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           exit $EXIT_CODE
@@ -90,7 +116,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          SUMMARY_LINE=$(grep -E "^\[INFO\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" test-output.txt | tail -1)
+          SUMMARY_LINE=$(grep -E "^\[INFO\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|^\[ERROR\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" test-output.txt | tail -1)
           RUN=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Tests run: )\d+' || true)
           FAILURES=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Failures: )\d+' || true)
           ERRORS=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Errors: )\d+' || true)
@@ -142,11 +168,17 @@ jobs:
       - name: Dar permisos al wrapper de Maven
         run: chmod +x mvnw
 
+      # Algunas pruebas de controlador resuelven el cliente y la habitación del
+      # formulario contra la base de demostración, igual que en la máquina de
+      # desarrollo. Se carga el mismo script versionado en el repositorio.
+      - name: Cargar la base de demostración en MySQL
+        run: mysql -h 127.0.0.1 -P 3306 -u root < bd/respaldo_bd_actual.sql
+
       - name: Ejecutar pruebas
         shell: bash
         run: |
           set +e
-          ./mvnw test -Dtest=ConsumoControllerTest,SistemahotelApplicationTests | tee test-output.txt
+          ./mvnw -B test -Dgroups=integracion | tee test-output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           exit $EXIT_CODE
@@ -155,7 +187,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          SUMMARY_LINE=$(grep -E "^\[INFO\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" test-output.txt | tail -1)
+          SUMMARY_LINE=$(grep -E "^\[INFO\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|^\[ERROR\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" test-output.txt | tail -1)
           RUN=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Tests run: )\d+' || true)
           FAILURES=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Failures: )\d+' || true)
           ERRORS=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Errors: )\d+' || true)
@@ -164,6 +196,77 @@ jobs:
           PASSED=$((RUN - FAILURES - ERRORS - SKIPPED))
           {
             echo "### Pruebas de integración"
+            echo ""
+            echo '```'
+            echo "Pruebas: $PASSED passed, $FAILURES failed, $ERRORS errors, $SKIPPED skipped (de $RUN totales)."
+            echo '```'
+            if [ "$FAILURES" != "0" ] || [ "$ERRORS" != "0" ]; then
+              echo ""
+              echo "**Pruebas fallidas:**"
+              grep -E "<<< FAILURE|<<< ERROR" test-output.txt || echo "(no se pudo listar el detalle, revisa el log completo)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  feature:
+    name: Pruebas feature (rutas HTTP de toda la aplicación)
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: alquiler
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: maven
+
+      - name: Dar permisos al wrapper de Maven
+        run: chmod +x mvnw
+
+      # Cada prueba crea sus propios datos dentro de una transacción que se
+      # deshace al terminar (como RefreshDatabase en Laravel); la base de
+      # demostración aporta el esquema completo.
+      - name: Cargar la base de demostración en MySQL
+        run: mysql -h 127.0.0.1 -P 3306 -u root < bd/respaldo_bd_actual.sql
+
+      - name: Ejecutar pruebas
+        shell: bash
+        run: |
+          set +e
+          ./mvnw -B test -Dgroups=feature | tee test-output.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          exit $EXIT_CODE
+
+      - name: Resumen de pruebas
+        if: always()
+        shell: bash
+        run: |
+          SUMMARY_LINE=$(grep -E "^\[INFO\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|^\[ERROR\] Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$" test-output.txt | tail -1)
+          RUN=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Tests run: )\d+' || true)
+          FAILURES=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Failures: )\d+' || true)
+          ERRORS=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Errors: )\d+' || true)
+          SKIPPED=$(echo "$SUMMARY_LINE" | grep -oP '(?<=Skipped: )\d+' || true)
+          RUN=${RUN:-0}; FAILURES=${FAILURES:-0}; ERRORS=${ERRORS:-0}; SKIPPED=${SKIPPED:-0}
+          PASSED=$((RUN - FAILURES - ERRORS - SKIPPED))
+          {
+            echo "### Pruebas feature"
             echo ""
             echo '```'
             echo "Pruebas: $PASSED passed, $FAILURES failed, $ERRORS errors, $SKIPPED skipped (de $RUN totales)."

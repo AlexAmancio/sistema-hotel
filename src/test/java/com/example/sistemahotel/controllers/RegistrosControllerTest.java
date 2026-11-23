@@ -1,5 +1,6 @@
 package com.example.sistemahotel.controllers;
 
+import org.junit.jupiter.api.Tag;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
@@ -42,6 +43,7 @@ import com.example.sistemahotel.servicios.UsuarioService;
 @SpringBootTest
 @AutoConfigureMockMvc
 @WithMockUser(username = "elon", roles = "ADMIN")
+@Tag("integracion")
 class RegistrosControllerTest {
 
     @Autowired

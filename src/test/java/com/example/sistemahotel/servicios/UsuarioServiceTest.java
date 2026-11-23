@@ -1,5 +1,6 @@
 package com.example.sistemahotel.servicios;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,6 +25,7 @@ import com.example.sistemahotel.modelos.Usuario;
 import com.example.sistemahotel.repositories.IUsuarioRepository;
 
 @ExtendWith(MockitoExtension.class)
+@Tag("mockito")
 class UsuarioServiceTest {
 
     @Mock
