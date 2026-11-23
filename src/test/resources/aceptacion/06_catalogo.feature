@@ -1,5 +1,5 @@
 # language: es
-@feature
+@aceptacion
 Característica: Catálogo de productos de consumo
   Como administrador
   quiero mantener el catálogo de productos

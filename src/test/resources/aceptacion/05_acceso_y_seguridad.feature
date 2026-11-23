@@ -1,5 +1,5 @@
 # language: es
-@feature
+@aceptacion
 Característica: Inicio de sesión y permisos
   Como administrador de Tunki Lodge
   quiero que solo el personal autorizado entre al sistema

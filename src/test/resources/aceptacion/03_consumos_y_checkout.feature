@@ -1,5 +1,5 @@
 # language: es
-@feature
+@aceptacion
 Característica: Consumos, check-out y comprobante
   Como recepcionista
   quiero cargar los consumos, cerrar la estadía y emitir el comprobante

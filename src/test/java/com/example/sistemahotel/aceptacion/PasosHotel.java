@@ -1,4 +1,4 @@
-package com.example.sistemahotel.feature;
+package com.example.sistemahotel.aceptacion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -49,7 +49,7 @@ import io.cucumber.java.es.Entonces;
 import io.cucumber.java.es.Y;
 import jakarta.persistence.EntityManager;
 
-// Pasos de las pruebas feature. Los datos de cada escenario se crean con los
+// Pasos de las pruebas de aceptación (BDD). Los datos de cada escenario se crean con los
 // repositorios reales y las acciones pasan por las mismas rutas HTTP que usa la
 // pantalla (con seguridad, CSRF y validaciones reales). Antes de verificar se
 // sincroniza la sesión de JPA para leer lo que realmente quedó en MySQL.

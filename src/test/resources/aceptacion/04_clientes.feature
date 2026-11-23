@@ -1,5 +1,5 @@
 # language: es
-@feature
+@aceptacion
 Característica: Registro de clientes
   Como recepcionista
   quiero registrar a los huéspedes una sola vez

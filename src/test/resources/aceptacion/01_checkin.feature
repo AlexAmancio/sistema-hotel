@@ -1,5 +1,5 @@
 # language: es
-@feature
+@aceptacion
 Característica: Registro del check-in
   Como recepcionista de Tunki Lodge
   quiero registrar la llegada de un huésped

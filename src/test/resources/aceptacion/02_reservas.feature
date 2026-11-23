@@ -1,5 +1,5 @@
 # language: es
-@feature
+@aceptacion
 Característica: Reserva de varias habitaciones para un mismo cliente
   Como recepcionista
   quiero reservar varias habitaciones a la vez para un grupo

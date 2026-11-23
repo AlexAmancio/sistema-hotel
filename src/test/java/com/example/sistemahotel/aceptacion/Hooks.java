@@ -1,4 +1,4 @@
-package com.example.sistemahotel.feature;
+package com.example.sistemahotel.aceptacion;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
