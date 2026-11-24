@@ -327,14 +327,13 @@ public class RegistrosController {
             return redirectError;
         }
 
-        if (registro.getHabitacion() != null && registro.getCheckIn() != null) {
-            Integer idActual = registro.getId() > 0 ? registro.getId() : null;
-            boolean solapa = service.existeSolapamiento(registro.getHabitacion(), registro.getCheckIn(), registro.getNoches(), idActual);
-            if (solapa) {
-                redirectAttributes.addFlashAttribute("error",
-                    "La habitación " + registro.getHabitacion().getNumero() + " ya tiene otra reserva activa que se cruza con esas fechas.");
-                return redirectError;
-            }
+        // Cliente, habitación y fecha de ingreso ya se validaron arriba.
+        Integer idActual = registro.getId() > 0 ? registro.getId() : null;
+        boolean solapa = service.existeSolapamiento(registro.getHabitacion(), registro.getCheckIn(), registro.getNoches(), idActual);
+        if (solapa) {
+            redirectAttributes.addFlashAttribute("error",
+                "La habitación " + registro.getHabitacion().getNumero() + " ya tiene otra reserva activa que se cruza con esas fechas.");
+            return redirectError;
         }
 
         // Un check-in nuevo queda atribuido al usuario logueado, no al que
@@ -359,7 +358,7 @@ public class RegistrosController {
             return redirectError;
         }
 
-        Integer habitacionNuevaId = registro.getHabitacion() != null ? registro.getHabitacion().getId() : null;
+        Integer habitacionNuevaId = registro.getHabitacion().getId();
         boolean cambioDeHabitacion = habitacionAnteriorId != null && !habitacionAnteriorId.equals(habitacionNuevaId);
 
         // La habitación se marca OCUPADA en dos casos: un check-in nuevo, o una
@@ -368,7 +367,7 @@ public class RegistrosController {
         // registro ya FINALIZADA/CANCELADA no debe tocar el estado de ninguna
         // habitación — antes esto corría en cada guardado sin condición.
         boolean debeOcuparNueva = (esNuevo || cambioDeHabitacion) && registro.getEstado() == com.example.sistemahotel.modelos.EstadoRegistro.ACTIVA;
-        if (debeOcuparNueva && registro.getHabitacion() != null) {
+        if (debeOcuparNueva) {
             Habitacion habitacion = registro.getHabitacion();
             habitacion.setEstado(EstadoHabitacion.OCUPADA);
             habitacionService.guardar(habitacion);

@@ -181,6 +181,38 @@ class RegistrosControllerTest {
         verify(service, never()).guardar(any());
     }
 
+    // Defecto D12: un POST directo sin fecha de ingreso no debe guardarse,
+    // aunque el formulario ya la exija en el navegador.
+    @Test
+    void rechazaGuardarSinFechaDeIngreso() throws Exception {
+        mockMvc.perform(post("/guardar/").with(csrf())
+                .param("cliente", "1")
+                .param("habitacion", "15")
+                .param("numHuespedes", "2")
+                .param("noches", "2")
+                .param("tarifa", "440")
+                .param("montoPagado", "0")
+                .param("estado", "ACTIVA"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/nuevo/"))
+            .andExpect(flash().attribute("error", "Elegí la fecha y hora de ingreso."));
+
+        verify(service, never()).guardar(any());
+    }
+
+    // Extender una estadía que ya no existe (por ejemplo, borrada en otra
+    // pestaña) vuelve a la lista sin intentar extender nada.
+    @Test
+    void extenderUnaEstadiaQueNoExisteVuelveALaLista() throws Exception {
+        when(service.consultarId(999)).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/extender/999/").with(csrf()).param("noches", "3"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+
+        verify(service, never()).extenderEstadia(anyInt(), anyInt());
+    }
+
     // Bug real encontrado en sesion: no habia forma de buscar por cliente,
     // DNI o habitacion dentro de la propia lista de registros — el unico
     // buscador era el del sidebar, que te sacaba a una pantalla distinta y

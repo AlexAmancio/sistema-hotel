@@ -1,6 +1,7 @@
 package com.example.sistemahotel.servicios;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -44,5 +45,26 @@ class UsuarioServiceDetailsCuentaTest {
     @Test
     void unUsuarioActivoEstaHabilitado() {
         assertTrue(detalles.isEnabled());
+    }
+
+    // El texto de depuración muestra solo el nombre de usuario, nunca la
+    // contraseña cifrada (relacionado con el defecto D6).
+    @Test
+    void elTextoDeDepuracionMuestraSoloElNombreDeUsuario() {
+        assertEquals("UsuarioServiceDetails[mquispe]", detalles.toString());
+    }
+
+    // La sesión única depende de equals: dos inicios de sesión del mismo
+    // usuario son iguales; otro usuario u otro tipo de objeto, no.
+    @Test
+    void dosDetallesSonIgualesSoloSiSonDelMismoUsuario() {
+        Usuario mismo = new Usuario();
+        mismo.setUsername("mquispe");
+        Usuario otro = new Usuario();
+        otro.setUsername("aflores");
+
+        assertTrue(detalles.equals(new UsuarioServiceDetails(mismo)));
+        assertFalse(detalles.equals(new UsuarioServiceDetails(otro)));
+        assertFalse(detalles.equals("mquispe"));
     }
 }
