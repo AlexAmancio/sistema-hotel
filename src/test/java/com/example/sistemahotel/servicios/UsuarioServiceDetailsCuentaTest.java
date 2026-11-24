@@ -45,4 +45,11 @@ class UsuarioServiceDetailsCuentaTest {
     void unUsuarioActivoEstaHabilitado() {
         assertTrue(detalles.isEnabled());
     }
+
+    // El texto de depuración muestra solo el nombre de usuario, nunca la
+    // contraseña cifrada (relacionado con el defecto D6).
+    @Test
+    void elTextoDeDepuracionMuestraSoloElNombreDeUsuario() {
+        assertEquals("UsuarioServiceDetails[mquispe]", detalles.toString());
+    }
 }
