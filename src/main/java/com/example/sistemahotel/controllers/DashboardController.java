@@ -154,7 +154,9 @@ public class DashboardController {
             }
 
             double ocupacionPromedio = 0;
-            if (totalHabitaciones > 0 && finEfectivo.after(inicioMes.getTime())) {
+            // finEfectivo siempre es posterior al inicio del mes (es mañana o el fin
+            // del mes), así que el recorrido de días cuenta al menos uno.
+            if (totalHabitaciones > 0) {
                 int diasContados = 0;
                 double sumaOcupadas = 0;
                 Calendar cursor = (Calendar) inicioMes.clone();
@@ -176,9 +178,7 @@ public class DashboardController {
                     diasContados++;
                     cursor.add(Calendar.DAY_OF_MONTH, 1);
                 }
-                if (diasContados > 0) {
-                    ocupacionPromedio = (sumaOcupadas / diasContados) / totalHabitaciones * 100.0;
-                }
+                ocupacionPromedio = (sumaOcupadas / diasContados) / totalHabitaciones * 100.0;
             }
 
             Double variacion = ingresoMesAnterior == null || ingresoMesAnterior == 0
