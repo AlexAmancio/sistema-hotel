@@ -150,20 +150,19 @@ svg path {
     background-color: rgba(0, 175, 101, 0.25);
 }
 
-.logo {
-    padding: 24px 28px 16px;
-}
-
 .content {
-    margin-left: 328px;
-    padding: 32px 32px 56px 56px;
+    margin-left: var(--sidebar-width);
+    padding: 32px clamp(20px, 3vw, 48px) 48px;
 }
 
 /* Estilos del menu */
+:root {
+    --sidebar-width: clamp(224px, 19vw, 272px);
+}
 .sidebar {
     position: fixed;
-    width: 328px;
-    height: 100vh;
+    width: var(--sidebar-width);
+    height: 100dvh;
     background-color: var(--bg-surface);
     border-right: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
@@ -174,9 +173,36 @@ svg path {
 /* El logo y el buscador no achican; el <ul> del medio es lo único que
    scrollea si no entran todos los ítems; el footer (usuario + logout)
    queda siempre visible, sin importar cuántos ítems tenga el menú. */
-.sidebar > div:first-child,
-.sidebar > .search-box {
+.sidebar-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px 12px;
     flex-shrink: 0;
+}
+.logo {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.sidebar-toggle {
+    display: none;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-color);
+    background: var(--bg-surface);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.sidebar-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 .items {
     flex: 1 1 auto;
@@ -236,8 +262,18 @@ svg path {
 .item-menu .icono-agregar {
     display: none;
 }
-.item-menu:hover .icono-agregar {
+.item-menu:hover .icono-agregar,
+.item-menu:focus-within .icono-agregar {
     display: flex;
+}
+
+@media (hover: none) {
+    .item-menu .icono-agregar {
+        display: flex;
+    }
+    .item-menu:has(.a-agregar) .a-general {
+        padding-right: 54px;
+    }
 }
 
 
@@ -560,6 +596,8 @@ table {
     background-color: var(--color-plomo);
     width: 38px;
     height: 38px;
+    border: none;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -666,9 +704,30 @@ table {
 ---------------------------------------------------------------------*/
 
 .header-form {
-    text-align: center;
-    margin-top: 80px;
-    margin-bottom: 50px;
+    text-align: left;
+    margin-bottom: 24px;
+}
+.content h1 {
+    font-size: clamp(25px, 4vw, 34px);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+.lista-titulo {
+    margin-bottom: 16px;
+}
+.form-catalogo {
+    max-width: 780px;
+    margin-inline: auto;
+}
+.form-catalogo .content-form {
+    padding: clamp(16px, 4vw, 28px);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+.form-catalogo .group-field:last-child {
+    margin-bottom: 0;
 }
 .aviso-comprobante-emitido {
     max-width: 700px;
@@ -683,15 +742,19 @@ table {
     text-align: center;
 }
 .actions-form {
-    padding: 25px 0px;
+    padding: 20px 0 0;
     display: flex;
     justify-content: space-between;
-    width: 700px;
-    margin: auto; 
+    gap: 12px;
+    width: min(100%, 700px);
+    margin: auto;
 }
 .actions-form button {
     min-height: 53px;
     width: 280px;
+    max-width: 100%;
+    min-width: 0;
+    padding-inline: 12px;
     display: flex;
     border-radius: var(--radius-sm);
     align-items: center;
@@ -747,6 +810,8 @@ table {
     color: var(--text-color);
     border-style: none;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
 }
 /* .group-field select {
     width: 100%;
@@ -868,7 +933,8 @@ table {
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
-    overflow: hidden;
+    max-height: calc(100dvh - 16px);
+    overflow: auto;
     z-index: 99;
 }
 .submenu-options.active {
@@ -1022,10 +1088,119 @@ table {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
-    padding: 4px 24px;
+    padding: 4px clamp(12px, 2vw, 24px);
 }
-table {
+.table-wrapper > table {
     min-width: 720px;
+}
+.table-wrapper > .table-registros {
+    min-width: 0;
+}
+.table-wrapper:not(.table-wrapper-registros) .table-item > td:last-child:has(.wrapper-options) {
+    position: sticky;
+    right: 0;
+    padding: 8px;
+    width: 54px;
+    z-index: 1;
+    background-color: var(--bg-surface);
+}
+.table-wrapper:not(.table-wrapper-registros) .table-item > td:last-child:has(.submenu-options.active) {
+    z-index: 2;
+}
+@media (max-width: 700px) {
+    .table-wrapper-fichas {
+        padding: 0;
+        overflow: visible;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+    .table-wrapper-fichas > table {
+        display: block;
+        min-width: 0;
+    }
+    .table-wrapper-fichas tbody {
+        display: grid;
+        gap: 12px;
+    }
+    .table-wrapper-fichas .table-header {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+    .table-wrapper-fichas .table-item:not(.hidden) {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 14px;
+        padding: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--bg-surface);
+        box-shadow: var(--shadow-sm);
+        cursor: auto;
+    }
+    .table-wrapper-fichas tr:not(.table-header, .table-item) {
+        display: block;
+        padding: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--bg-surface);
+    }
+    .table-wrapper-fichas .table-item > td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+        overflow-wrap: anywhere;
+    }
+    .table-wrapper-fichas .table-item > td:empty {
+        display: none;
+    }
+    .table-wrapper-fichas td[data-etiqueta]::before {
+        content: attr(data-etiqueta) / "";
+        display: block;
+        margin-bottom: 3px;
+        color: var(--color-plomo-oscuro);
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .table-wrapper-fichas .ficha-identidad,
+    .table-wrapper-fichas .ficha-ancha,
+    .table-wrapper-fichas .ficha-acciones {
+        grid-column: 1 / -1;
+    }
+    .table-wrapper-fichas .ficha-identidad {
+        font-weight: 600;
+    }
+    .table-wrapper-fichas .col-tag {
+        white-space: normal;
+    }
+    .table-wrapper-fichas .cliente-item-header {
+        padding: 0;
+    }
+    .table-wrapper-fichas .table-item-header img {
+        margin: 0 4px 0 0;
+        max-width: 72px;
+    }
+    .table-wrapper-fichas .table-item > .usuario-nombre-celda {
+        display: flex;
+    }
+    .table-wrapper-fichas .table-item > td.ficha-acciones:last-child:has(.wrapper-options) {
+        position: static;
+        width: auto;
+        padding: 6px 0 0;
+        border-top: 1px solid var(--border-color);
+        background: transparent;
+    }
+    .table-wrapper-fichas .ficha-acciones .wrapper-options {
+        display: flex;
+        justify-content: flex-end;
+    }
+    .table-wrapper-fichas .icon-three {
+        width: 44px;
+        height: 44px;
+    }
 }
 .table-wrapper-registros {
     container-type: inline-size;
@@ -1123,11 +1298,32 @@ table {
 
 @media (max-width: 900px) {
     .sidebar {
-        width: 240px;
+        position: relative;
+        width: 100%;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .sidebar-cabecera {
+        padding: 10px clamp(16px, 3vw, 28px);
+    }
+    .sidebar-cabecera .logo {
+        width: 110px;
+    }
+    .sidebar.menu-listo .sidebar-toggle {
+        display: block;
+    }
+    .sidebar.menu-listo:not(.menu-abierto) .sidebar-panel {
+        display: none;
+    }
+    .sidebar .items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 215px), 1fr));
+        overflow: visible;
     }
     .content {
-        margin-left: 240px;
-        padding: 20px 20px 40px 20px;
+        margin-left: 0;
+        padding: 24px clamp(16px, 3vw, 28px) 40px;
     }
     .content-form,
     .actions-form {
@@ -1152,29 +1348,9 @@ table {
         align-self: flex-start;
         margin-top: 4px;
     }
-    .noches-rapidas,
-    .form-seccion-titulo,
-    .form-warning-texto {
-        margin-left: 0;
-    }
-    .resumen-vivo {
-        margin-left: 0;
-    }
 }
 
 @media (max-width: 640px) {
-    .sidebar {
-        position: static;
-        width: 100%;
-        height: auto;
-    }
-    .items {
-        overflow-y: visible;
-    }
-    .content {
-        margin-left: 0;
-        padding: 20px 16px 40px 16px;
-    }
     .current-user-card {
         position: static;
     }
@@ -1336,7 +1512,7 @@ table {
     flex-wrap: wrap;
     column-gap: 8px;
     row-gap: 6px;
-    margin: 0 0 16px 250px;
+    margin: 0 0 16px;
 }
 .btn-consumo-atajo {
     font-size: 13px;
@@ -1511,16 +1687,14 @@ table {
     margin: 0;
 }
 
-/* El layout de dos columnas necesita bastante más espacio que el resto de
-   la app para verse bien (sidebar fijo de 328px + panel de resumen de
-   300px). Se apila antes que el breakpoint general de 900px: si no, entre
-   900 y ~1260px quedaría aplastado. */
+/* Apila el resumen cuando el formulario y el panel lateral necesitan más espacio. */
 @media (max-width: 1260px) {
     .content-form {
         max-width: 700px;
     }
     .form-layout {
         flex-direction: column;
+        align-items: stretch;
     }
     .form-summary-sticky {
         position: static;
@@ -1750,6 +1924,10 @@ table {
 }
 
 @media (max-width: 900px) {
+    .noches-rapidas,
+    .form-seccion-titulo,
+    .form-warning-texto,
+    .resumen-vivo,
     .pago-rapido {
         margin-left: 0;
     }
@@ -1789,12 +1967,14 @@ table {
     max-width: 760px;
     border: 1px solid var(--color-plomo);
     border-radius: 8px;
-    padding: 32px;
+    padding: clamp(14px, 4vw, 32px);
 }
 .comprobante-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
     border-bottom: 1px solid var(--color-plomo);
     padding-bottom: 20px;
     margin-bottom: 20px;
@@ -1839,11 +2019,12 @@ table {
 }
 .comprobante-totales {
     margin-left: auto;
-    width: 280px;
+    width: min(100%, 280px);
 }
 .comprobante-totales div {
     display: flex;
     justify-content: space-between;
+    gap: 8px;
     padding: 6px 0;
     font-size: 14px;
 }
@@ -1857,8 +2038,9 @@ table {
 .comprobante-acciones {
     max-width: 760px;
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
-    column-gap: 12px;
+    gap: 8px 12px;
     margin-top: 20px;
 }
 .comprobante-acciones button {
@@ -1887,7 +2069,8 @@ table {
 
 /* ======================= BUSCADOR GLOBAL ===========================*/
 .search-box {
-    padding: 0 28px 20px;
+    flex-shrink: 0;
+    padding: 0 20px 14px;
 }
 .search-box input {
     width: 100%;
@@ -1967,11 +2150,11 @@ table {
 /* ======================= DASHBOARD ===========================*/
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 205px), 1fr));
     gap: 18px;
 }
 .dashboard-grid-habitaciones {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr));
 }
 .stat-card {
     background-color: var(--bg-surface);
@@ -2026,12 +2209,6 @@ table {
     font-size: 13px;
     color: var(--color-plomo-oscuro);
 }
-@media (max-width: 900px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
 /* Mini gráfico de barras embebido en una stat-card (ingresos/ocupación por
    mes en Reportes). Una sola serie por gráfico -> un solo color, sin
    leyenda (el stat-label ya dice qué es). El valor exacto aparece al pasar
@@ -2066,7 +2243,7 @@ table {
 .chart-mini-barra-gold {
     background: var(--accent-gold);
 }
-.chart-mini-barra-wrap:hover .chart-mini-barra {
+.chart-mini-barra-wrap:is(:hover, :focus) .chart-mini-barra {
     opacity: 0.75;
 }
 .chart-mini-valor {
@@ -2081,7 +2258,7 @@ table {
     white-space: nowrap;
     pointer-events: none;
 }
-.chart-mini-barra-wrap:hover .chart-mini-valor {
+.chart-mini-barra-wrap:is(:hover, :focus) .chart-mini-valor {
     opacity: 1;
     transform: translateY(0);
 }
@@ -2095,7 +2272,8 @@ table {
 .filtro-bar {
     display: flex;
     align-items: center;
-    column-gap: 16px;
+    flex-wrap: wrap;
+    gap: 8px 12px;
     margin: 20px 0;
 }
 .filtro-bar label {
@@ -2103,6 +2281,7 @@ table {
     margin-right: 8px;
 }
 .filtro-bar select {
+    max-width: 100%;
     font-family: 'Outfit', sans-serif;
     font-size: 15px;
     padding: 8px 12px;
@@ -2209,9 +2388,10 @@ table {
 
 .pagination {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 8px 12px;
     margin-top: 20px;
     padding: 4px 0;
 }
@@ -2243,6 +2423,8 @@ table {
 }
 .pagination-numeros {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
     column-gap: 4px;
 }
@@ -2330,6 +2512,7 @@ table {
 }
 .ocupacion-nav {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
 }
 .ocupacion-nav .btn-exportar {
@@ -2346,6 +2529,12 @@ table {
 .ocupacion-grid {
     display: grid;
     min-width: max-content;
+    --ocupacion-columna-habitacion: 180px;
+}
+@media (max-width: 640px) {
+    .ocupacion-grid {
+        --ocupacion-columna-habitacion: 112px;
+    }
 }
 .ocupacion-celda {
     padding: 10px 14px;

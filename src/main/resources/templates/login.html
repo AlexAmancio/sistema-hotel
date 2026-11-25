@@ -31,7 +31,7 @@
       .pagina-login {
         display: flex;
         width: 100%;
-        height: 100vh;
+        min-height: 100dvh;
       }
       .foto-lateral {
         flex: 1 1 50%;
@@ -161,16 +161,18 @@
       }
       .panel-formulario {
         flex: 1 1 50%;
+        min-width: 0;
         display: flex;
         justify-content: center;
         align-items: center;
+        padding: 24px 16px;
         background: #FDF6EF;
       }
       form {
         width: 100%;
       }
       .container {
-        width: 400px;
+        width: min(100%, 400px);
         display: flex;
         flex-direction: column;
         align-items: center;

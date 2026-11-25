@@ -42,9 +42,12 @@ document.addEventListener("DOMContentLoaded", function() {
             break;
     }
 
-    console.log(elementosDeRuta[1]);
     if (elemento) {
         elemento.classList.add("active");
+        const enlace = elemento.querySelector(".a-general");
+        if (enlace && enlace.pathname === ruta) {
+            enlace.setAttribute("aria-current", "page");
+        }
     }
 
     // Evita doble submit (doble clic, doble Enter) en cualquier formulario normal:

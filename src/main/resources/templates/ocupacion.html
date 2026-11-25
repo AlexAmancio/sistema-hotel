@@ -24,8 +24,8 @@
       <span id="ocupacion-sin-resultados" class="filtro-sin-resultados hidden">No hay habitaciones de esa categoría.</span>
     </div>
 
-    <div class="ocupacion-wrapper">
-      <div class="ocupacion-grid" th:style="'grid-template-columns: 180px repeat(' + ${#lists.size(dias)} + ', minmax(64px, 1fr));'">
+    <div class="ocupacion-wrapper" tabindex="0" role="region" aria-label="Calendario de ocupación">
+      <div class="ocupacion-grid" th:style="'grid-template-columns: var(--ocupacion-columna-habitacion) repeat(' + ${#lists.size(dias)} + ', minmax(64px, 1fr));'">
 
         <div class="ocupacion-celda ocupacion-esquina"></div>
         <div class="ocupacion-celda ocupacion-dia-header"
