@@ -267,6 +267,15 @@ svg path {
     display: flex;
 }
 
+@media (hover: none) {
+    .item-menu .icono-agregar {
+        display: flex;
+    }
+    .item-menu:has(.a-agregar) .a-general {
+        padding-right: 54px;
+    }
+}
+
 
 .item-menu.active {
     background-color: var(--primary-light);
@@ -1097,6 +1106,101 @@ table {
 }
 .table-wrapper:not(.table-wrapper-registros) .table-item > td:last-child:has(.submenu-options.active) {
     z-index: 2;
+}
+@media (max-width: 700px) {
+    .table-wrapper-fichas {
+        padding: 0;
+        overflow: visible;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+    .table-wrapper-fichas > table {
+        display: block;
+        min-width: 0;
+    }
+    .table-wrapper-fichas tbody {
+        display: grid;
+        gap: 12px;
+    }
+    .table-wrapper-fichas .table-header {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+    .table-wrapper-fichas .table-item:not(.hidden) {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 14px;
+        padding: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--bg-surface);
+        box-shadow: var(--shadow-sm);
+        cursor: auto;
+    }
+    .table-wrapper-fichas tr:not(.table-header, .table-item) {
+        display: block;
+        padding: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--bg-surface);
+    }
+    .table-wrapper-fichas .table-item > td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+        overflow-wrap: anywhere;
+    }
+    .table-wrapper-fichas .table-item > td:empty {
+        display: none;
+    }
+    .table-wrapper-fichas td[data-etiqueta]::before {
+        content: attr(data-etiqueta) / "";
+        display: block;
+        margin-bottom: 3px;
+        color: var(--color-plomo-oscuro);
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .table-wrapper-fichas .ficha-identidad,
+    .table-wrapper-fichas .ficha-ancha,
+    .table-wrapper-fichas .ficha-acciones {
+        grid-column: 1 / -1;
+    }
+    .table-wrapper-fichas .ficha-identidad {
+        font-weight: 600;
+    }
+    .table-wrapper-fichas .col-tag {
+        white-space: normal;
+    }
+    .table-wrapper-fichas .cliente-item-header {
+        padding: 0;
+    }
+    .table-wrapper-fichas .table-item-header img {
+        margin: 0 4px 0 0;
+        max-width: 72px;
+    }
+    .table-wrapper-fichas .table-item > .usuario-nombre-celda {
+        display: flex;
+    }
+    .table-wrapper-fichas .table-item > td.ficha-acciones:last-child:has(.wrapper-options) {
+        position: static;
+        width: auto;
+        padding: 6px 0 0;
+        border-top: 1px solid var(--border-color);
+        background: transparent;
+    }
+    .table-wrapper-fichas .ficha-acciones .wrapper-options {
+        display: flex;
+        justify-content: flex-end;
+    }
+    .table-wrapper-fichas .icon-three {
+        width: 44px;
+        height: 44px;
+    }
 }
 .table-wrapper-registros {
     container-type: inline-size;
@@ -2139,7 +2243,7 @@ table {
 .chart-mini-barra-gold {
     background: var(--accent-gold);
 }
-.chart-mini-barra-wrap:hover .chart-mini-barra {
+.chart-mini-barra-wrap:is(:hover, :focus) .chart-mini-barra {
     opacity: 0.75;
 }
 .chart-mini-valor {
@@ -2154,7 +2258,7 @@ table {
     white-space: nowrap;
     pointer-events: none;
 }
-.chart-mini-barra-wrap:hover .chart-mini-valor {
+.chart-mini-barra-wrap:is(:hover, :focus) .chart-mini-valor {
     opacity: 1;
     transform: translateY(0);
 }

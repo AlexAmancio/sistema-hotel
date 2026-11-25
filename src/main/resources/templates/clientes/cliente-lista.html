@@ -10,19 +10,19 @@
     <h1 class="lista-titulo">Clientes</h1>
     <div th:replace="~{button-fragment(url=@{/clientes/nuevo/}, texto='Agregar cliente')}"></div>
 
-    <div class="table-wrapper">
-    <table>
-      <tr class="table-header">
-        <th>Nombre y apellidos</th>
-        <th>Procedencia</th>
-        <th>Identificación</th>
-        <th>Telefono</th>
-        <th>Correo</th>
-        <th>Ocupación</th>
-        <th></th>
+    <div class="table-wrapper table-wrapper-fichas">
+    <table role="table">
+      <tr role="row" class="table-header">
+        <th role="columnheader" scope="col">Nombre y apellidos</th>
+        <th role="columnheader" scope="col">Procedencia</th>
+        <th role="columnheader" scope="col">Identificación</th>
+        <th role="columnheader" scope="col">Teléfono</th>
+        <th role="columnheader" scope="col">Correo</th>
+        <th role="columnheader" scope="col">Ocupación</th>
+        <th role="columnheader" scope="col"></th>
       </tr>
-      <tr th:each="cliente : ${listaClientes}" class="table-item">
-        <td class="table-item-header">
+      <tr role="row" th:each="cliente : ${listaClientes}" class="table-item">
+        <td role="cell" class="table-item-header ficha-identidad">
           <a th:href="${'/clientes/editar/' + cliente.id + '/'}">
             <div class="cliente-item-header">
               <img class="user-avatar-img" th:src="${'https://api.dicebear.com/9.x/avataaars/svg?seed=' + cliente.id}" alt="" />
@@ -33,15 +33,15 @@
             </div>
           </a>
         </td>
-        <td th:text="${cliente.ciudad + ' / ' + cliente.pais}"></td>
-        <td>
+        <td role="cell" data-etiqueta="Procedencia" th:text="${cliente.ciudad + ' / ' + cliente.pais}"></td>
+        <td role="cell" data-etiqueta="Documento">
           <span class="col-tag" th:if="${cliente.tipoDocumento != null}" th:text="${cliente.tipoDocumento.etiqueta}"></span>
           <span th:text="${cliente.identificacion}"></span>
         </td>
-        <td th:text="${cliente.telefono}"></td>
-        <td th:text="${cliente.correo}"></td>
-        <td th:text="${cliente.ocupacion}"></td>
-        <td>
+        <td role="cell" data-etiqueta="Teléfono" th:text="${cliente.telefono}"></td>
+        <td role="cell" data-etiqueta="Correo" th:text="${cliente.correo}"></td>
+        <td role="cell" data-etiqueta="Ocupación" th:text="${cliente.ocupacion}"></td>
+        <td role="cell" class="ficha-acciones">
           <div class="wrapper-options">
             <button type="button" class="icon-three" aria-label="Opciones" aria-expanded="false">
               <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">

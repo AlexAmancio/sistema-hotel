@@ -48,19 +48,19 @@
     <div th:each="grupoPiso : ${habitacionesPorPiso}" class="piso-grupo"
          th:data-piso="${grupoPiso.key}">
       <h2 class="piso-titulo" th:text="${'Piso ' + grupoPiso.key}"></h2>
-      <div class="table-wrapper">
-      <table>
-        <tr class="table-header">
-          <th>Descripción</th>
-          <th>Tipo</th>
-          <th>Aforo Max.</th>
-          <th>Estado</th>
-          <th></th>
+      <div class="table-wrapper table-wrapper-fichas">
+      <table role="table">
+        <tr role="row" class="table-header">
+          <th role="columnheader" scope="col">Descripción</th>
+          <th role="columnheader" scope="col">Tipo</th>
+          <th role="columnheader" scope="col">Aforo Max.</th>
+          <th role="columnheader" scope="col">Estado</th>
+          <th role="columnheader" scope="col"></th>
         </tr>
-        <tr th:each="habitacion : ${grupoPiso.value}" class="table-item"
+        <tr role="row" th:each="habitacion : ${grupoPiso.value}" class="table-item"
             th:data-estado="${habitacion.estado.name()}"
             th:data-categoria="${habitacion.categoria.id}">
-        <td class="table-item-header">
+        <td role="cell" class="table-item-header ficha-identidad">
           <a th:href="${'/habitaciones/editar/' + habitacion.id + '/'}">
             <img th:src="${habitacion.urlImagen}" alt="alt" width="80" height="60" />
             <div>
@@ -68,15 +68,15 @@
             </div>
           </a>
         </td>
-        <td><span class="col-tag" th:text="${habitacion.categoria.nombre}"></span></td>
-        <td th:text="${habitacion.aforo} + ' personas'"></td>
-        <td>
+        <td role="cell" data-etiqueta="Tipo"><span class="col-tag" th:text="${habitacion.categoria.nombre}"></span></td>
+        <td role="cell" data-etiqueta="Aforo" th:text="${habitacion.aforo} + ' personas'"></td>
+        <td role="cell" data-etiqueta="Estado">
           <span class="col-tag estado-disponible" th:if="${habitacion.estado.name() == 'DISPONIBLE'}">Disponible</span>
           <span class="col-tag estado-ocupada" th:if="${habitacion.estado.name() == 'OCUPADA'}">Ocupada</span>
           <span class="col-tag estado-limpieza" th:if="${habitacion.estado.name() == 'LIMPIEZA'}">En limpieza</span>
           <span class="col-tag estado-mantenimiento" th:if="${habitacion.estado.name() == 'MANTENIMIENTO'}">Mantenimiento</span>
         </td>
-        <td>
+        <td role="cell" class="ficha-acciones">
           <div class="wrapper-options">
             <button type="button" class="icon-three" aria-label="Opciones" aria-expanded="false">
               <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">

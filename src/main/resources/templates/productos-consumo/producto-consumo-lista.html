@@ -17,22 +17,22 @@
       <span th:unless="${esAdmin}">Solo un administrador puede agregar, editar o eliminar productos.</span>
     </p>
 
-    <div class="table-wrapper">
-    <table>
-      <tr class="table-header">
-        <th>Nombre</th>
-        <th>Precio sugerido</th>
-        <th>Estado</th>
-        <th></th>
+    <div class="table-wrapper table-wrapper-fichas">
+    <table role="table">
+      <tr role="row" class="table-header">
+        <th role="columnheader" scope="col">Nombre</th>
+        <th role="columnheader" scope="col">Precio sugerido</th>
+        <th role="columnheader" scope="col">Estado</th>
+        <th role="columnheader" scope="col"></th>
       </tr>
-      <tr th:each="producto : ${listaProductos}" class="table-item">
-        <td th:text="${producto.nombre}"></td>
-        <td th:text="${'S/. ' + #numbers.formatDecimal(producto.precioSugerido, 1, 2)}"></td>
-        <td>
+      <tr role="row" th:each="producto : ${listaProductos}" class="table-item">
+        <td role="cell" class="ficha-identidad" th:text="${producto.nombre}"></td>
+        <td role="cell" data-etiqueta="Precio sugerido" th:text="${'S/. ' + #numbers.formatDecimal(producto.precioSugerido, 1, 2)}"></td>
+        <td role="cell" data-etiqueta="Estado">
           <span class="col-tag estado-activa" th:if="${producto.activo}">Activo</span>
           <span class="col-tag estado-cancelada" th:unless="${producto.activo}">Inactivo</span>
         </td>
-        <td th:if="${esAdmin}">
+        <td role="cell" class="ficha-acciones" th:if="${esAdmin}">
           <div class="wrapper-options">
             <button type="button" class="icon-three" aria-label="Opciones" aria-expanded="false">
               <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -89,10 +89,10 @@
             </div>
           </div>
         </td>
-        <td th:unless="${esAdmin}"></td>
+        <td role="cell" class="ficha-acciones" th:unless="${esAdmin}"></td>
       </tr>
-      <tr th:if="${#lists.isEmpty(listaProductos)}">
-        <td colspan="4" style="color: var(--color-plomo-oscuro);">Todavía no hay productos en el catálogo.</td>
+      <tr role="row" th:if="${#lists.isEmpty(listaProductos)}">
+        <td role="cell" colspan="4" style="color: var(--color-plomo-oscuro);">Todavía no hay productos en el catálogo.</td>
       </tr>
     </table>
     </div>
