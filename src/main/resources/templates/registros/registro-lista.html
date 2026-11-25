@@ -7,12 +7,12 @@
   <div th:replace="~{navegacion :: menu}"></div>
 
   <div class="content">
-    <div style="display:flex; column-gap: 16px; flex-wrap: wrap;">
+    <div class="registro-altas">
       <div th:replace="~{button-fragment(url=@{/nuevo/}, texto='Agregar reserva')}"></div>
       <div th:replace="~{button-fragment(url=@{/reservas/nueva/}, texto='Reserva múltiple')}"></div>
     </div>
 
-    <div class="filtro-bar">
+    <div class="filtro-bar filtro-registros">
       <form method="get" th:action="@{/}" id="filtro-estado-form">
         <label for="filtro-estado">Estado:</label>
         <select id="filtro-estado" name="estado" onchange="document.getElementById('filtro-estado-form').submit()">
@@ -28,7 +28,7 @@
       <a class="btn-exportar" th:href="@{/exportar/(estado=${estadoSeleccionado}, q=${busqueda})}">Exportar CSV</a>
     </div>
 
-    <div class="table-wrapper">
+    <div class="table-wrapper table-wrapper-registros">
     <table class="table-registros">
       <tr class="table-header">
         <th>Descripción</th>
@@ -78,13 +78,22 @@
           <span class="col-tag estado-cancelada" th:if="${registro.estado.name() == 'CANCELADA'}">Cancelado</span>
           <span class="col-tag estado-no-show" th:if="${registro.estado.name() == 'NO_SHOW'}">No-show</span>
         </td>
-        <td th:text="${'S/. ' + #numbers.formatDecimal(registro.tarifa, 1, 2)}"></td>
         <td>
+          <span class="registro-etiqueta">Tarifa</span>
+          <span th:text="${'S/. ' + #numbers.formatDecimal(registro.tarifa, 1, 2)}"></span>
+        </td>
+        <td>
+          <span class="registro-etiqueta">Saldo</span>
           <span th:if="${registro.saldoPendiente > 0}" class="saldo-pendiente" th:text="${'S/.' + #numbers.formatDecimal(registro.saldoPendiente, 1, 2)}"></span>
           <span th:unless="${registro.saldoPendiente > 0}" class="saldo-cero">Pagado</span>
         </td>
-        <td class="col-observaciones" th:text="${registro.observaciones}"></td>
-        <td>
+        <td class="col-observaciones">
+          <div th:unless="${#strings.isEmpty(registro.observaciones)}">
+            <span class="registro-etiqueta">Observaciones</span>
+            <span th:text="${registro.observaciones}"></span>
+          </div>
+        </td>
+        <td class="col-acciones">
           <div class="acciones-fila">
           <form th:if="${registro.estado.name() == 'ACTIVA'}" class="form-eliminar"
                 th:action="${'/checkout/' + registro.id + '/'}" method="post"
@@ -207,7 +216,7 @@
           </div>
         </td>
       </tr>
-      <tr th:if="${#lists.isEmpty(registros)}">
+      <tr th:if="${#lists.isEmpty(registros)}" class="table-registros-vacia">
         <td colspan="7" style="text-align:center; color: var(--color-plomo-oscuro); padding: 30px 0;">
           No hay registros con este filtro.
         </td>
