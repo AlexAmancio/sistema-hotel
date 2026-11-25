@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -144,9 +147,17 @@ public class ClientesController {
         if (!dni.matches("\\d{8}")) {
             return ResponseEntity.badRequest().body("{\"error\":\"DNI inválido\"}");
         }
-        String url = "https://apiperu.dev/api/dni/" + dni + "?api_token=" + apiPeruToken;
+        if (apiPeruToken.isBlank()) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body("{\"error\":\"La consulta por DNI no está configurada\"}");
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(apiPeruToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(Map.of("dni", dni), headers);
         try {
-            return ResponseEntity.ok(restTemplate.getForObject(url, String.class));
+            return ResponseEntity.ok(restTemplate.postForObject("https://api.apiperu.dev/dni", request, String.class));
         } catch (RestClientException e) {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("{\"error\":\"No se pudo consultar el DNI\"}");
         }
