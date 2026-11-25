@@ -34,9 +34,6 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Dar permisos al wrapper de Maven
-        run: chmod +x mvnw
-
       - name: Verificar que toda clase de prueba tenga etiqueta
         shell: bash
         run: |
@@ -56,7 +53,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          ./mvnw -B test -Dgroups=unitaria | tee test-output.txt
+          mvn -B test -Dgroups=unitaria | tee test-output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           exit $EXIT_CODE
@@ -100,14 +97,11 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Dar permisos al wrapper de Maven
-        run: chmod +x mvnw
-
       - name: Ejecutar pruebas
         shell: bash
         run: |
           set +e
-          ./mvnw -B test -Dgroups=mockito | tee test-output.txt
+          mvn -B test -Dgroups=mockito | tee test-output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           exit $EXIT_CODE
@@ -165,9 +159,6 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Dar permisos al wrapper de Maven
-        run: chmod +x mvnw
-
       # Algunas pruebas de controlador resuelven el cliente y la habitación del
       # formulario contra la base de demostración, igual que en la máquina de
       # desarrollo. Se carga el mismo script versionado en el repositorio.
@@ -190,7 +181,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          ./mvnw -B test -Dgroups=integracion | tee test-output.txt
+          mvn -B test -Dgroups=integracion | tee test-output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           exit $EXIT_CODE
@@ -248,9 +239,6 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Dar permisos al wrapper de Maven
-        run: chmod +x mvnw
-
       # Cada prueba crea sus propios datos dentro de una transacción que se
       # deshace al terminar (como RefreshDatabase en Laravel); la base de
       # demostración aporta el esquema completo.
@@ -273,7 +261,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          ./mvnw -B test -Dgroups=feature | tee test-output.txt
+          mvn -B test -Dgroups=feature | tee test-output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           exit $EXIT_CODE
