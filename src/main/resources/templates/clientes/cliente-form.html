@@ -4,12 +4,12 @@
   <body>
     <div th:replace="~{navegacion :: menu}"></div>
     <div class="content">
-      <form th:action="@{/clientes/guardar/}" method="post" th:object="${cliente}">
-        <div class="header-form">
-          <h1 th:text="${titulo}"></h1>
-        </div>
-        <div class="content-form">
-          <input th:field="*{id}" type="hidden" />
+      <form class="cliente-formulario" th:action="@{/clientes/guardar/}" method="post" th:object="${cliente}">
+        <h1 th:text="${titulo}"></h1>
+        <input th:field="*{id}" type="hidden" />
+
+        <section class="cliente-seccion" aria-labelledby="cliente-documento">
+          <h2 id="cliente-documento">Documento</h2>
           <div class="group-field">
             <label for="tipoDocumento">Tipo de documento</label>
             <select th:field="*{tipoDocumento}" id="tipoDocumento">
@@ -19,28 +19,39 @@
             </select>
           </div>
           <div class="group-field">
-            <label for="identificacion">Identificación</label>
-            <input th:field="*{identificacion}" type="text" id="identificacion" required>
-            <button type="button" class="btn btnbusqueda" id="busqueda">Buscar
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="bi bi-search" viewBox="0 0 16 16">
-                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-              </svg>
-            </button>
+            <label for="identificacion">Número de documento</label>
+            <div class="cliente-consulta-dni">
+              <input th:field="*{identificacion}" type="text" id="identificacion" aria-describedby="estado-consulta-dni" required>
+              <button type="button" class="btnbusqueda" id="busqueda">Consultar DNI</button>
+            </div>
+            <p id="estado-consulta-dni" role="status"></p>
           </div>
+        </section>
+
+        <section class="cliente-seccion" aria-labelledby="cliente-personal">
+          <h2 id="cliente-personal">Datos personales</h2>
           <div class="group-field">
             <label for="nombres">Nombres</label>
-            <input th:field=*{nombres} type="text" autofocus id="nombres" readonly="">
+            <input th:field="*{nombres}" type="text" id="nombres">
           </div>
           <div class="group-field">
             <label for="apellidos">Apellidos</label>
-            <input th:field="*{apellidos}" type="text" id="apellidos" readonly="">
+            <input th:field="*{apellidos}" type="text" id="apellidos">
           </div>
           <div class="group-field">
             <label for="fechaNacimiento">Fecha de nacimiento</label>
             <input th:field="*{fechaNacimiento}" type="date" id="fechaNacimiento">
           </div>
           <div class="group-field">
-            <label for="pais">Pais</label>
+            <label for="ocupacion">Ocupación</label>
+            <input th:field="*{ocupacion}" type="text">
+          </div>
+        </section>
+
+        <section class="cliente-seccion" aria-labelledby="cliente-contacto">
+          <h2 id="cliente-contacto">Ubicación y contacto</h2>
+          <div class="group-field">
+            <label for="pais">País</label>
             <input th:field="*{pais}" type="text">
           </div>
           <div class="group-field">
@@ -48,18 +59,14 @@
             <input th:field="*{ciudad}" type="text">
           </div>
           <div class="group-field">
-            <label for="telefono">Telefono</label>
-            <input th:field="*{telefono}" type="text">
+            <label for="telefono">Teléfono</label>
+            <input th:field="*{telefono}" type="tel">
           </div>
           <div class="group-field">
             <label for="correo">Correo</label>
-            <input th:field="*{correo}" type="text">
+            <input th:field="*{correo}" type="text" inputmode="email">
           </div>
-          <div class="group-field">
-            <label for="ocupacion">Ocupación</label>
-            <input th:field="*{ocupacion}" type="text">
-          </div>
-        </div>
+        </section>
         <div class="actions-form">
           <button type="submit">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -67,9 +74,9 @@
                 d="M10.9091 1.53409C10.9091 1.30805 10.8193 1.09128 10.6595 0.931443C10.4996 0.771611 10.2829 0.681818 10.0568 0.681818C9.83079 0.681818 9.61401 0.771611 9.45418 0.931443C9.29434 1.09128 9.20455 1.30805 9.20455 1.53409V9.20455H1.5341C1.30806 9.20455 1.09128 9.29434 0.931449 9.45417C0.771617 9.614 0.681824 9.83078 0.681824 10.0568C0.681824 10.2829 0.771617 10.4996 0.931449 10.6595C1.09128 10.8193 1.30806 10.9091 1.5341 10.9091H9.20455V18.5795C9.20455 18.8056 9.29434 19.0224 9.45418 19.1822C9.61401 19.342 9.83079 19.4318 10.0568 19.4318C10.2829 19.4318 10.4996 19.342 10.6595 19.1822C10.8193 19.0224 10.9091 18.8056 10.9091 18.5795V10.9091H18.5796C18.8056 10.9091 19.0224 10.8193 19.1822 10.6595C19.342 10.4996 19.4318 10.2829 19.4318 10.0568C19.4318 9.83078 19.342 9.614 19.1822 9.45417C19.0224 9.29434 18.8056 9.20455 18.5796 9.20455H10.9091V1.53409Z"
                 fill="black" />
             </svg>
-            <span th:text="${txtboton}"></span>
+            <span th:text="${txtboton == 'Agregar' ? 'Guardar cliente' : 'Actualizar cliente'}"></span>
           </button>
-          <button id="btn-close"><span>Cancelar</span></button>
+          <button type="button" id="btn-close"><span>Cancelar</span></button>
         </div>
 
       </form>

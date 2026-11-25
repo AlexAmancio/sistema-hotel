@@ -359,6 +359,87 @@ svg path {
     flex-shrink: 0;
 }
 
+.perfil-contenido {
+    display: grid;
+    gap: 20px;
+    max-width: 600px;
+}
+.perfil-tarjeta {
+    padding: clamp(16px, 4vw, 28px);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow-wrap: anywhere;
+}
+.perfil-tarjeta h2 {
+    font-size: 20px;
+}
+.perfil-identidad {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.perfil-identidad .user-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 18px;
+}
+.perfil-identidad p {
+    margin-top: 4px;
+    color: var(--color-plomo-oscuro);
+}
+.perfil-formulario {
+    margin-top: 18px;
+}
+.perfil-formulario .group-field {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+.perfil-formulario .group-field label {
+    width: auto;
+    font-size: 15px;
+    font-weight: 600;
+}
+.perfil-campo {
+    display: flex;
+    gap: 8px;
+}
+.perfil-campo input {
+    min-width: 0;
+}
+.perfil-campo button {
+    min-width: 76px;
+    min-height: 44px;
+    padding-inline: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    color: var(--text-color);
+    font-weight: 600;
+    cursor: pointer;
+}
+.perfil-campo button:hover {
+    background: var(--bg-hover);
+}
+.perfil-formulario .actions-form {
+    width: 100%;
+    padding: 4px 0 0;
+}
+.perfil-formulario .actions-form button {
+    width: min(100%, 280px);
+    min-height: 44px;
+    padding: 8px 16px;
+    font-size: 15px;
+    font-weight: 600;
+}
+@media (max-width: 640px) {
+    .perfil-formulario .actions-form button {
+        width: 100%;
+    }
+}
 
 /* Estilos de boton agregar */
 .btn-agregar-a {
@@ -670,6 +751,84 @@ table {
 /* .group-field select {
     width: 100%;
 } */
+
+.cliente-formulario {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    max-width: 900px;
+    margin-inline: auto;
+}
+.cliente-seccion {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+    gap: 16px;
+    padding: clamp(16px, 3vw, 24px);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+.cliente-seccion h2 {
+    grid-column: 1 / -1;
+    font-size: 20px;
+}
+.cliente-seccion .group-field {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    min-width: 0;
+    margin-bottom: 0;
+}
+.cliente-seccion .group-field label {
+    width: auto;
+    font-size: 15px;
+    font-weight: 600;
+}
+.cliente-consulta-dni {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.cliente-consulta-dni input {
+    flex: 1 1 110px;
+    min-width: 0;
+}
+.cliente-consulta-dni button {
+    min-height: 44px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+.cliente-consulta-dni button[hidden] {
+    display: none;
+}
+.cliente-consulta-dni button:disabled {
+    opacity: .65;
+    cursor: wait;
+}
+#estado-consulta-dni {
+    color: var(--color-plomo-oscuro);
+    font-size: 14px;
+}
+#estado-consulta-dni.consulta-error {
+    color: var(--color-rojo);
+}
+.cliente-formulario .actions-form {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 4px 0 0;
+}
+.cliente-formulario .actions-form button {
+    flex: 0 1 280px;
+    max-width: 100%;
+}
+@media (max-width: 640px) {
+    .cliente-formulario .actions-form button {
+        flex-basis: auto;
+    }
+}
 
 /* Pading emjorable */
 .cliente-item-header {

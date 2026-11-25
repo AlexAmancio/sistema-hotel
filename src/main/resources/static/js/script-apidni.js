@@ -1,33 +1,72 @@
-var boton = document.getElementById("busqueda");
-var selectTipoDocumento = document.getElementById("tipoDocumento");
-var campoNombres = document.getElementById("nombres");
-var campoApellidos = document.getElementById("apellidos");
+const tipoDocumento = document.getElementById("tipoDocumento");
+const identificacion = document.getElementById("identificacion");
+const botonConsulta = document.getElementById("busqueda");
+const estadoConsulta = document.getElementById("estado-consulta-dni");
+const nombres = document.getElementById("nombres");
+const apellidos = document.getElementById("apellidos");
 
-function traerdatos(){
-    var dni = document.getElementById("identificacion").value;
-    fetch("/clientes/dni/" + dni)
-        .then((res) => res.json())
-        .then((data) => {
-            document.getElementById("nombres").value = data.data.nombres;
-            document.getElementById("apellidos").value = data.data.apellido_paterno + " " + data.data.apellido_materno;
-        })
-        .catch((error) => {
-            console.error('Error al obtener datos:', error);
-        });
+let consultaActiva;
+
+function mostrarEstado(texto, error = false) {
+    estadoConsulta.classList.toggle("consulta-error", error);
+    estadoConsulta.textContent = texto;
 }
-boton.addEventListener("click", traerdatos);
 
-// La API de búsqueda solo conoce DNI (consulta RENIEC). Con pasaporte o
-// carné de extranjería no hay forma de autocompletar: se habilita la carga
-// manual de nombres y apellidos y se oculta el botón de búsqueda.
 function actualizarModoDocumento() {
-    var esDni = selectTipoDocumento.value === "DNI";
-    boton.classList.toggle("hidden", !esDni);
-    campoNombres.readOnly = esDni;
-    campoApellidos.readOnly = esDni;
+    consultaActiva?.abort();
+    consultaActiva = null;
+
+    const esDni = tipoDocumento.value === "DNI";
+    botonConsulta.hidden = !esDni;
+    botonConsulta.disabled = false;
+    identificacion.inputMode = esDni ? "numeric" : "text";
+    nombres.readOnly = esDni;
+    apellidos.readOnly = esDni;
+    mostrarEstado("");
 }
 
-if (selectTipoDocumento) {
-    selectTipoDocumento.addEventListener("change", actualizarModoDocumento);
-    actualizarModoDocumento();
+async function consultarDni() {
+    const dni = identificacion.value.trim();
+    if (!/^\d{8}$/.test(dni)) {
+        mostrarEstado("Ingresa un DNI de 8 dígitos.", true);
+        identificacion.focus();
+        return;
+    }
+
+    const consulta = new AbortController();
+    consultaActiva = consulta;
+    botonConsulta.disabled = true;
+    mostrarEstado("Consultando DNI…");
+
+    try {
+        const respuesta = await fetch("/clientes/dni/" + dni, { signal: consulta.signal });
+        if (!respuesta.ok) throw new Error("Consulta fallida");
+
+        const { data } = await respuesta.json();
+        const apellidosDni = [data?.apellido_paterno, data?.apellido_materno].filter(Boolean).join(" ");
+        if (!data?.nombres || !apellidosDni) throw new Error("Respuesta incompleta");
+        if (consultaActiva !== consulta) return;
+
+        nombres.value = data.nombres;
+        apellidos.value = apellidosDni;
+        nombres.readOnly = true;
+        apellidos.readOnly = true;
+        mostrarEstado("Datos del DNI encontrados.");
+    } catch {
+        if (consultaActiva !== consulta) return;
+
+        nombres.readOnly = false;
+        apellidos.readOnly = false;
+        mostrarEstado("No se pudo consultar el DNI. Puedes ingresar los nombres y apellidos manualmente.", true);
+    } finally {
+        if (consultaActiva === consulta) {
+            consultaActiva = null;
+            botonConsulta.disabled = false;
+        }
+    }
 }
+
+tipoDocumento.addEventListener("change", actualizarModoDocumento);
+identificacion.addEventListener("input", actualizarModoDocumento);
+botonConsulta.addEventListener("click", consultarDni);
+actualizarModoDocumento();
