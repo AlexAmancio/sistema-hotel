@@ -11,11 +11,15 @@
       mostrarToast(/*[[${exito}]]*/ '', 'exito');
     });
   </script>
-  <a th:href="@{/hoy/}" style="display:block; width: 328px; height: 146px">
-    <img class="logo" src="/LogoSistema.png" alt="Hoteles Tunki — ir a Hoy" width="100%" />
-  </a>
+  <div class="sidebar-cabecera">
+    <a th:href="@{/hoy/}">
+      <img class="logo" th:src="@{/LogoSistema.png}" alt="Hoteles Tunki — ir a Hoy" />
+    </a>
+    <button class="sidebar-toggle" type="button" aria-controls="sidebar-panel" aria-expanded="false">Menú</button>
+  </div>
+  <nav class="sidebar-panel" id="sidebar-panel" aria-label="Navegación principal">
   <form method="get" th:action="@{/buscar}" class="search-box">
-    <input type="text" name="q" placeholder="Buscar cliente, DNI o habitación...">
+    <input type="search" name="q" aria-label="Buscar cliente, DNI o habitación" placeholder="Buscar cliente, DNI o habitación...">
   </form>
   <ul class="items">
     <li class="item-menu" id="item-reportes">
@@ -360,6 +364,27 @@
     })();
   </script>
 
+  </nav>
+  <script>
+    (function () {
+      const sidebar = document.querySelector(".sidebar");
+      const toggle = sidebar.querySelector(".sidebar-toggle");
+
+      function alternarMenu(abierto) {
+        sidebar.classList.toggle("menu-abierto", abierto);
+        toggle.setAttribute("aria-expanded", String(abierto));
+      }
+
+      sidebar.classList.add("menu-listo");
+      toggle.addEventListener("click", () => alternarMenu(!sidebar.classList.contains("menu-abierto")));
+      sidebar.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && getComputedStyle(toggle).display !== "none" && sidebar.classList.contains("menu-abierto")) {
+          alternarMenu(false);
+          toggle.focus();
+        }
+      });
+    })();
+  </script>
   <script>
     (function () {
       var trigger = document.getElementById("btn-perfil-trigger");

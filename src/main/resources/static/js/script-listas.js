@@ -1,10 +1,16 @@
 document.addEventListener("DOMContentLoaded", function() {
 
     // Abrir submenu de opciones
-    const submenuOptionsList = document.querySelectorAll(".submenu-options");
     const iconSubmenuList = document.querySelectorAll(".icon-three");
 
     let actualIconSubmenu = null;
+
+    function cerrarSubmenu() {
+        if (!actualIconSubmenu) return;
+        actualIconSubmenu.nextElementSibling.classList.remove("active");
+        actualIconSubmenu.setAttribute("aria-expanded", "false");
+        actualIconSubmenu = null;
+    }
 
     // Agregar un event listener para detectar clics en el documento
     document.addEventListener("click", (e) => {
@@ -12,13 +18,13 @@ document.addEventListener("DOMContentLoaded", function() {
         const clickEnIcono = e.target.closest(".icon-three");
         const clickEnSubmenu = e.target.closest(".submenu-options");
         if (!clickEnIcono && !clickEnSubmenu) {
-            submenuOptionsList.forEach(submenuOptions => {
-                submenuOptions.classList.remove("active");
-            });
-            // Sin esto, el próximo clic sobre el mismo ícono quedaba
-            // desincronizado: pensaba que seguía abierto y lo "cerraba"
-            // sin haberlo abierto de nuevo.
-            actualIconSubmenu = null;
+            cerrarSubmenu();
+        }
+    });
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && actualIconSubmenu) {
+            actualIconSubmenu.focus();
+            cerrarSubmenu();
         }
     });
 
@@ -53,18 +59,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
             // Si el iconSubmenu actual ya tiene la clase "active", lo cerramos
             if (iconSubmenu === actualIconSubmenu) {
-                submenuOptions.classList.remove("active");
-                actualIconSubmenu = null;
+                cerrarSubmenu();
             } else {
                 // Si no, cerramos el submenú anterior (si lo hay)
-                if (actualIconSubmenu) {
-                    actualIconSubmenu.nextElementSibling.classList.remove("active");
-                }
+                cerrarSubmenu();
                 // Lo mostramos primero para poder medir su alto real...
                 submenuOptions.classList.add("active");
                 // ...y recién ahí lo posicionamos.
                 posicionar(iconSubmenu, submenuOptions);
                 actualIconSubmenu = iconSubmenu;
+                iconSubmenu.setAttribute("aria-expanded", "true");
             }
 
             e.stopPropagation();

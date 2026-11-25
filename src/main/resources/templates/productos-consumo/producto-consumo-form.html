@@ -6,7 +6,7 @@
     <div th:replace="~{navegacion :: menu}"></div>
     <div class="content">
 
-      <form th:action="@{/productos-consumo/guardar/}" method="post" th:object="${producto}">
+      <form class="form-catalogo" th:action="@{/productos-consumo/guardar/}" method="post" th:object="${producto}">
         <div class="header-form">
           <h1 th:text="${titulo}"></h1>
         </div>
