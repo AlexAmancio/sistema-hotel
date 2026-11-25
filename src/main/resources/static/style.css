@@ -868,8 +868,90 @@ table {
 table {
     min-width: 720px;
 }
+.table-wrapper-registros {
+    container-type: inline-size;
+    padding-inline: clamp(12px, 2vw, 24px);
+}
 .table-registros {
-    min-width: 1180px;
+    min-width: 0;
+    table-layout: fixed;
+    overflow-wrap: anywhere;
+}
+.table-registros th {
+    white-space: normal;
+}
+.table-registros th:nth-child(2) { width: 20%; }
+.table-registros th:nth-child(3) { width: 15%; }
+.table-registros th:nth-child(4) { width: 10%; }
+.table-registros th:nth-child(5) { width: 11%; }
+.table-registros th:nth-child(6) { width: 13%; }
+.table-registros th:nth-child(7) { width: 144px; }
+.table-registros .cliente-item-header {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+.table-registros .col-estadia > div {
+    white-space: normal;
+}
+.table-registros .col-tag {
+    white-space: normal;
+}
+.table-registros .col-acciones {
+    padding-right: 0;
+}
+.registro-etiqueta {
+    display: none;
+}
+.registro-altas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+}
+
+@container (max-width: 850px) {
+    .table-registros,
+    .table-registros > tbody {
+        display: block;
+    }
+    .table-registros .table-header {
+        display: none;
+    }
+    .table-registros .table-item {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 12px;
+        padding: 12px;
+    }
+    .table-registros .table-item > td,
+    .table-registros .cliente-item-header {
+        padding: 0;
+    }
+    .table-registros .table-item-header,
+    .table-registros .col-estadia,
+    .table-registros .col-observaciones,
+    .table-registros .col-acciones {
+        grid-column: 1 / -1;
+    }
+    .table-registros .col-observaciones:not(:has(div)) {
+        display: none;
+    }
+    .table-registros .registro-etiqueta {
+        display: block;
+        color: var(--color-plomo-oscuro);
+        font-size: 12px;
+    }
+    .table-registros .btn-checkout-rapido {
+        min-height: 44px;
+    }
+    .table-registros .icon-three {
+        width: 44px;
+        height: 44px;
+    }
+    .table-registros-vacia,
+    .table-registros-vacia td {
+        display: block;
+    }
 }
 .table-header th {
     white-space: nowrap;
@@ -1881,6 +1963,17 @@ table {
     border: 1px solid var(--border-color);
     background: var(--bg-surface);
     color: var(--text-color);
+}
+.filtro-registros,
+.filtro-registros form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+}
+.filtro-registros input[type="text"] {
+    max-width: 100%;
+    margin-left: 0;
 }
 .btn-exportar {
     font-size: 15px;
